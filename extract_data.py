@@ -1,10 +1,13 @@
-import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
-
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import Lasso, LogisticRegression
+import pandas as pd
+from sklearn.feature_selection import RFE
 from sklearn.feature_selection import SelectFromModel
+from sklearn.linear_model import Lasso
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVR
+
 
 # For all nuclear critical points, there is
 # i think this all are in the other part
@@ -362,7 +365,7 @@ def extract_all( ):
 barriers = pd.read_csv("./dielsalder_dataframe.csv")
 y = barriers["Barrier"][6:-1].to_numpy()
 x = extract_all()
-x_train, x_test, y_train, y_test = train_test_split(x,y, test_size = 0.8)
+x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.8)
 
 
 
@@ -377,10 +380,73 @@ print(sel.get_support())
 print(np.count_nonzero(sel.get_support()))
 print("finished")
 
-
 # variance threshold filtering
 from sklearn.feature_selection import VarianceThreshold
+
 sel = VarianceThreshold(threshold=(.5 * (1 - .5)))
-print(np.shape(x_train))
-print(np.shape(sel.fit_transform(x_train)))
-#can also correlate features with pearson data
+
+# recursive feature elimination, tune to the number of features we want
+svr = SVR(kernel="linear")
+rfe = RFE(estimator=svr, n_features_to_select=5, step=1)
+# rfe = RFECV(estimator=svr, step=1, scoring = "accuracy")
+
+las = Lasso(alpha=0.5, max_iter=10000)
+rfe = RFE(estimator=las, n_features_to_select=5, step=1)
+# rfe = RFECV(estimator=las, step=1,  scoring = "accuracy")
+rfe.fit(x_train, y_train)
+
+ranking = rfe.ranking_.reshape(x[0].shape)
+print(np.shape(x))
+print(np.count_nonzero(rfe.support_))
+print(ranking)
+
+# recursive feature elimination method
+#
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import RepeatedKFold, cross_val_score
+from sklearn.linear_model import SGDRegressor, Ridge
+
+# model choices for features - iterative
+las = Lasso(alpha=0.5, max_iter=10000)
+svr = SVR(kernel="linear")
+dtr = DecisionTreeRegressor()
+rdg = Ridge(alpha=1.0)
+sgd = SGDRegressor(max_iter=100000, penalty="elasticnet", alpha=0.00001)
+
+model_list = [las, dtr, svr, rdg, sgd]
+model_list_sgd = [las, dtr, svr, rdg]
+n_scores = []
+
+for model in model_list_sgd:
+    rfe = RFE(model, n_features_to_select=8, step=1)
+    pipeline = Pipeline(steps=[('s', rfe), ('m', model)])
+    cv = RepeatedKFold(n_splits=4, n_repeats=2, random_state=1)
+    score_temp = cross_val_score(pipeline, x, y, scoring='neg_mean_absolute_error', cv=cv, n_jobs=-1,
+                                 error_score='raise')
+    n_scores.append(score_temp)
+
+names = ["lasso", "svr", "dec. tree", "Ridge", "Stochastic"]
+names_sgd = ["lasso", "svr", "dec. tree", "Ridge"]
+
+plt.boxplot(n_scores, showmeans=True, labels=names_sgd)
+plt.show()
+
+# model choice in number of features
+
+n_scores = []
+names = []
+for i in range(1, 10):
+    # model = Lasso(alpha=1, max_iter=10000)
+    # model = DecisionTreeRegressor()
+    model = SVR(kernel="linear")
+    rfe = RFE(model, n_features_to_select=i, step=1)
+    pipeline = Pipeline(steps=[('s', rfe), ('m', model)])
+    cv = RepeatedKFold(n_splits=4, n_repeats=3, random_state=1)
+    score_temp = cross_val_score(pipeline, x, y, scoring='neg_mean_absolute_error', cv=cv, n_jobs=-1,
+                                 error_score='raise')
+    n_scores.append(score_temp)
+    names.append(i)
+
+plt.boxplot(n_scores, showmeans=True, labels=names)
+plt.show()
