@@ -148,4 +148,5 @@ for i in range(1, 10):
     names.append(i)
 
 plt.boxplot(n_scores, showmeans=True, labels=names)
+
 plt.show()
