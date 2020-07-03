@@ -139,9 +139,11 @@ for i in range(1, 10):
     # model = Lasso(alpha=1, max_iter=10000)
     # model = DecisionTreeRegressor()
     model = SVR(kernel="linear")
+
     rfe = RFE(model, n_features_to_select=i, step=1)
     pipeline = Pipeline(steps=[('s', rfe), ('m', model)])
     cv = RepeatedKFold(n_splits=4, n_repeats=3, random_state=1)
+
     score_temp = cross_val_score(pipeline, x, y, scoring='neg_mean_absolute_error', cv=cv, n_jobs=-1,
                                  error_score='raise')
     n_scores.append(score_temp)
