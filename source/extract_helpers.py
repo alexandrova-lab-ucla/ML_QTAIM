@@ -18,7 +18,7 @@
 # Atomic Electronic Spin Populations:
 # ...
 
-def extract_other_crit(num, filename="./qtaim/reactC_endo10MVc.sum"):
+def extract_other_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     lookup_other = [
         "Rho",
         "GradRho",
@@ -114,7 +114,7 @@ def extract_other_crit(num, filename="./qtaim/reactC_endo10MVc.sum"):
 
 
 # num is an array of the critical nulcear atoms
-def extract_nuc_crit(num, filename="./qtaim/reactC_endo10MVc.sum"):
+def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     lookup_nuclear = [
         "Rho",
         "GradRho",
@@ -181,7 +181,7 @@ def extract_nuc_crit(num, filename="./qtaim/reactC_endo10MVc.sum"):
 # note, might have to modulate the string traversing based on the number of atoms in the file
 # bond pulling stil isn't achieved
 
-def extract_basics(num, filename="./qtaim/reactC_endo10MVc.sum"):
+def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
     lookup_dictionary = [
         "Number of electrons",
         "Nuclear Charges and Cartesian Coordinates",
@@ -236,7 +236,7 @@ def extract_basics(num, filename="./qtaim/reactC_endo10MVc.sum"):
 # this implementation gets "N_total" and "N_spin" vectors from the
 # atoms in the cage of the diels alder rxn
 
-def extract_charge_energies(num, filename="./qtaim/reactC_endo10MVc.sum"):
+def extract_charge_energies(num, filename="../sum_files/reactC_endo10MVc.sum"):
     with open(filename) as myFile:
         control = 0
         iter = 0
@@ -271,7 +271,7 @@ def extract_charge_energies(num, filename="./qtaim/reactC_endo10MVc.sum"):
 # this implementation gets "N_total" and "N_spin" vectors from the
 # atoms in the cage of the diels alder rxn
 
-def extract_spin(num, filename="./qtaim/reactC_endo10MVc.sum"):
+def extract_spin(num, filename="../sum_files/reactC_endo10MVc.sum"):
     with open(filename) as myFile:
         control = 0
         ret_list1 = []
@@ -298,3 +298,46 @@ def extract_spin(num, filename="./qtaim/reactC_endo10MVc.sum"):
 
     ret_list1 = ret_list1 + ret_list2
     return ret_list1
+
+
+def atom_xyz_from_sum(filename=""):
+    temp = []
+    xyz = []
+    control = 0
+
+    with open(filename) as myFile:
+        for line_num, line in enumerate(myFile.readlines()):
+            try:
+                if (line.split() == []):
+                    control = 0
+
+                if (line.split()[0] == 'Atom' and line.split()[1] == 'Charge'
+                        and line.split()[2] == 'X'):
+                    control = 1
+                    print("found atom xyz in file")
+
+                tf = line.split()[0][0] == 'H' or line.split()[0][0] == 'N' or line.split()[0][0] == 'C' or \
+                     line.split()[0][0] == 'O' or \
+                     line.split()[0][0] == 'h' or line.split()[0][0] == 'n' or line.split()[0][0] == 'c' or \
+                     line.split()[0][0] == 'o'
+
+                line.split()[0] == 'B' or line.split()[0] == 'F' or line.split()[0] == 'O'
+                if (control == 1 and tf):
+                    temp.append(line.split()[-5][0])
+                    temp.append(float(line.split()[-3]))
+                    temp.append(float(line.split()[-2]))
+                    temp.append(float(line.split()[-1]))
+
+                    # print(temp)
+                    print(temp[0], temp[1], temp[2], temp[3])
+                    xyz.append(temp)
+
+                    temp = []
+
+
+
+            except:
+                pass
+
+# from extract_helpers import atom_xyz_from_sum
+# atom_xyz_from_sum("../sum_files/A_1-opt.sum")
