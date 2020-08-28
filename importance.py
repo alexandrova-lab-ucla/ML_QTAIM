@@ -1,48 +1,47 @@
+import numpy as np
 from sklearn.feature_selection import RFE
 from sklearn.feature_selection import SelectFromModel
+from sklearn.feature_selection import VarianceThreshold
 from sklearn.linear_model import Lasso
-from sklearn.model_selection import train_test_split
+from sklearn.linear_model import SGDRegressor, Ridge
+from sklearn.model_selection import RepeatedKFold, cross_val_score
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
-
-def lasso(x, y):
-
-    barriers = pd.read_csv("./dielsalder_dataframe.csv")
-    y = barriers["Barrier"][6:-1].to_numpy()
-    x = extract_all()
-    x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.8)
+from sklearn.tree import DecisionTreeRegressor
 
 
-
+#######################################Method 1 #########################################33
+def lasso(x_train, y_train):
     # lasso importance sampping
     scaler = StandardScaler()
     scaler.fit(x_train, y_train)
     print("finished")
-    sel = SelectFromModel(Lasso(alpha = 0.1, max_iter = 10000))
+    sel = SelectFromModel(Lasso(alpha=0.1, max_iter=10000))
     x_train = scaler.transform(x_train)
     sel.fit(x_train, y_train)
     print(sel.get_support())
     print(np.count_nonzero(sel.get_support()))
     print("finished")
 
+
+#######################################Method 2 #########################################33
 # variance threshold filtering
-def variance(x,y):
 
-    from sklearn.feature_selection import VarianceThreshold
+def variance_thresh(x, y):
+    scaler = StandardScaler()
+    scaler.fit(x_train, y_train)
+
     sel = VarianceThreshold(threshold=(.5 * (1 - .5)))
+    x_train = scaler.transform(x_train)
+    sel.fit(x_train, y_train)
 
 
+#######################################Method 3 #########################################33
+# recursive feature elimination, tune to the number of features we want
 
 
-def recursive_features(x,y):
-
-    # recursive feature elimination method
-    from sklearn.tree import DecisionTreeRegressor
-    from sklearn.pipeline import Pipeline
-    from sklearn.model_selection import RepeatedKFold, cross_val_score
-    from sklearn.linear_model import SGDRegressor, Ridge
-
-    # recursive feature elimination, tune to the number of features we want
+def recursive_feat_elim(x, y):
     svr = SVR(kernel="linear")
     rfe = RFE(estimator=svr, n_features_to_select=5, step=1)
     # rfe = RFECV(estimator=svr, step=1, scoring = "accuracy")
@@ -50,6 +49,13 @@ def recursive_features(x,y):
     rfe = RFE(estimator=las, n_features_to_select=5, step=1)
     rfe.fit(x_train, y_train)
     ranking = rfe.ranking_.reshape(x[0].shape)
+
+    # print(np.shape(x))
+    # print(np.count_nonzero(rfe.support_))
+    # print(ranking)
+
+    # recursive feature elimination method
+    #
 
     # model choices for features - iterative
     las = Lasso(alpha=0.5, max_iter=10000)
@@ -95,6 +101,4 @@ def recursive_features(x,y):
         names.append(i)
 
     plt.boxplot(n_scores, showmeans=True, labels=names)
-
     plt.show()
-
