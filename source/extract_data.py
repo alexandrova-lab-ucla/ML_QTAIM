@@ -3,59 +3,91 @@ import pandas as pd
 from extract_helpers import *
 from feature_sel_util import *
 from sklearn.model_selection import train_test_split
-
+from sklearn.preprocessing import scale
+import os
 
 def extract_all():
     # add reactD once I get the files for it
+    df = pd.read_excel("../data/barriers.xlsx")
 
-    fl_arr = [
-        "../sum_files/reactC_endonf.sum",
-        "../sum_files/reactC_endo10MVc.sum",
-        "../sum_files/reactC_endo-10MVc.sum",
-        "../sum_files/reactC_endop10MVc.sum",
-        "../sum_files/reactC_endop-10MVc.sum",
-        "../sum_files/reactC_endol10MVc.sum",
-        "../sum_files/reactC_endol-10MVc.sum",
-        "../sum_files/reactC_endoc10MVc.sum",
-        "../sum_files/reactC_endoc-10MVc.sum",
-        "../sum_files/reactC_exonf.sum",
-        "../sum_files/reactC_exo10MVc.sum",
-        "../sum_files/reactC_exo-10MVc.sum",
-        "../sum_files/reactC_exop10MVc.sum",
-        "../sum_files/reactC_exop-10MVc.sum",
-        "../sum_files/reactC_exol10MVc.sum",
-        "../sum_files/reactC_exol-10MVc.sum",
-        "../sum_files/reactC_exoc10MVc.sum",
-        "../sum_files/reactC_exoc-10MVc.sum"
-
-    ]
-
+    fl_arr = []
+    completed_files = []
     x = []
+    y = []
 
-    for fl in fl_arr:
-        if ("reactC_exo" in fl):
-            atoms = [1, 2, 3, 4, 5, 6]
-            atom_id = ["c1", "c2", "c3", "c4", "c5", "c6"]
-            bond_cp = [26, 19, 21, 22, 23, 24, 25]
+    for i, j in enumerate(df["group"]):
+        if (j != "reactC"):
+            temp_name = "../sum_files/" + str(j) + "_" + str(df["file"].values[i]) + "-opt.sum"
+            fl_arr.append(temp_name)
 
-        if ("reactC_endo" in fl):
-            atoms = [1, 3, 4, 5, 6, 7]
-            atom_id = ["c1", "c3", "c4", "c5", "c6", "c7"]
-            bond_cp = [26, 19, 21, 22, 23, 24, 25]
-
-        ex1 = extract_other_crit(num=bond_cp, filename=fl)
-        ex2 = extract_nuc_crit(num=atoms, filename=fl)
-        ex3 = extract_charge_energies(num=atom_id, filename=fl)
-        ex4 = extract_spin(num=atom_id, filename=fl)
-        ex5 = extract_basics(num=atom_id, filename=fl)
-
-        x.append([float(i) for i in ex1[1]["Stress_EigVals"][0:-1]] + ex3 + ex4 + ex5)
-
-    x = np.array(x)
-    return x
+        else:
+            temp_name = "../sum_files/" + str(j) + "_" + str(df["file"].values[i]) + ".sum"
+            fl_arr.append(temp_name)
 
 
-barriers = pd.read_csv("../data/dielsalder_dataframe.csv")
-y = barriers["Barrier"][6:-1].to_numpy()
-x = extract_all()
-x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.8)
+    for ind, fl in enumerate(fl_arr):
+
+        print(fl)
+        if (pd.isnull(df["AtomOrder"][ind]) or pd.isnull(df["CPOrder"][ind]) ):
+            print("critical points not added here")
+        else:
+
+            completed_files.append(fl)
+            y.append(df["barrier(kj/mol)"][ind])
+            atoms = df["AtomOrder"][ind]
+            atoms = atoms[1:-1]
+            atom_id = [x.strip('\"') for x in atoms.split(",")]
+            bond_cp = [int(x) for x in df["CPOrder"][ind].split(",")]
+
+            atoms = []
+
+            for i in atom_id:
+                atoms.append(int(i[-1]))
+
+            ex1 = extract_other_crit(num=bond_cp, filename=fl)
+            ex2 = extract_nuc_crit(num=atoms, filename=fl)
+            ex3 = extract_charge_energies(num=atom_id, filename=fl)
+            ex4 = extract_spin(num=atom_id, filename=fl)
+            ex5 = extract_basics(num=atom_id, filename=fl)
+
+            #unpacks
+            temp = []
+            for i in ex1:
+                for key, vals in i.items():
+                    if(type(vals) == list):
+                        for list_val in vals:
+                            if (list_val == "NA" ):
+                                temp.append(0)
+                            else:
+                                temp.append(float(list_val))
+                    else:
+                        if (vals == "NA"):
+                            temp.append(0)
+                        else:
+                            temp.append(float(vals))
+
+            for i in ex2:
+                for key, vals in i.items():
+                    if(type(vals) == list):
+                        for list_val in vals:
+                            if (list_val == "NA" ):
+                                temp.append(0)
+                            else:
+                                temp.append(float(list_val))
+                    else:
+                        if (vals == "NA"):
+                            temp.append(0)
+                        else:
+                            temp.append(float(vals))
+
+            x.append(temp +  ex3 + ex4 + ex5)
+
+    np_convert = []
+    for arrays in x:
+        np_convert.append(np.array(arrays))
+    return np_convert, np.array(y)
+
+x, y = extract_all()
+
+print(np.shape(y))
+print(np.shape(x))

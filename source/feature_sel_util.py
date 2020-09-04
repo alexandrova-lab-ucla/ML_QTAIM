@@ -11,6 +11,20 @@ from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
 
 
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.feature_selection import RFE
+from sklearn.feature_selection import SelectFromModel
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.linear_model import Lasso
+from sklearn.linear_model import SGDRegressor, Ridge
+from sklearn.model_selection import RepeatedKFold, cross_val_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVR
+from sklearn.tree import DecisionTreeRegressor
+
+
 #######################################Method 1 #########################################33
 def lasso(x_train, y_train):
     # lasso importance sampping
@@ -23,18 +37,6 @@ def lasso(x_train, y_train):
     print(sel.get_support())
     print(np.count_nonzero(sel.get_support()))
     print("finished")
-
-
-#######################################Method 2 #########################################33
-# variance threshold filtering
-
-def variance_thresh(x, y):
-    scaler = StandardScaler()
-    scaler.fit(x_train, y_train)
-
-    sel = VarianceThreshold(threshold=(.5 * (1 - .5)))
-    x_train = scaler.transform(x_train)
-    sel.fit(x_train, y_train)
 
 
 #######################################Method 3 #########################################33
@@ -102,3 +104,25 @@ def recursive_feat_elim(x, y):
 
     plt.boxplot(n_scores, showmeans=True, labels=names)
     plt.show()
+
+
+#######################################Method 2 #########################################33
+# variance threshold filtering
+
+def variance_thresh(x, y):
+    scaler = StandardScaler()
+    scaler.fit(x, y)
+
+    sel = VarianceThreshold(threshold=(.5 * (1 - .5)))
+    x_train = scaler.transform(x)
+    sel.fit(x, y)
+
+
+#######################################Method 6 #########################################33
+#todo: PCA
+
+#######################################Method 4 #########################################33
+#todo: Boruta
+
+#######################################Method 5 #########################################33
+#todo: 1D autoencoder
