@@ -1,24 +1,35 @@
-# For all nuclear critical points, there is
-# i think this all are in the other part
-# (1) Bader charge, - the other
-# (2) energy, - in the other
-# (3) electrostatic potential,
-# (4) nuclear electrostatic potential,
+
+
+#  CPs have different lengths, some dont have gbl
+#  types of critical points - might have to one-hot encode
+#  NACP = Nuclear Attractor Critical Point
+#  NNACP = Non-Nuclear Attractor Critical Point
+#  BCP = Bond Critical Point
+#  RCP = Ring Critical Point
+#  CCP = Cage Critical Point
+
+# each critical point has:
 # ---------------------------------------------
-#  Vnuc = Electrostatic Potential from Nuclei
-#  ESP = Total Electrostatic Potential
-#  ESPe = Electrostatic Potential from Electrons
-#  ESPn = Electrostatic Potential from Nuclei
+#   Rho = Electron Density
+#   DelSqRho = Laplacian of Rho = Trace of Hessian of Rho
+#   DelSqV = Laplacian of V
+#   ask matthew about all the other types of laplacians
+#   HessRho_EigVals = Eigenvalues of the Hessian of Rho, Ascending Order
+#   Bond Ellipticity = (HessRho_EigVal(1) / HessRho_EigVal(2)) - 1
+#   G = Lagrangian Form of Kinetic Energy Density
+#   K = Hamiltonian Form of Kinetic Energy Density
+#   L = K - G = Lagrangian Density = (-1/4)DelSqRho
 
-# (5) multipoles,
-# (6) force tensors,
+#   Stress_EigVals = Eigenvalues of Stress Tensor, Ascending Order
+#   V = Virial Field = Potential Energy Density = Trace of Stress Tensor
+#  -DivStress = Ehrenfest Force Density = Minus Divergence of Stress Tensor
 
-# (7) spin populations - Done
-# ---------------------------------------------
-# Atomic Electronic Spin Populations:
-# ...
 
-def extract_other_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
+# num is an array of the critical nulcear atoms
+def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
+
+    # todo: once this is complete separate into bond cp and rcp and add GBL and BPL to dictionary
+
     lookup_other = [
         "Rho",
         "GradRho",
@@ -35,11 +46,10 @@ def extract_other_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
         "-DivStress",
         "ESP",
         "ESPe",
-        "ESPn",
-        "GBL"
+        "ESPn"
     ]
 
-    num = sorted(num)
+    #num = sorted(num)
     iter = 0
     iter_lookup = 0
     control = 0
@@ -79,7 +89,7 @@ def extract_other_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
                         iter_lookup += 1
 
-                if (int(line.split()[1]) == num[iter] and
+                if (int(line.split()[1]) in num and
                         line.split()[0] == "CP#"):
                     control = 1
 
@@ -88,32 +98,98 @@ def extract_other_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     return list_dicts
 
 
-#  CPs have different lengths, some dont have gbl
-#  types of critical points - might have to one-hot encode
-#  NACP = Nuclear Attractor Critical Point
-#  NNACP = Non-Nuclear Attractor Critical Point
-#  BCP = Bond Critical Point
-#  RCP = Ring Critical Point
-#  CCP = Cage Critical Point
 
-# each critical point has:
+def extract_ring_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
+    lookup_other = [
+        "Rho",
+        "GradRho",
+        "HessRho_EigVals",
+        "DelSqRho",
+        "Bond",
+        "V",
+        "G",
+        "K",
+        "L",
+        "Vnuc",
+        "DelSqV",
+        "Stress_EigVals",
+        "-DivStress",
+        "ESP",
+        "ESPe",
+        "ESPn",
+        "GBL_I",
+        "GBL_II",
+        "GBL_III",
+        "BPL"
+    ]
+
+    #num = sorted(num)
+    iter = 0
+    iter_lookup = 0
+    control = 0
+    ret_list = {}
+    list_dicts = []
+
+    with open(filename) as myFile:
+        for line_num, line in enumerate(myFile.readlines()):
+
+            try:
+                if (control == 1):
+
+                    if (iter_lookup == len(lookup_other) or line.split() == []):
+                        iter_lookup = 0
+                        control = 0
+                        iter += 1
+                        list_dicts.append(ret_list)
+                        ret_list = {}
+
+                    if (line.split()[0] == "Type"):
+                        ret_list.append(line.split()[3])
+
+                    if (lookup_other[iter_lookup] == line.split()[0]):
+
+                        if (line.split()[0] == "Stress_EigVals"):
+                            ret_list["Stress_EigVals"] = line.split()[2:5]
+                        elif (line.split()[0] == "GradRho"):
+                            ret_list["GradRho"] = line.split()[2:5]
+
+                        elif (line.split()[0] == "Bond"):
+                            ret_list["Bond"] = line.split()[3]
+                        else:
+                            ret_list[lookup_other[iter_lookup]] = line.split()[2]
+
+                        iter_lookup += 1
+
+                if (int(line.split()[1]) in num and
+                        line.split()[0] == "CP#"):
+                    control = 1
+
+            except:
+                pass
+    if (num[0] == num[1]):
+        list_dicts.append(list_dicts)
+    return list_dicts
+
+# For all nuclear critical points, there is
+# i think this all are in the other part
+# (1) Bader charge, - the other
+# (2) energy, - in the other
+# (3) electrostatic potential,
+# (4) nuclear electrostatic potential,
 # ---------------------------------------------
-#   Rho = Electron Density
-#   DelSqRho = Laplacian of Rho = Trace of Hessian of Rho
-#   DelSqV = Laplacian of V
-#   ask matthew about all the other types of laplacians
-#   HessRho_EigVals = Eigenvalues of the Hessian of Rho, Ascending Order
-#   Bond Ellipticity = (HessRho_EigVal(1) / HessRho_EigVal(2)) - 1
-#   G = Lagrangian Form of Kinetic Energy Density
-#   K = Hamiltonian Form of Kinetic Energy Density
-#   L = K - G = Lagrangian Density = (-1/4)DelSqRho
+#  Vnuc = Electrostatic Potential from Nuclei
+#  ESP = Total Electrostatic Potential
+#  ESPe = Electrostatic Potential from Electrons
+#  ESPn = Electrostatic Potential from Nuclei
 
-#   Stress_EigVals = Eigenvalues of Stress Tensor, Ascending Order
-#   V = Virial Field = Potential Energy Density = Trace of Stress Tensor
-#  -DivStress = Ehrenfest Force Density = Minus Divergence of Stress Tensor
+# (5) multipoles,
+# (6) force tensors,
+# (7) spin populations - Done
+# ---------------------------------------------
+# Atomic Electronic Spin Populations:
+# ...
 
 
-# num is an array of the critical nulcear atoms
 def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     lookup_nuclear = [
         "Rho",
@@ -133,7 +209,7 @@ def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
         "ESPn",
     ]
 
-    num = sorted(num)
+    #num = sorted(num)
     ret_list = {}
     list_dicts = []
     iter = 0
@@ -144,6 +220,7 @@ def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
         for line_num, line in enumerate(myFile.readlines()):
 
             try:
+
                 if (control == 1):
 
                     if (iter_lookup == len(lookup_nuclear) or line.split() == []):
@@ -156,7 +233,7 @@ def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
                     if (line.split()[0] == "Type"):
                         ret_list.append(line.split()[3])
 
-                    if (lookup_nuclear[iter_lookup] == line.split()[0]):
+                    if (line.split()[0] in lookup_nuclear[iter_lookup]  ):
                         if (line.split()[0] == "Stress_EigVals"):
                             ret_list["Stress_EigVals"] = line.split()[2:5]
                         elif (line.split()[0] == "GradRho"):
@@ -169,9 +246,10 @@ def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
                         iter_lookup += 1
 
-                if (int(line.split()[1]) == num[iter] and
+                if (int(line.split()[1]) in num and
                         line.split()[0] == "CP#"):
                     control = 1
+
 
             except:
                 pass
@@ -197,16 +275,22 @@ def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
     control_2 = 0
 
     ret_list = []
-    iter = 0
+    iter_1 = 0
+    iter_2 = 0
+
+    # todo: the integration of the dictionary is yet to be done here
 
     with open(filename) as myFile:
         for line_num, line in enumerate(myFile.readlines()):
             try:
 
                 ########
-                if (iter > 2 * len(num) - 1):
-                    break
+                #if (iter_1 > 2 * len(num) - 1):
+                #    break
+                #if (iter_2 > 2 * len(num) - 1):
+                #    break
 
+                # sets control to 1 when the line of interest is hit
                 if (line.split()[1] == "Atomic" and
                         line.split()[0] == "Some"):
                     control_1 = 1
@@ -215,18 +299,23 @@ def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
                         line.split()[0] == "Nuclear"):
                     control_2 = 1
 
+
                 # grabs charge, lagrangian, kinetic energy of ea. atom
                 if (int(line.split().count(num[iter % len(num)])) > 0 and control_1 > 0):
                     ret_list = ret_list + [float(i) for i in line.split()[1:4]]
-                    iter += 1
+                    iter_1 += 1
 
                 # grabs position of six atoms
                 if (int(line.split().count(num[iter % len(num)])) > 0 and control_2 > 0):
                     ret_list = ret_list + [float(i) for i in line.split()[2:5]]
-                    iter += 1
-
-                if (iter >= len(num)):
-                    control = 0
+                    iter_2 += 1
+                if (iter_1 >= len(num)):
+                    control_1 = 0
+                    iter_1 = 0
+                    print("here")
+                if (iter_2 >= len(num)):
+                    control_2 = 0
+                    iter_2 = 0
 
             except:
                 pass
@@ -254,7 +343,7 @@ def extract_charge_energies(num, filename="../sum_files/reactC_endo10MVc.sum"):
                         and line.split()[2] == "Properties:"):
                     control = 1
 
-                if (num[iter] == line.split()[0] and control == 1):
+                if ((line.split()[0].lower() in num or line.split()[0].upper() in num) and control == 1):
                     ret_list1.append(float(line.split()[1]))
                     ret_list2.append(float(line.split()[2]))
                     iter += 1
@@ -277,6 +366,7 @@ def extract_spin(num, filename="../sum_files/reactC_endo10MVc.sum"):
         ret_list1 = []
         ret_list2 = []
 
+
         iter = 0
         for line_num, line in enumerate(myFile.readlines()):
             try:
@@ -285,7 +375,7 @@ def extract_spin(num, filename="../sum_files/reactC_endo10MVc.sum"):
                         and line.split()[2] == "Spin"):
                     control = 1
 
-                if (num[iter] == line.split()[0] and control == 1):
+                if ((line.split()[0].lower() in num or line.split()[0].upper() in num) and control == 1):
                     ret_list1.append(float(line.split()[3]))
                     ret_list2.append(float(line.split()[4]))
                     iter += 1

@@ -3,6 +3,7 @@ import pandas as pd
 from extract_helpers import *
 from feature_sel_util import *
 from sklearn.model_selection import train_test_split
+from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import scale
 import os
 
@@ -27,32 +28,45 @@ def extract_all():
 
     for ind, fl in enumerate(fl_arr):
 
-        print(fl)
+        #print(fl)
         if (pd.isnull(df["AtomOrder"][ind]) or pd.isnull(df["CPOrder"][ind]) ):
-            print("critical points not added here")
+            #print("critical points not added here")
+            pass
         else:
 
-            completed_files.append(fl)
-            y.append(df["barrier(kj/mol)"][ind])
             atoms = df["AtomOrder"][ind]
-            atoms = atoms[1:-1]
-            atom_id = [x.strip('\"') for x in atoms.split(",")]
-            bond_cp = [int(x) for x in df["CPOrder"][ind].split(",")]
+            atoms = atoms.replace(" ","")[1:-1]
+            atom_id = [x[1:-1] for x in atoms.split(",")]
+            bond_cp = [int(x) for x in df["CPOrder"][ind].split(",")][6:13]
+            ring_cp = bond_cp[4:6]
+            bond_cp = bond_cp[0:4]
 
             atoms = []
-
             for i in atom_id:
-                atoms.append(int(i[-1]))
+                if(len(i) == 3):
+                    atoms.append(int(i[1:3]))
+                else:
+                    atoms.append(int(i[-1]))
 
-            ex1 = extract_other_crit(num=bond_cp, filename=fl)
-            ex2 = extract_nuc_crit(num=atoms, filename=fl)
-            ex3 = extract_charge_energies(num=atom_id, filename=fl)
-            ex4 = extract_spin(num=atom_id, filename=fl)
-            ex5 = extract_basics(num=atom_id, filename=fl)
+            bond    = extract_bond_crit(num=bond_cp, filename=fl)
+            ring    = extract_ring_crit(num=ring_cp, filename=fl)
+            nuc     = extract_nuc_crit(num=atoms, filename=fl)
+            charge  = extract_charge_energies(num=atom_id, filename=fl)
+            spin    = extract_spin(num=atom_id, filename=fl)
+            basics  = extract_basics(num=atom_id, filename=fl)
+
+            # todo: basics: rip
+
+            if(len(bond) != 4):
+                print(fl)
+                print(bond_cp)
+            if (len(ring) != 2):
+                print(fl)
+                print(ring_cp)
 
             #unpacks
             temp = []
-            for i in ex1:
+            for i in bond:
                 for key, vals in i.items():
                     if(type(vals) == list):
                         for list_val in vals:
@@ -66,7 +80,7 @@ def extract_all():
                         else:
                             temp.append(float(vals))
 
-            for i in ex2:
+            for i in nuc:
                 for key, vals in i.items():
                     if(type(vals) == list):
                         for list_val in vals:
@@ -80,14 +94,15 @@ def extract_all():
                         else:
                             temp.append(float(vals))
 
-            x.append(temp +  ex3 + ex4 + ex5)
+            x.append(temp +  charge + spin + basics)
+            completed_files.append(fl)
+            y.append(float(df["barrier(kj/mol)"][ind]))
 
-    np_convert = []
-    for arrays in x:
-        np_convert.append(np.array(arrays))
-    return np_convert, np.array(y)
+    return x, np.array(y)
 
 x, y = extract_all()
 
-print(np.shape(y))
-print(np.shape(x))
+selector = VarianceThreshold()
+
+x = selector.fit_transform(x)
+print(len(x))
