@@ -23,20 +23,19 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.preprocessing import MinMaxScaler
 
 
 #######################################Method 1 #########################################33
-def lasso(x_train, y_train):
+def lasso(x, y):
     # lasso importance sampping
     scaler = StandardScaler()
-    scaler.fit(x_train, y_train)
-    print("finished")
-    sel = SelectFromModel(Lasso(alpha=0.1, max_iter=10000))
-    x_train = scaler.transform(x_train)
-    sel.fit(x_train, y_train)
-    print(sel.get_support())
-    print(np.count_nonzero(sel.get_support()))
-    print("finished")
+    scaler.fit(x, y)
+    sel = SelectFromModel(Lasso(alpha=0.1, max_iter=10000, normalize=True))
+    x_train = scaler.transform(x)
+    sel.fit(x, y)
+    #print(sel.get_support())
+    print("number of features selected via lasso: " + str(np.count_nonzero(sel.get_support())))
 
 
 #######################################Method 3 #########################################33
@@ -44,18 +43,27 @@ def lasso(x_train, y_train):
 
 
 def recursive_feat_elim(x, y):
-    svr = SVR(kernel="linear")
-    rfe = RFE(estimator=svr, n_features_to_select=5, step=1)
-    # rfe = RFECV(estimator=svr, step=1, scoring = "accuracy")
-    las = Lasso(alpha=0.5, max_iter=10000)
-    rfe = RFE(estimator=las, n_features_to_select=5, step=1)
-    rfe.fit(x_train, y_train)
-    ranking = rfe.ranking_.reshape(x[0].shape)
 
-    # print(np.shape(x))
-    # print(np.count_nonzero(rfe.support_))
-    # print(ranking)
 
+    sgd = SGDRegressor(max_iter=100000, penalty="elasticnet", alpha=0.00001)
+    rfe = RFE(estimator = sgd, n_features_to_select=40, step=1)
+    rfe.fit(x,y)
+    ranking = rfe.ranking_.reshape(np.shape(x)[1])
+    print(ranking)
+
+    #las = Lasso(alpha=0.1, max_iter=1000000)
+    #rfe = RFE(estimator=las, n_features_to_select=20, step=1)
+    #rfe.fit(x, y)
+    #ranking = rfe.ranking_.reshape(np.shape(x)[1])
+    #print(ranking)
+
+    dtr = DecisionTreeRegressor()
+    rfe = RFE(estimator=dtr, n_features_to_select=40, step=1)
+    rfe.fit(x, y)
+    ranking = rfe.ranking_.reshape(np.shape(x)[1])
+    print(ranking)
+
+    '''
     # recursive feature elimination method
     #
 
@@ -104,19 +112,25 @@ def recursive_feat_elim(x, y):
 
     plt.boxplot(n_scores, showmeans=True, labels=names)
     plt.show()
-
+    '''
 
 #######################################Method 2 #########################################33
 # variance threshold filtering
 
 def variance_thresh(x, y):
-    scaler = StandardScaler()
-    scaler.fit(x, y)
+    print("feature length: " + str(np.shape(x)[1]))
+    # ----------------------- not scaling features
+    selector = VarianceThreshold()
+    x_var_filter = selector.fit_transform(x)
+    print("relevant features w/out min/max scaling: " + str(np.shape(x_var_filter)[1]))
 
-    sel = VarianceThreshold(threshold=(.5 * (1 - .5)))
-    x_train = scaler.transform(x)
-    sel.fit(x, y)
-
+    # ----------------------- min_max scale before variance filtering
+    scaler = MinMaxScaler()
+    scaler.fit(x)
+    x_min_man = scaler.transform(x)
+    selector = VarianceThreshold()
+    x_var_filter = selector.fit_transform(x)
+    print("relevant features with min/manx scaling: " + str(np.shape(x_var_filter)[1]))
 
 #######################################Method 6 #########################################33
 #todo: PCA

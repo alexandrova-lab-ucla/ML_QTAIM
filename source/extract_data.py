@@ -4,7 +4,7 @@ from extract_helpers import *
 from feature_sel_util import *
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.preprocessing import scale
+from sklearn.preprocessing import MinMaxScaler
 import os
 
 def extract_all():
@@ -101,8 +101,15 @@ def extract_all():
     return x, np.array(y)
 
 x, y = extract_all()
-
+# -------------------------------------
+print("feature length: " + str(np.shape(x)[1]))
 selector = VarianceThreshold()
+x_var_filter = selector.fit_transform(x)
 
-x = selector.fit_transform(x)
-print(len(x))
+variance_thresh(x,y)
+
+lasso(x, y)
+lasso(x_var_filter, y)
+
+recursive_feat_elim(x, y)
+#recursive_feat_elim(x_var_filter, y)
