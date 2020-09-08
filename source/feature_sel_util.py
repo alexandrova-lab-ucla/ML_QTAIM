@@ -13,11 +13,10 @@ from sklearn.tree import DecisionTreeRegressor
 
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.feature_selection import RFE
+from sklearn.feature_selection import RFE, RFECV
 from sklearn.feature_selection import SelectFromModel
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.linear_model import Lasso
-from sklearn.linear_model import SGDRegressor, Ridge
+from sklearn.linear_model import SGDRegressor, Ridge, Lasso
 from sklearn.model_selection import RepeatedKFold, cross_val_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -57,11 +56,11 @@ def recursive_feat_elim(x, y):
     #ranking = rfe.ranking_.reshape(np.shape(x)[1])
     #print(ranking)
 
-    dtr = DecisionTreeRegressor()
-    rfe = RFE(estimator=dtr, n_features_to_select=40, step=1)
-    rfe.fit(x, y)
-    ranking = rfe.ranking_.reshape(np.shape(x)[1])
-    print(ranking)
+    #dtr = DecisionTreeRegressor()
+    #rfe = RFE(estimator=dtr, n_features_to_select=40, step=1)
+    #rfe.fit(x, y)
+    #ranking = rfe.ranking_.reshape(np.shape(x)[1])
+    #print(ranking)
 
     '''
     # recursive feature elimination method
@@ -113,6 +112,29 @@ def recursive_feat_elim(x, y):
     plt.boxplot(n_scores, showmeans=True, labels=names)
     plt.show()
     '''
+#######################################Method 2 #########################################33
+# rfecv
+
+def recursive_feat_cv(x, y):
+
+
+    sgd = SGDRegressor(max_iter=100000, penalty="elasticnet", alpha=0.00001)
+    sgd = SGDRegressor()
+    sgd = Lasso(max_iter=100000)
+    rfecv = RFECV(estimator = sgd, min_features_to_select=10, step=1, n_jobs=4, scoring= "explained_variance")
+
+    rfecv.fit(x,y)
+    #ranking = rfe.ranking_.reshape(np.shape(x)[1])
+    #print(ranking)
+    print("Optimal number of features : %d" % rfecv.n_features_)
+
+    # Plot number of features VS. cross-validation scores
+    plt.figure()
+    plt.xlabel("Number of features selected")
+    plt.ylabel("Score")
+    plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_)
+    plt.show()
+
 
 #######################################Method 2 #########################################33
 # variance threshold filtering
