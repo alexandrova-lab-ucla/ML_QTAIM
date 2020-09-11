@@ -1,11 +1,11 @@
+import os
 import numpy as np
 import pandas as pd
 from extract_helpers import *
 from feature_sel_util import *
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.preprocessing import MinMaxScaler
-import os
+from sklearn.preprocessing import MinMaxScaler, scale
 
 def extract_all():
     # add reactD once I get the files for it
@@ -63,6 +63,9 @@ def extract_all():
             if (len(ring) != 2):
                 print(fl)
                 print(ring_cp)
+            if (len(spin) != 12):
+                print(fl)
+                print(len(spin))
 
             #unpacks
             temp = []
@@ -101,15 +104,20 @@ def extract_all():
     return x, np.array(y)
 
 x, y = extract_all()
+for i,j in enumerate(x):
+    if (len(j) != 239):
+        print(y[i])
 # -------------------------------------
-print("feature length: " + str(np.shape(x)[1]))
-selector = VarianceThreshold()
-x_var_filter = selector.fit_transform(x)
-
+#print("feature length: " + str(x[1]))
+#selector = VarianceThreshold()
+#x_var_filter = selector.fit_transform(x)
+x_scaled = scale(x)
 variance_thresh(x,y)
-
 lasso(x, y)
-lasso(x_var_filter, y)
-
-recursive_feat_elim(x, y)
+lasso(x, y)
+#recursive_feat_elim(x, y)
+#recursive_feat_cv(x, y)
+pca(x)
+boruta(x,y)
+#vae(x_scaled)
 #recursive_feat_elim(x_var_filter, y)

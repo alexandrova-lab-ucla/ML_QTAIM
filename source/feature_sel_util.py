@@ -1,29 +1,18 @@
 import numpy as np
-from sklearn.feature_selection import RFE
-from sklearn.feature_selection import SelectFromModel
-from sklearn.feature_selection import VarianceThreshold
-from sklearn.linear_model import Lasso
-from sklearn.linear_model import SGDRegressor, Ridge
-from sklearn.model_selection import RepeatedKFold, cross_val_score
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR
-from sklearn.tree import DecisionTreeRegressor
-
-
-import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.feature_selection import RFE, RFECV
-from sklearn.feature_selection import SelectFromModel
-from sklearn.feature_selection import VarianceThreshold
-from sklearn.linear_model import SGDRegressor, Ridge, Lasso
-from sklearn.model_selection import RepeatedKFold, cross_val_score
+from boruta import BorutaPy
+
+from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import RFE, RFECV, \
+    SelectFromModel, VarianceThreshold
+from sklearn.model_selection import RepeatedKFold, cross_val_score
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.preprocessing import MinMaxScaler
-
+from sklearn.linear_model import SGDRegressor, Ridge, Lasso
+from sklearn.ensemble import RandomForestRegressor
 
 #######################################Method 1 #########################################33
 def lasso(x, y):
@@ -155,10 +144,52 @@ def variance_thresh(x, y):
     print("relevant features with min/manx scaling: " + str(np.shape(x_var_filter)[1]))
 
 #######################################Method 6 #########################################33
-#todo: PCA
+def pca(x):
+    pca = PCA(n_components = 6)
+    pca.fit(x)
+    print(pca.explained_variance_ratio_)
 
 #######################################Method 4 #########################################33
 #todo: Boruta
 
+def boruta(x,y):
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=5)
+    print(type(np.array(x)))
+    print(type(y))
+    feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, random_state=1)
+    feat_selector.fit(np.array(x), y)
+    print(    feat_selector.support_)
+    print(feat_selector.ranking_)
+
 #######################################Method 5 #########################################33
 #todo: 1D autoencoder
+import tensorflow as tf
+import tensorflow.keras as keras
+from tensorflow.keras.layers import Dense, MaxPooling2D, Conv2D, Dropout, \
+    Flatten, BatchNormalization, Activation, GlobalAvgPool2D, Input
+from tensorflow.keras.models import Sequential
+
+def vae(x):
+    print(np.shape(x))
+
+
+    dim = np.shape(x)[1]
+    x = x.astype('float32')
+    model = Sequential()
+    model.add(Input((dim,)))
+    model.add(Dense(512, activation='relu'))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(512, activation='relu'))
+    model.add(Dense(dim, activation="relu"))
+
+    model.compile(loss=keras.losses.mean_squared_error,
+                  optimizer=keras.optimizers.RMSprop(lr=0.0001, rho=0.9, epsilon=None, decay=0.0),
+                  metrics=['accuracy'])
+
+    history = model.fit(x, x, epochs=100)
+    print(np.shape(x))
+    print(x[0])
+    print(model.predict(np.array(x[0:1])))
+    model.summary()
+
+    return 1
