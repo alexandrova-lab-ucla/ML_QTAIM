@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 from boruta import BorutaPy
-
+import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import RFE, RFECV, \
@@ -11,7 +12,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.linear_model import SGDRegressor, Ridge, Lasso
+from sklearn.linear_model import SGDRegressor, Ridge, Lasso, LassoCV
 from sklearn.ensemble import RandomForestRegressor
 
 #######################################Method 1 #########################################33
@@ -19,13 +20,28 @@ def lasso(x, y):
     # lasso importance sampping
     scaler = StandardScaler()
     scaler.fit(x, y)
-    sel = SelectFromModel(Lasso(alpha=0.1, max_iter=10000, normalize=True))
+    sel = SelectFromModel(Lasso(alpha=0.01, max_iter=10000, normalize=True))
     x_train = scaler.transform(x)
     sel.fit(x, y)
     #print(sel.get_support())
     print("number of features selected via lasso: " + str(np.count_nonzero(sel.get_support())))
 
-
+def lasso_cv(x, y):
+    # lasso importance sampping
+    reg = LassoCV(max_iter=10000, normalize=True, tol=1e-3)
+    reg.fit(x, y)
+    print(type(x))
+    print("Best alpha using built-in LassoCV: %f" % reg.alpha_)
+    print("Best score using built-in LassoCV: %f" % reg.score(x, y))
+    coef = pd.Series(reg.coef_, index=x.columns)
+    print("Lasso picked " + str(sum(coef != 0)) + " variables and eliminated the other " + str(
+        sum(coef == 0)) + " variables")
+    print(coef.sort_values())
+    imp_coef = coef.sort_values()
+    #matplotlib.rcParams['figure.figsize'] = (8.0, 10.0)
+    imp_coef.plot(kind = "barh")
+    plt.title("Feature importance using Lasso Model")
+    plt.show
 #######################################Method 3 #########################################33
 # recursive feature elimination, tune to the number of features we want
 

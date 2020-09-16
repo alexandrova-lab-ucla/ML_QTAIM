@@ -6,15 +6,22 @@ from feature_sel_util import *
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import MinMaxScaler, scale
+from sklearn.feature_selection import SelectKBest
+
+import matplotlib.pyplot as plt
+
+
+# takes: nothing
+# returns: two matrices. list_of_dicts is a list of dictionaries containing
+# critical values for each file. Y is the energies of each file.
 
 def extract_all():
     # add reactD once I get the files for it
-    df = pd.read_excel("../data/barriers.xlsx")
-
     fl_arr = []
-    completed_files = []
-    x = []
     y = []
+    list_of_dicts = []
+    df = pd.read_excel("../data/barriers.xlsx")
+    full_dictionary = {}
 
     for i, j in enumerate(df["group"]):
         if (j != "reactC"):
@@ -25,10 +32,7 @@ def extract_all():
             temp_name = "../sum_files/" + str(j) + "_" + str(df["file"].values[i]) + ".sum"
             fl_arr.append(temp_name)
 
-
     for ind, fl in enumerate(fl_arr):
-
-        #print(fl)
         if (pd.isnull(df["AtomOrder"][ind]) or pd.isnull(df["CPOrder"][ind]) ):
             #print("critical points not added here")
             pass
@@ -40,7 +44,6 @@ def extract_all():
             bond_cp = [int(x) for x in df["CPOrder"][ind].split(",")][6:13]
             ring_cp = bond_cp[4:6]
             bond_cp = bond_cp[0:4]
-
             atoms = []
             for i in atom_id:
                 if(len(i) == 3):
@@ -48,76 +51,42 @@ def extract_all():
                 else:
                     atoms.append(int(i[-1]))
 
-            bond    = extract_bond_crit(num=bond_cp, filename=fl)
-            ring    = extract_ring_crit(num=ring_cp, filename=fl)
-            nuc     = extract_nuc_crit(num=atoms, filename=fl)
-            charge  = extract_charge_energies(num=atom_id, filename=fl)
-            spin    = extract_spin(num=atom_id, filename=fl)
-            basics  = extract_basics(num=atom_id, filename=fl)
+            bond = extract_bond_crit(num=bond_cp, filename=fl)
+            ring = extract_ring_crit(num=ring_cp, filename=fl)
+            nuc = extract_nuc_crit(num=atoms, filename=fl)
+            charge = extract_charge_energies(num=atom_id, filename=fl)
+            spin = extract_spin(num=atom_id, filename=fl)
+            basics = extract_basics(num=atom_id, filename=fl)
 
-            # todo: basics: rip
-
-            if(len(bond) != 4):
-                print(fl)
-                print(bond_cp)
-            if (len(ring) != 2):
-                print(fl)
-                print(ring_cp)
-            if (len(spin) != 12):
-                print(fl)
-                print(len(spin))
-
-            #unpacks
-            temp = []
-            for i in bond:
-                for key, vals in i.items():
-                    if(type(vals) == list):
-                        for list_val in vals:
-                            if (list_val == "NA" ):
-                                temp.append(0)
-                            else:
-                                temp.append(float(list_val))
-                    else:
-                        if (vals == "NA"):
-                            temp.append(0)
-                        else:
-                            temp.append(float(vals))
-
-            for i in nuc:
-                for key, vals in i.items():
-                    if(type(vals) == list):
-                        for list_val in vals:
-                            if (list_val == "NA" ):
-                                temp.append(0)
-                            else:
-                                temp.append(float(list_val))
-                    else:
-                        if (vals == "NA"):
-                            temp.append(0)
-                        else:
-                            temp.append(float(vals))
-
-            x.append(temp +  charge + spin + basics)
-            completed_files.append(fl)
+            full_dictionary.update(bond)
+            full_dictionary.update(ring)
+            full_dictionary.update(nuc)
+            full_dictionary.update(charge)
+            full_dictionary.update(spin)
+            full_dictionary.update(basics)
             y.append(float(df["barrier(kj/mol)"][ind]))
-
-    return x, np.array(y)
+            list_of_dicts.append(full_dictionary)
+            full_dictionary = {}
+    df = pd.DataFrame(list_of_dicts)
+    return df, np.array(y)
 
 x, y = extract_all()
-for i,j in enumerate(x):
-    if (len(j) != 239):
-        print(y[i])
+#plt.matshow(x.corr())
+#plt.colorbar()
+#plt.show()
+#x = scale(x)
+#variance_thresh(x,y)
+
 # -------------------------------------
+
 #print("feature length: " + str(x[1]))
 #selector = VarianceThreshold()
 #x_var_filter = selector.fit_transform(x)
-x_scaled = scale(x)
-variance_thresh(x,y)
-lasso(x, y)
-lasso(x, y)
+#lasso(x, y)
+lasso_cv(x,y)
+pca(x)
+#boruta(x,y)
 #recursive_feat_elim(x, y)
 #recursive_feat_cv(x, y)
-pca(x)
-boruta(x,y)
 #vae(x_scaled)
 #recursive_feat_elim(x_var_filter, y)
