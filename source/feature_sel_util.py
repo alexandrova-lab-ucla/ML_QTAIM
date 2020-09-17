@@ -8,7 +8,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import RFE, RFECV, \
     SelectFromModel, VarianceThreshold
 from sklearn.model_selection import RepeatedKFold, cross_val_score
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, scale
 
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
@@ -18,42 +18,41 @@ from sklearn.ensemble import RandomForestRegressor
 #######################################Method 1 #########################################33
 def lasso(x, y):
     # lasso importance sampping
-    scaler = StandardScaler()
-    scaler.fit(x, y)
-    sel = SelectFromModel(Lasso(alpha=0.01, max_iter=10000, normalize=True))
-    x_train = scaler.transform(x)
-    sel.fit(x, y)
-    #print(sel.get_support())
+    x_scaled = scale(x)
+    sel = SelectFromModel(Lasso(alpha=0.9, max_iter=20000, normalize = True))
+    sel.fit(x_scaled, y)
     print("number of features selected via lasso: " + str(np.count_nonzero(sel.get_support())))
+    for i, j in enumerate(sel.get_support()):
+        if j != 0:
+            print(x.columns.values[i])
 
 def lasso_cv(x, y):
     # lasso importance sampping
     reg = LassoCV(max_iter=10000, normalize=True, tol=1e-3)
     reg.fit(x, y)
-    print(type(x))
     print("Best alpha using built-in LassoCV: %f" % reg.alpha_)
     print("Best score using built-in LassoCV: %f" % reg.score(x, y))
     coef = pd.Series(reg.coef_, index=x.columns)
     print("Lasso picked " + str(sum(coef != 0)) + " variables and eliminated the other " + str(
         sum(coef == 0)) + " variables")
-    print(coef.sort_values())
-    imp_coef = coef.sort_values()
-    #matplotlib.rcParams['figure.figsize'] = (8.0, 10.0)
-    imp_coef.plot(kind = "barh")
-    plt.title("Feature importance using Lasso Model")
-    plt.show
+    sort = coef.sort_values()
+    print(sort[sort!=0])
 #######################################Method 3 #########################################33
 # recursive feature elimination, tune to the number of features we want
 
 
 def recursive_feat_elim(x, y):
 
-
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=5)
     sgd = SGDRegressor(max_iter=100000, penalty="elasticnet", alpha=0.00001)
-    rfe = RFE(estimator = sgd, n_features_to_select=40, step=1)
-    rfe.fit(x,y)
-    ranking = rfe.ranking_.reshape(np.shape(x)[1])
-    print(ranking)
+    rfe = RFE(estimator = rf, n_features_to_select=20, step=1)
+    x_scaled = scale(x)
+    rfe.fit(x_scaled,y)
+    ranking = rfe.ranking_.reshape(np.shape(x_scaled)[1])
+    # selects top 20 features
+    for i, j in enumerate(ranking):
+        if j <= 1:
+            print(x.columns.values[i])
 
     #las = Lasso(alpha=0.1, max_iter=1000000)
     #rfe = RFE(estimator=las, n_features_to_select=20, step=1)
@@ -126,7 +125,10 @@ def recursive_feat_cv(x, y):
     sgd = SGDRegressor(max_iter=100000, penalty="elasticnet", alpha=0.00001)
     sgd = SGDRegressor()
     sgd = Lasso(max_iter=100000)
-    rfecv = RFECV(estimator = sgd, min_features_to_select=10, step=1, n_jobs=4, scoring= "explained_variance")
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=5)
+    svr = SVR(kernel="linear")
+
+    rfecv = RFECV(estimator = svr, min_features_to_select=10, step=1, n_jobs=4, scoring= "explained_variance", verbose = 1)
 
     rfecv.fit(x,y)
     #ranking = rfe.ranking_.reshape(np.shape(x)[1])
@@ -161,51 +163,33 @@ def variance_thresh(x, y):
 
 #######################################Method 6 #########################################33
 def pca(x):
-    pca = PCA(n_components = 6)
+    pca = PCA(n_components = 20)
+    x = scale(x)
     pca.fit(x)
-    print(pca.explained_variance_ratio_)
-
+    variance = pca.explained_variance_ratio_
+    var = np.cumsum(np.round(variance, decimals=3) * 100)
+    #print(pca.components_)
+    #print(pca.explained_variance_ratio_)
+    #print(sum(pca.explained_variance_ratio_))
+    plt.ylabel('% Variance Explained')
+    plt.xlabel('# of Features')
+    plt.title('PCA Analysis')
+    plt.ylim(0,100)
+    plt.style.context('seaborn-whitegrid')
+    plt.plot(var)
+    plt.show()
 #######################################Method 4 #########################################33
 #todo: Boruta
 
 def boruta(x,y):
     rf = RandomForestRegressor(n_jobs=-1, max_depth=5)
-    print(type(np.array(x)))
-    print(type(y))
-    feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, random_state=1)
-    feat_selector.fit(np.array(x), y)
+    feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, random_state=1,
+                             max_iter=500)
+    x_scale = scale(x)
+    feat_selector.fit(np.array(x_scale), y)
     print(    feat_selector.support_)
     print(feat_selector.ranking_)
+    for i, j in enumerate(feat_selector.support_):
+        if j == True:
+            print(x.columns.values[i])
 
-#######################################Method 5 #########################################33
-#todo: 1D autoencoder
-import tensorflow as tf
-import tensorflow.keras as keras
-from tensorflow.keras.layers import Dense, MaxPooling2D, Conv2D, Dropout, \
-    Flatten, BatchNormalization, Activation, GlobalAvgPool2D, Input
-from tensorflow.keras.models import Sequential
-
-def vae(x):
-    print(np.shape(x))
-
-
-    dim = np.shape(x)[1]
-    x = x.astype('float32')
-    model = Sequential()
-    model.add(Input((dim,)))
-    model.add(Dense(512, activation='relu'))
-    model.add(Dense(64, activation='relu'))
-    model.add(Dense(512, activation='relu'))
-    model.add(Dense(dim, activation="relu"))
-
-    model.compile(loss=keras.losses.mean_squared_error,
-                  optimizer=keras.optimizers.RMSprop(lr=0.0001, rho=0.9, epsilon=None, decay=0.0),
-                  metrics=['accuracy'])
-
-    history = model.fit(x, x, epochs=100)
-    print(np.shape(x))
-    print(x[0])
-    print(model.predict(np.array(x[0:1])))
-    model.summary()
-
-    return 1
