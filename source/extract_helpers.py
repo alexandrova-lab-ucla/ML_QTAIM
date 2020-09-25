@@ -387,7 +387,9 @@ def atom_xyz_from_sum(filename=""):
                      line.split()[0][0] == 'O' or \
                      line.split()[0][0] == 'h' or line.split()[0][0] == 'n' or line.split()[0][0] == 'c' or \
                      line.split()[0][0] == 'o' or line.split()[0] == 'B' or line.split()[0] == 'F' \
-                     or line.split()[0] == 'O'
+                     or line.split()[0] == 'O' or line.split()[0] == 'Si' or line.split()[0] == 'si' \
+                     or line.split()[0] == 'SI'
+
 
                 if (control == 1 and tf):
 
@@ -397,8 +399,9 @@ def atom_xyz_from_sum(filename=""):
                     temp.append(float(line.split()[-1]))
                     print(temp[0], temp[1], temp[2], temp[3])
                     xyz.append(temp)
-                    temp = []
+                    print(temp[0], temp[1], temp[2], temp[3])
 
+                    temp = []
 
 
             except:
