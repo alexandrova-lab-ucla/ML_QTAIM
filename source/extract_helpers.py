@@ -53,7 +53,6 @@ def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     control = 0
     ret_list = {}
     cp_of_interest = 6
-
     with open(filename) as myFile:
         for line_num, line in enumerate(myFile.readlines()):
             try:
@@ -293,7 +292,7 @@ def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
                 if (control_2 > 0):
                     ret_list["charge_basic_"+str(iter_2)] = float(line.split()[2])
                     ret_list["x_basic_"+str(iter_2)] = float(line.split()[3])
-                    ret_list["y_basic"+str(iter_2)] = float(line.split()[4])
+                    ret_list["y_basic_"+str(iter_2)] = float(line.split()[4])
                     ret_list["z_basic_"+str(iter_2)] = float(line.split()[5])
                     iter_2 += 1
 
@@ -396,7 +395,7 @@ def atom_xyz_from_sum(filename=""):
                     temp.append(float(line.split()[-3]))
                     temp.append(float(line.split()[-2]))
                     temp.append(float(line.split()[-1]))
-
+                    print(temp[0], temp[1], temp[2], temp[3])
                     xyz.append(temp)
                     temp = []
 

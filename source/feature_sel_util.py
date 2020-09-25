@@ -19,7 +19,7 @@ from sklearn.ensemble import RandomForestRegressor
 def lasso(x, y):
     # lasso importance sampping
     x_scaled = scale(x)
-    sel = SelectFromModel(Lasso(alpha=0.9, max_iter=20000, normalize = True))
+    sel = SelectFromModel(Lasso(alpha=0.1, max_iter=20000, normalize = True))
     sel.fit(x_scaled, y)
     print("number of features selected via lasso: " + str(np.count_nonzero(sel.get_support())))
     for i, j in enumerate(sel.get_support()):
@@ -43,54 +43,43 @@ def lasso_cv(x, y):
 
 def recursive_feat_elim(x, y):
 
-    rf = RandomForestRegressor(n_jobs=-1, max_depth=5)
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=7)
     sgd = SGDRegressor(max_iter=100000, penalty="elasticnet", alpha=0.00001)
-    rfe = RFE(estimator = rf, n_features_to_select=20, step=1)
-    x_scaled = scale(x)
-    rfe.fit(x_scaled,y)
-    ranking = rfe.ranking_.reshape(np.shape(x_scaled)[1])
-    # selects top 20 features
+    svr = SVR(kernel="linear")
+
+    rfe = RFE(estimator = rf, n_features_to_select=20, step=1, verbose=1)
+
+    rfe.fit(x,y)
+    ranking = rfe.ranking_.reshape(np.shape(x)[1])
+    #selects top 20 features
     for i, j in enumerate(ranking):
         if j <= 1:
             print(x.columns.values[i])
 
-    #las = Lasso(alpha=0.1, max_iter=1000000)
-    #rfe = RFE(estimator=las, n_features_to_select=20, step=1)
-    #rfe.fit(x, y)
-    #ranking = rfe.ranking_.reshape(np.shape(x)[1])
-    #print(ranking)
-
-    #dtr = DecisionTreeRegressor()
-    #rfe = RFE(estimator=dtr, n_features_to_select=40, step=1)
-    #rfe.fit(x, y)
-    #ranking = rfe.ranking_.reshape(np.shape(x)[1])
-    #print(ranking)
+    # recursive feature elimination method
 
     '''
-    # recursive feature elimination method
-    #
-
     # model choices for features - iterative
-    las = Lasso(alpha=0.5, max_iter=10000)
+    las = Lasso(alpha=0.1, max_iter=50000, tol=1e-3)
     svr = SVR(kernel="linear")
     dtr = DecisionTreeRegressor()
     rdg = Ridge(alpha=1.0)
     sgd = SGDRegressor(max_iter=100000, penalty="elasticnet", alpha=0.00001)
 
     model_list = [las, dtr, svr, rdg, sgd]
-    model_list_sgd = [las, dtr, svr, rdg]
+    model_list_sgd = [dtr]
     n_scores = []
 
     for model in model_list_sgd:
-        rfe = RFE(model, n_features_to_select=8, step=1)
+        rfe = RFE(model, n_features_to_select=10, step=1)
         pipeline = Pipeline(steps=[('s', rfe), ('m', model)])
-        cv = RepeatedKFold(n_splits=4, n_repeats=2, random_state=1)
+        cv = RepeatedKFold(n_splits=3, n_repeats=2, random_state=1)
         score_temp = cross_val_score(pipeline, x, y, scoring='neg_mean_absolute_error', cv=cv, n_jobs=-1,
-                                     error_score='raise')
+                                     error_score='raise', verbose=3)
         n_scores.append(score_temp)
 
     names = ["lasso", "svr", "dec. tree", "Ridge", "Stochastic"]
-    names_sgd = ["lasso", "svr", "dec. tree", "Ridge"]
+    names_sgd = ["lasso", "dec. tree", "Ridge"]
 
     plt.boxplot(n_scores, showmeans=True, labels=names_sgd)
     plt.show()
@@ -126,10 +115,9 @@ def recursive_feat_cv(x, y):
     sgd = SGDRegressor()
     sgd = Lasso(max_iter=100000)
     rf = RandomForestRegressor(n_jobs=-1, max_depth=5)
-    svr = SVR(kernel="linear")
-
-    rfecv = RFECV(estimator = svr, min_features_to_select=10, step=1, n_jobs=4, scoring= "explained_variance", verbose = 1)
-
+    #svr = SVR(kernel="linear")
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=7)
+    rfecv = RFECV(estimator = rf, min_features_to_select=10, step=1, n_jobs=4, scoring= "explained_variance", verbose = 1)
     rfecv.fit(x,y)
     #ranking = rfe.ranking_.reshape(np.shape(x)[1])
     #print(ranking)
@@ -182,13 +170,17 @@ def pca(x):
 #todo: Boruta
 
 def boruta(x,y):
-    rf = RandomForestRegressor(n_jobs=-1, max_depth=5)
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=7)
     feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, random_state=1,
-                             max_iter=500)
+                             max_iter=1000)
+
+    for i in x:
+        print(i)
     x_scale = scale(x)
+
     feat_selector.fit(np.array(x_scale), y)
-    print(    feat_selector.support_)
-    print(feat_selector.ranking_)
+    #print(    feat_selector.support_)
+    #print(feat_selector.ranking_)
     for i, j in enumerate(feat_selector.support_):
         if j == True:
             print(x.columns.values[i])

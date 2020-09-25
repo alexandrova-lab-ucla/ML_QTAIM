@@ -32,6 +32,16 @@ def extract_all():
             temp_name = "../sum_files/" + str(j) + "_" + str(df["file"].values[i]) + ".sum"
             fl_arr.append(temp_name)
 
+    # extract the
+    atoms = df["AtomOrder"][0]
+    atoms = atoms.replace(" ","")[1:-1]
+    atom_id = [x[1:-1] for x in atoms.split(",")]
+    basis = extract_basics(num=atom_id, filename=fl_arr[0])
+
+    basis_atom_1 = [basis["x_basic_1"], basis["y_basic_1"], basis["z_basic_1"]]
+    basis_atom_2 = [basis["x_basic_2"], basis["y_basic_2"], basis["z_basic_2"]]
+
+
     for ind, fl in enumerate(fl_arr):
         if (pd.isnull(df["AtomOrder"][ind]) or pd.isnull(df["CPOrder"][ind]) ):
             #print("critical points not added here")
@@ -57,6 +67,19 @@ def extract_all():
             charge = extract_charge_energies(num=atom_id, filename=fl)
             spin = extract_spin(num=atom_id, filename=fl)
             basics = extract_basics(num=atom_id, filename=fl)
+            translate = ["x_basic_0", "y_basic_0", "z_basic_0", "x_basic_1", "y_basic_1", "z_basic_1",
+                         "x_basic_2", "y_basic_2", "z_basic_2", "x_basic_3", "y_basic_3", "z_basic_3",
+                         "x_basic_4", "y_basic_4", "z_basic_4", "x_basic_5", "y_basic_5", "z_basic_5"]
+
+            for i in translate:
+
+                if(i[0] == 'x'):
+                    basics[i] = basics[i] - basis_atom_1[0]
+                elif(i[0] == 'y'):
+                    basics[i] = basics[i] - basis_atom_1[1]
+                else:
+                    basics[i] = basics[i] - basis_atom_1[2]
+
 
             full_dictionary.update(bond)
             full_dictionary.update(ring)
@@ -64,6 +87,7 @@ def extract_all():
             full_dictionary.update(charge)
             full_dictionary.update(spin)
             full_dictionary.update(basics)
+
             y.append(float(df["barrier(kj/mol)"][ind]))
             list_of_dicts.append(full_dictionary)
             full_dictionary = {}
@@ -71,22 +95,21 @@ def extract_all():
     return df, np.array(y)
 
 x, y = extract_all()
+
 #plt.matshow(x.corr())
 #plt.colorbar()
 #plt.show()
+
 #x = scale(x)
-
 #variance_thresh(x,y)
-
 # -------------------------------------
-
-#print("feature length: " + str(x[1]))
-#selector = VarianceThreshold()
-#x_var_filter = selector.fit_transform(x)
-#lasso(x, y)
-#lasso_cv(x,y)
 #pca(x)
+#----------------Done
+#lasso(x, y)
 #boruta(x,y)
 recursive_feat_elim(x, y)
+
+#lasso_cv(x,y)
 #recursive_feat_cv(x, y)
-#recursive_feat_elim(x_var_filter, y)
+#todo: t-sne
+
