@@ -15,11 +15,11 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import SGDRegressor, Ridge, Lasso, LassoCV
 from sklearn.ensemble import RandomForestRegressor
 
-#######################################Method 1 #########################################33
+#######################################Method 1: Lasso #########################################33
 def lasso(x, y):
     # lasso importance sampping
     x_scaled = scale(x)
-    sel = SelectFromModel(Lasso(alpha=0.1, max_iter=20000, normalize = True))
+    sel = SelectFromModel(Lasso(alpha=1, max_iter=20000, normalize = True))
     sel.fit(x_scaled, y)
     print("number of features selected via lasso: " + str(np.count_nonzero(sel.get_support())))
     for i, j in enumerate(sel.get_support()):
@@ -37,17 +37,17 @@ def lasso_cv(x, y):
         sum(coef == 0)) + " variables")
     sort = coef.sort_values()
     print(sort[sort!=0])
-#######################################Method 3 #########################################33
+#######################################Method 2: Recursive #########################################33
 # recursive feature elimination, tune to the number of features we want
 
 
 def recursive_feat_elim(x, y):
 
-    rf = RandomForestRegressor(n_jobs=-1, max_depth=7)
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=5)
     sgd = SGDRegressor(max_iter=100000, penalty="elasticnet", alpha=0.00001)
     svr = SVR(kernel="linear")
 
-    rfe = RFE(estimator = rf, n_features_to_select=20, step=1, verbose=1)
+    rfe = RFE(estimator = rf, n_features_to_select = 20, step=1, verbose=1)
 
     rfe.fit(x,y)
     ranking = rfe.ranking_.reshape(np.shape(x)[1])
@@ -56,57 +56,8 @@ def recursive_feat_elim(x, y):
         if j <= 1:
             print(x.columns.values[i])
 
-    # recursive feature elimination method
 
-    '''
-    # model choices for features - iterative
-    las = Lasso(alpha=0.1, max_iter=50000, tol=1e-3)
-    svr = SVR(kernel="linear")
-    dtr = DecisionTreeRegressor()
-    rdg = Ridge(alpha=1.0)
-    sgd = SGDRegressor(max_iter=100000, penalty="elasticnet", alpha=0.00001)
-
-    model_list = [las, dtr, svr, rdg, sgd]
-    model_list_sgd = [dtr]
-    n_scores = []
-
-    for model in model_list_sgd:
-        rfe = RFE(model, n_features_to_select=10, step=1)
-        pipeline = Pipeline(steps=[('s', rfe), ('m', model)])
-        cv = RepeatedKFold(n_splits=3, n_repeats=2, random_state=1)
-        score_temp = cross_val_score(pipeline, x, y, scoring='neg_mean_absolute_error', cv=cv, n_jobs=-1,
-                                     error_score='raise', verbose=3)
-        n_scores.append(score_temp)
-
-    names = ["lasso", "svr", "dec. tree", "Ridge", "Stochastic"]
-    names_sgd = ["lasso", "dec. tree", "Ridge"]
-
-    plt.boxplot(n_scores, showmeans=True, labels=names_sgd)
-    plt.show()
-
-    # model choice in number of features
-
-    n_scores = []
-    names = []
-    for i in range(1, 10):
-        # model = Lasso(alpha=1, max_iter=10000)
-        # model = DecisionTreeRegressor()
-        model = SVR(kernel="linear")
-
-        rfe = RFE(model, n_features_to_select=i, step=1)
-        pipeline = Pipeline(steps=[('s', rfe), ('m', model)])
-        cv = RepeatedKFold(n_splits=4, n_repeats=3, random_state=1)
-
-        score_temp = cross_val_score(pipeline, x, y, scoring='neg_mean_absolute_error', cv=cv, n_jobs=-1,
-                                     error_score='raise')
-        n_scores.append(score_temp)
-        names.append(i)
-
-    plt.boxplot(n_scores, showmeans=True, labels=names)
-    plt.show()
-    '''
-#######################################Method 2 #########################################33
-# rfecv
+#######################################Method 3: Recursive  #########################################33
 
 def recursive_feat_cv(x, y):
 
@@ -131,7 +82,7 @@ def recursive_feat_cv(x, y):
     plt.show()
 
 
-#######################################Method 2 #########################################33
+#######################################Method 4: Var Threshold #########################################33
 # variance threshold filtering
 
 def variance_thresh(x, y):
@@ -149,16 +100,16 @@ def variance_thresh(x, y):
     x_var_filter = selector.fit_transform(x)
     print("relevant features with min/manx scaling: " + str(np.shape(x_var_filter)[1]))
 
-#######################################Method 6 #########################################33
+#######################################Method 5: PCA #########################################33
 def pca(x):
-    pca = PCA(n_components = 20)
+    pca = PCA(n_components = 15)
     x = scale(x)
     pca.fit(x)
     variance = pca.explained_variance_ratio_
     var = np.cumsum(np.round(variance, decimals=3) * 100)
-    #print(pca.components_)
-    #print(pca.explained_variance_ratio_)
-    #print(sum(pca.explained_variance_ratio_))
+    print(pca.components_)
+    print(pca.explained_variance_ratio_)
+    print(sum(pca.explained_variance_ratio_))
     plt.ylabel('% Variance Explained')
     plt.xlabel('# of Features')
     plt.title('PCA Analysis')
@@ -166,11 +117,10 @@ def pca(x):
     plt.style.context('seaborn-whitegrid')
     plt.plot(var)
     plt.show()
-#######################################Method 4 #########################################33
-#todo: Boruta
+#######################################Method 6: Boruta #########################################33
 
 def boruta(x,y):
-    rf = RandomForestRegressor(n_jobs=-1, max_depth=7)
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=5)
     feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, random_state=1,
                              max_iter=1000)
 

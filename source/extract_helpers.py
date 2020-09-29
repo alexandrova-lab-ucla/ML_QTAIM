@@ -27,8 +27,6 @@
 
 # num is an array of the critical nulcear atoms
 def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
-
-
     lookup_other = [
         "Rho",
         "GradRho",
@@ -52,7 +50,7 @@ def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     iter_lookup = 0
     control = 0
     ret_list = {}
-    cp_of_interest = 6
+    cp_of_interest = 5
     with open(filename) as myFile:
         for line_num, line in enumerate(myFile.readlines()):
             try:
@@ -69,14 +67,14 @@ def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
                     if (lookup_other[iter_lookup] == line.split()[0]):
 
                         if (line.split()[0] == "Stress_EigVals"):
-                            ret_list["Stress_EigVals_a_" + str(cp_of_interest)] = line.split()[2]
-                            ret_list["Stress_EigVals_b_" + str(cp_of_interest)] = line.split()[3]
-                            ret_list["Stress_EigVals_c_" + str(cp_of_interest)] = line.split()[4]
+                            ret_list["Stress_EigVals_a_" + str(cp_of_interest)] = float(line.split()[2])
+                            ret_list["Stress_EigVals_b_" + str(cp_of_interest)] = float(line.split()[3])
+                            ret_list["Stress_EigVals_c_" + str(cp_of_interest)] = float(line.split()[4])
 
                         elif (line.split()[0] == "GradRho"):
-                            ret_list["GradRho_a_"+ str(cp_of_interest) ] = line.split()[2]
-                            ret_list["GradRho_b_"+ str(cp_of_interest) ] = line.split()[3]
-                            ret_list["GradRho_c_"+ str(cp_of_interest) ] = line.split()[4]
+                            ret_list["GradRho_a_"+ str(cp_of_interest) ] = float(line.split()[2])
+                            ret_list["GradRho_b_"+ str(cp_of_interest) ] = float(line.split()[3])
+                            ret_list["GradRho_c_"+ str(cp_of_interest) ] = float(line.split()[4])
 
                         elif (line.split()[0] == "Bond"):
                             if (line.split()[3] == "NA"):
@@ -85,11 +83,11 @@ def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
                                 ret_list["Bond_" + str(cp_of_interest)] = float(line.split()[3])
 
                         elif (line.split()[0] == "HessRho_EigVals"):
-                            ret_list["HessRho_EigVals_a_"+ str(cp_of_interest)] = line.split()[2]
-                            ret_list["HessRho_EigVals_b_"+ str(cp_of_interest)] = line.split()[3]
-                            ret_list["HessRho_EigVals_c_"+ str(cp_of_interest)] = line.split()[4]
+                            ret_list["HessRho_EigVals_a_"+ str(cp_of_interest)] = float(line.split()[2])
+                            ret_list["HessRho_EigVals_b_"+ str(cp_of_interest)] = float(line.split()[3])
+                            ret_list["HessRho_EigVals_c_"+ str(cp_of_interest)] = float(line.split()[4])
                         else:
-                            ret_list[lookup_other[iter_lookup] + "_" + str(cp_of_interest)] = line.split()[2]
+                            ret_list[lookup_other[iter_lookup] + "_" + str(cp_of_interest)] = float(line.split()[2])
                         iter_lookup += 1
 
                 if (int(line.split()[1]) in num and line.split()[0] == "CP#"):
@@ -255,9 +253,6 @@ def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
         return ret_list
 
 
-# note, might have to modulate the string traversing based on the number of atoms in the file
-# bond pulling stil isn't achieved
-# GET THIS RIGHT IT'S BROKEN
 def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
     control_1 = 0
