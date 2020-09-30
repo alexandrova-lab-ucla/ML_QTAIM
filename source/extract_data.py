@@ -6,6 +6,7 @@ from feature_sel_util import *
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import MinMaxScaler, scale
+from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectKBest
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -98,6 +99,7 @@ def extract_all():
     df_results = pd.DataFrame(list_of_dicts)
 
     return df_results, np.array(y)
+
 x, y = extract_all()
 
 importance_vars_v1 = [
@@ -111,55 +113,103 @@ importance_vars_v1 = [
 "V_5","z_basic_1","z_basic_3","z_basic_4",
 "z_basic_5"]
 
-reduced_x = x[importance_vars_v1]
+#reduced_x = x[importance_vars_v1]
 #reduced_x = scale(reduced_x)
 #plt.matshow(reduced_x.corr())
 #plt.colorbar()
 #plt.show()
 
+#plots selected variable correlation
+#reduced_x = x[importance_vars_v1]
+#corr = reduced_x.corr()
+#ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
+#    cmap=sns.diverging_palette(20, 220, n=200), square=False)
+#ax.set_xticklabels(ax.get_xticklabels(),rotation=45, horizontalalignment='right', fontsize='small')
+#plt.show()
 
-''' plots selected variable correlation 
-importance_vars_v1 = [
-"DelSqRho_5", "ESPn_4", "HessRho_EigVals_c_6",
-"HessRho_EigVals_a_9","G_7","G_4", "GradRho_b_10",
-"Kinetic_basic_4","K|Scaled|_basic_1","K|Scaled|_basic_3",
-"K|Scaled|_basic_5","ESP_0","ESP_3","ESP_5","ESP_4","ESPe_9",
-"NetCharge_4","NetCharge_5","NetCharge_basic_3","Rho_0",
-"Rho_7","Rho_5","Stress_EigVals_c_6","Spin_tot_5",
+
+importance_vars_v2 = \
+    ["G_7","GradRho_b_10","Kinetic_basic_4",
+"K|Scaled|_basic_1","K|Scaled|_basic_3","K|Scaled|_basic_5",
+"ESP_0","ESP_3","ESP_4","ESPe_9","NetCharge_4",
+"NetCharge_basic_3","Rho_0","Rho_7",
+"Stress_EigVals_c_6","Spin_tot_5",
 "Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_0",
-"V_5","z_basic_1","z_basic_3","z_basic_4",
-"z_basic_5"]
+"z_basic_1","z_basic_3","z_basic_4"]
 
-reduced_x = x[importance_vars_v1]
-corr = reduced_x.corr()
-ax = sns.heatmap(
-    corr,  vmin=-1, vmax=1, center=0,
-    cmap=sns.diverging_palette(20, 220, n=200),
-    square=True
-)
-ax.set_xticklabels(ax.get_xticklabels(),
-    rotation=45, horizontalalignment='right')
-plt.show()
-'''
+reduced_x_2 = x[importance_vars_v2]
+#corr = reduced_x_2.corr()
+#ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0, cmap=sns.diverging_palette(20, 220, n=200), square=False)
+#ax.set_xticklabels(ax.get_xticklabels(),rotation=45, horizontalalignment='right', fontsize='small')
+#plt.show()
+#print(corr)
 
-#x = scale(x)
+
+# feature selection
+x = scale(x)
 #variance_thresh(x,y)
 #lasso_cv(x,y)
 #recursive_feat_cv(x, y)
 
 # -------------------------------------
-#print(x)
-
 #pca(x)
 # 15 pca components has 82% explained variance
 # 20 pca components has 87% explained variance
 # 25 pca components has 90% explained variance
 
-
-#----------------Done
+#----------------Done and good
 #lasso(x, y)
 #boruta(x,y)
 #recursive_feat_elim(x, y)
 
-#todo: t-sne
+reduced_x_2 = scale(reduced_x_2)
 
+pca = PCA(0.85)
+principal_components = pca.fit_transform(x)
+principal_df = pd.DataFrame(data = principal_components)
+
+principal_df
+
+from sklearn.linear_model import BayesianRidge
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
+
+reg_bayes = BayesianRidge(n_iter=10000, tol=1e-7, copy_X=True, alpha_1=1e-03, alpha_2=1e-03,
+                    lambda_1=1e-03, lambda_2=1e-03)
+reg_ridge = KernelRidge(kernel='rbf', alpha=0.00005, gamma=0.0001)
+reg_rf    = RandomForestRegressor()
+
+x_train, x_test, y_train, y_test = train_test_split(principal_df, y, test_size=0.2)
+sklearn_x = x_train.values
+reg_bayes.fit(list(sklearn_x), y_train)
+reg_ridge.fit(list(sklearn_x), y_train)
+reg_rf.fit(l(sklearn_x), y_train)
+
+score = reg_bayes.score(list(x_test), y_test)
+print("bayes score:                " + str(score))
+score = str(mean_squared_error(reg_bayes.predict(x_test), y_test))
+print("MSE score:   " + str(score) )
+score = str(mean_absolute_error(reg_bayes.predict(x_test), y_test))
+print("MAE score:   " + str(score))
+score = str(r2_score(reg_bayes.predict(x_test), y_test))
+print("r2 score:   " + str(score))
+print("................................................")
+score = reg_bayes.score(list(x_test), y_test)
+print("ridge score:                " + str(score))
+score = str(mean_squared_error(reg_ridge.predict(x_test), y_test))
+print("MSE score:   " + str(score) )
+score = str(mean_absolute_error(reg_ridge.predict(x_test), y_test))
+print("MAE score:   " + str(score))
+score = str(r2_score(reg_ridge.predict(x_test), y_test))
+print("r2 score:   " + str(score))
+print("................................................")
+score = reg_bayes.score(list(x_test), y_test)
+print("rf score:                " + str(score))
+score = str(mean_squared_error(reg_rf.predict(x_test), y_test))
+print("MSE score:   " + str(score) )
+score = str(mean_absolute_error(reg_rf.predict(x_test), y_test))
+print("MAE score:   " + str(score))
+score = str(r2_score(reg_rf.predict(x_test), y_test))
+print("r2 score:   " + str(score))

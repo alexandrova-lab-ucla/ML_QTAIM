@@ -394,10 +394,7 @@ def atom_xyz_from_sum(filename=""):
                     temp.append(float(line.split()[-1]))
                     print(temp[0], temp[1], temp[2], temp[3])
                     xyz.append(temp)
-                    print(temp[0], temp[1], temp[2], temp[3])
-
                     temp = []
-
 
             except:
                 pass
