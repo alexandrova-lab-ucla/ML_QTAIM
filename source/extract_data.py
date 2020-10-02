@@ -10,6 +10,8 @@ from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectKBest
 import seaborn as sns
 import matplotlib.pyplot as plt
+from skopt.space import Real, Integer
+from skopt.searchcv import BayesSearchCV
 
 
 # takes: nothing
@@ -136,7 +138,7 @@ importance_vars_v2 = \
 "Stress_EigVals_c_6","Spin_tot_5",
 "Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_0",
 "z_basic_1","z_basic_3","z_basic_4"]
-
+reduced_x_1 = x[importance_vars_v1]
 reduced_x_2 = x[importance_vars_v2]
 #corr = reduced_x_2.corr()
 #ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0, cmap=sns.diverging_palette(20, 220, n=200), square=False)
@@ -163,6 +165,7 @@ x = scale(x)
 #recursive_feat_elim(x, y)
 
 reduced_x_2 = scale(reduced_x_2)
+reduced_x_1 = scale(reduced_x_1)
 
 pca = PCA(0.85)
 principal_components = pca.fit_transform(x)
@@ -170,22 +173,71 @@ principal_df = pd.DataFrame(data = principal_components)
 
 principal_df
 
-from sklearn.linear_model import BayesianRidge
+from sklearn.linear_model import BayesianRidge, SGDRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.neural_network import MLPRegressor
+from skopt.searchcv import BayesSearchCV
+from skopt.space import Real, Integer
 
+params_bayes = {
+    "n_iter": Integer(1000, 10000),
+    "tol": Real(1e-9, 1e-3, prior='log-uniform'),
+    "alpha_1": Real(1e-6, 1e+1, prior='log-uniform'),
+    "alpha_2": Real(1e-6, 1e+1, prior='log-uniform'),
+    "lambda_1": Real(1e-6, 1e+1, prior='log-uniform'),
+    "lambda_2": Real(1e-6, 1e+1, prior='log-uniform')}
 
-reg_bayes = BayesianRidge(n_iter=10000, tol=1e-7, copy_X=True, alpha_1=1e-03, alpha_2=1e-03,
-                    lambda_1=1e-03, lambda_2=1e-03)
-reg_ridge = KernelRidge(kernel='rbf', alpha=0.00005, gamma=0.0001)
+params_ridge = {"alpha": Real(1e-6, 1e0, prior='log-uniform'),
+          "gamma": Real(1e-8, 1e0, prior='log-uniform')}
+
+params_svr_lin = {"C": Real(1e-6, 1e+1, prior='log-uniform'),
+                  "gamma": Real(1e-5, 1e-1, prior='log-uniform'),
+                  "cache_size": Integer(500, 8000)}
+
+params_svr_rbf = {"C": Real(1e-5, 1e+1, prior='log-uniform'),
+          "gamma": Real(1e-5, 1e-1, prior='log-uniform'),
+          "epsilon": Real(1e-2, 1e+1, prior='log-uniform'),
+          "cache_size": Integer(500, 8000)}
+
+params_rf = {"max_depth": Integer(10, 40),
+          "min_samples_split": Integer(2, 6),
+          "n_estimators": Integer(500, 5000)}
+
+params_nn = {"alpha": Real(1e-10, 1e-1, prior='log-uniform'),
+                  "max_iter": Integer(100, 10000),
+                  "tol": Real(1e-10, 1e-1, prior='log-uniform'),
+                  "learning_rate_init": Real(1e-3, 1e-1, prior='log-uniform')}
+
+params = {'l1_ratio': Real(0.1, 0.3),
+                  'tol': Real(1e-3, 1e-1, prior="log-uniform"),
+                  "epsilon": Real(1e-3, 1e0, prior="log-uniform"),
+                  "eta0": Real(0.01, 0.2)}
+
+reg_svr_rbf = SVR(kernel="rbf")
+reg_svr_lin = SVR(kernel="linear")
+reg_bayes = BayesianRidge()
+reg_ridge = KernelRidge(kernel = "rbf")
 reg_rf    = RandomForestRegressor()
+reg_sgd = SGDRegressor()
+reg_nn = MLPRegressor()
 
-x_train, x_test, y_train, y_test = train_test_split(principal_df, y, test_size=0.2)
-sklearn_x = x_train.values
-reg_bayes.fit(list(sklearn_x), y_train)
-reg_ridge.fit(list(sklearn_x), y_train)
-reg_rf.fit(l(sklearn_x), y_train)
+reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=200, verbose=3, cv=3, n_jobs=10)
+reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=200, verbose=3, cv=3, n_jobs=10)
+reg_bayes = BayesSearchCV(reg_bayes, params_bayes, n_iter=1000, verbose=3, cv=3, n_jobs=10)
+reg_ridge = BayesSearchCV(reg_ridge, params_ridge, n_iter=1000, verbose=3, cv=3, n_jobs=10)
+reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=1000, verbose=3, cv=3, n_jobs=10)
+reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=200, verbose=3, cv=3, n_jobs=10)
+reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=200, verbose=3, cv=3, n_jobs=10)
+
+x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
+#sklearn_x = x_train.values
+
+reg_bayes.fit(list(x_train), y_train)
+reg_ridge.fit(list(x_train), y_train)
+reg_rf.fit(list(x_train), y_train)
+
 
 score = reg_bayes.score(list(x_test), y_test)
 print("bayes score:                " + str(score))
@@ -194,22 +246,29 @@ print("MSE score:   " + str(score) )
 score = str(mean_absolute_error(reg_bayes.predict(x_test), y_test))
 print("MAE score:   " + str(score))
 score = str(r2_score(reg_bayes.predict(x_test), y_test))
+print("r2 score test data: " + str(score))
+score = str(r2_score(reg_bayes.predict(x_train), y_train))
 print("r2 score:   " + str(score))
+
 print("................................................")
-score = reg_bayes.score(list(x_test), y_test)
+score = reg_ridge.score(list(x_test), y_test)
 print("ridge score:                " + str(score))
 score = str(mean_squared_error(reg_ridge.predict(x_test), y_test))
 print("MSE score:   " + str(score) )
 score = str(mean_absolute_error(reg_ridge.predict(x_test), y_test))
 print("MAE score:   " + str(score))
 score = str(r2_score(reg_ridge.predict(x_test), y_test))
+print("r2 score test data:   " + str(score))
+score = str(r2_score(reg_ridge.predict(x_train), y_train))
 print("r2 score:   " + str(score))
 print("................................................")
-score = reg_bayes.score(list(x_test), y_test)
+score = reg_rf.score(list(x_test), y_test)
 print("rf score:                " + str(score))
 score = str(mean_squared_error(reg_rf.predict(x_test), y_test))
 print("MSE score:   " + str(score) )
 score = str(mean_absolute_error(reg_rf.predict(x_test), y_test))
 print("MAE score:   " + str(score))
 score = str(r2_score(reg_rf.predict(x_test), y_test))
+print("r2 score test data:   " + str(score))
+score = str(r2_score(reg_rf.predict(x_train), y_train))
 print("r2 score:   " + str(score))
