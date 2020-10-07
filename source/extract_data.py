@@ -68,10 +68,10 @@ def extract_all():
         charge = extract_charge_energies(num=atom_id, filename=fl)
         spin = extract_spin(num=atom_id, filename=fl)
         basics = extract_basics(num=atom_id, filename=fl)
-sdfsdfsdfs
+
         translate = ["x_basic_0", "y_basic_0", "z_basic_0", "x_basic_1", "y_basic_1", "z_basic_1",
                      "x_basic_2", "y_basic_2", "z_basic_2", "x_basic_3", "y_basic_3", "z_basic_3",
-                     "x_basic_4", "y_basic_4", "00", "x_basic_5", "y_basic_5", "z_basic_5"]
+                     "x_basic_4", "y_basic_4","z_basic_5", "x_basic_5", "y_basic_5", "z_basic_5"]
 
         for i in translate:
 
@@ -80,6 +80,8 @@ sdfsdfsdfs
             elif(i[0] == 'y'):
                 basics[i] = basics[i] - basis_atom_1[1]
             else:
+                print(basics[i])
+                print(basis_atom_1[2])
                 basics[i] = basics[i] - basis_atom_1[2]
 
         #print(len(bond) + len(ring) + len(nuc) + len(charge)+\
@@ -227,12 +229,12 @@ reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=200, verbose=3, 
 reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=200, verbose=3, cv=3, n_jobs=10)
 reg_bayes = BayesSearchCV(reg_bayes, params_bayes, n_iter=1000, verbose=3, cv=3, n_jobs=10)
 reg_ridge = BayesSearchCV(reg_ridge, params_ridge, n_iter=1000, verbose=3, cv=3, n_jobs=10)
-reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=1000, verbose=3, cv=3, n_jobs=10)
+reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=1500, verbose=3, cv=3, n_jobs=10)
 reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=200, verbose=3, cv=3, n_jobs=10)
 reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=200, verbose=3, cv=3, n_jobs=10)
 
 #x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
-x_train, x_test, y_train, y_test = train_test_split(reduced_x_2, y , test_size=0.2)
+x_train, x_test, y_train, y_test = train_test_split(x, y , test_size=0.2)
 
 #sklearn_x = x_train.values
 
