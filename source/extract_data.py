@@ -68,10 +68,10 @@ def extract_all():
         charge = extract_charge_energies(num=atom_id, filename=fl)
         spin = extract_spin(num=atom_id, filename=fl)
         basics = extract_basics(num=atom_id, filename=fl)
-
+sdfsdfsdfs
         translate = ["x_basic_0", "y_basic_0", "z_basic_0", "x_basic_1", "y_basic_1", "z_basic_1",
                      "x_basic_2", "y_basic_2", "z_basic_2", "x_basic_3", "y_basic_3", "z_basic_3",
-                     "x_basic_4", "y_basic_4", "z_basic_4", "x_basic_5", "y_basic_5", "z_basic_5"]
+                     "x_basic_4", "y_basic_4", "00", "x_basic_5", "y_basic_5", "z_basic_5"]
 
         for i in translate:
 
@@ -201,9 +201,9 @@ params_svr_rbf = {"C": Real(1e-5, 1e+1, prior='log-uniform'),
           "epsilon": Real(1e-2, 1e+1, prior='log-uniform'),
           "cache_size": Integer(500, 8000)}
 
-params_rf = {"max_depth": Integer(10, 40),
+params_rf = {"max_depth": Integer(5, 40),
           "min_samples_split": Integer(2, 6),
-          "n_estimators": Integer(500, 5000)}
+          "n_estimators": Integer(300, 5000)}
 
 params_nn = {"alpha": Real(1e-10, 1e-1, prior='log-uniform'),
                   "max_iter": Integer(100, 10000),
@@ -231,14 +231,16 @@ reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=1000, verbose=3, cv=3, n_jobs=1
 reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=200, verbose=3, cv=3, n_jobs=10)
 reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=200, verbose=3, cv=3, n_jobs=10)
 
-x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
+#x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
+x_train, x_test, y_train, y_test = train_test_split(reduced_x_2, y , test_size=0.2)
+
 #sklearn_x = x_train.values
 
-reg_bayes.fit(list(x_train), y_train)
-reg_ridge.fit(list(x_train), y_train)
+#reg_bayes.fit(list(x_train), y_train)
+#reg_ridge.fit(list(x_train), y_train)
 reg_rf.fit(list(x_train), y_train)
 
-
+'''
 score = reg_bayes.score(list(x_test), y_test)
 print("bayes score:                " + str(score))
 score = str(mean_squared_error(reg_bayes.predict(x_test), y_test))
@@ -261,6 +263,7 @@ score = str(r2_score(reg_ridge.predict(x_test), y_test))
 print("r2 score test data:   " + str(score))
 score = str(r2_score(reg_ridge.predict(x_train), y_train))
 print("r2 score:   " + str(score))
+'''
 print("................................................")
 score = reg_rf.score(list(x_test), y_test)
 print("rf score:                " + str(score))
