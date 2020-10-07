@@ -12,11 +12,29 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from skopt.space import Real, Integer
 from skopt.searchcv import BayesSearchCV
+import xgboost as xgb
 
 
 # takes: nothing
 # returns: two matrices. list_of_dicts is a list of dictionaries containing
 # critical values for each file. Y is the energies of each file.
+def score(reg, x_train, x_test, y_train, y_test):
+    print("................................................")
+    try:
+        score = reg.score(list(x_test), y_test)
+    except:
+        score = reg.score(x_test, y_test)
+
+    print("rf score:                " + str(score))
+    score = str(mean_squared_error(reg.predict(x_test), y_test))
+    print("MSE score:   " + str(score) )
+    score = str(mean_absolute_error(reg.predict(x_test), y_test))
+    print("MAE score:   " + str(score))
+
+    score = str(r2_score(reg.predict(x_test), y_test))
+    print("r2 score test data:   " + str(score))
+    score = str(r2_score(reg.predict(x_train), y_train))
+    print("r2 score:   " + str(score))
 
 def extract_all():
     # add reactD once I get the files for it
@@ -80,8 +98,6 @@ def extract_all():
             elif(i[0] == 'y'):
                 basics[i] = basics[i] - basis_atom_1[1]
             else:
-                print(basics[i])
-                print(basis_atom_1[2])
                 basics[i] = basics[i] - basis_atom_1[2]
 
         #print(len(bond) + len(ring) + len(nuc) + len(charge)+\
@@ -124,12 +140,12 @@ importance_vars_v1 = [
 #plt.show()
 
 #plots selected variable correlation
-#reduced_x = x[importance_vars_v1]
-#corr = reduced_x.corr()
-#ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
-#    cmap=sns.diverging_palette(20, 220, n=200), square=False)
-#ax.set_xticklabels(ax.get_xticklabels(),rotation=45, horizontalalignment='right', fontsize='small')
-#plt.show()
+reduced_x = x[importance_vars_v1]
+corr = reduced_x.corr()
+ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
+    cmap=sns.diverging_palette(20, 220, n=200), square=False)
+ax.set_xticklabels(ax.get_xticklabels(),rotation=45, horizontalalignment='right', fontsize='small')
+plt.show()
 
 
 importance_vars_v2 = \
@@ -150,7 +166,7 @@ reduced_x_2 = x[importance_vars_v2]
 
 
 # feature selection
-x = scale(x)
+reduced_x_2 = scale(reduced_x_2)
 #variance_thresh(x,y)
 #lasso_cv(x,y)
 #recursive_feat_cv(x, y)
@@ -217,6 +233,21 @@ params = {'l1_ratio': Real(0.1, 0.3),
                   "epsilon": Real(1e-3, 1e0, prior="log-uniform"),
                   "eta0": Real(0.01, 0.2)}
 
+params_xgb = {
+        "colsample_bytree": Real(0.5, 0.99),
+        "max_depth": Integer(5, 25),
+        "lambda": Real(0, 0.25),
+        "learning_rate": Real(0.1, 0.25),
+        "alpha": Real(0, 0.2),
+        "eta": Real(0, 0.1),
+        "gamma": Real(0, 0.1),
+        "n_estimators": Integer(500, 5000),
+        "objective": ["reg:squarederror"],
+        "tree_method": ["gpu_hist"]
+    }
+
+
+
 reg_svr_rbf = SVR(kernel="rbf")
 reg_svr_lin = SVR(kernel="linear")
 reg_bayes = BayesianRidge()
@@ -224,56 +255,29 @@ reg_ridge = KernelRidge(kernel = "rbf")
 reg_rf    = RandomForestRegressor()
 reg_sgd = SGDRegressor()
 reg_nn = MLPRegressor()
+reg_xgb = xgb.XGBRegressor()
+
+
 
 reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=200, verbose=3, cv=3, n_jobs=10)
 reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=200, verbose=3, cv=3, n_jobs=10)
 reg_bayes = BayesSearchCV(reg_bayes, params_bayes, n_iter=1000, verbose=3, cv=3, n_jobs=10)
 reg_ridge = BayesSearchCV(reg_ridge, params_ridge, n_iter=1000, verbose=3, cv=3, n_jobs=10)
-reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=1500, verbose=3, cv=3, n_jobs=10)
+reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=200, verbose=3, cv=3, n_jobs=10)
 reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=200, verbose=3, cv=3, n_jobs=10)
 reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=200, verbose=3, cv=3, n_jobs=10)
-
+reg_xgb = BayesSearchCV(reg_xgb, params_xgb, n_iter=50, verbose=4, cv=3)
 #x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
-x_train, x_test, y_train, y_test = train_test_split(x, y , test_size=0.2)
+x_train, x_test, y_train, y_test = train_test_split(reduced_x_2, y , test_size=0.2)
 
 #sklearn_x = x_train.values
 
 #reg_bayes.fit(list(x_train), y_train)
 #reg_ridge.fit(list(x_train), y_train)
-reg_rf.fit(list(x_train), y_train)
 
-'''
-score = reg_bayes.score(list(x_test), y_test)
-print("bayes score:                " + str(score))
-score = str(mean_squared_error(reg_bayes.predict(x_test), y_test))
-print("MSE score:   " + str(score) )
-score = str(mean_absolute_error(reg_bayes.predict(x_test), y_test))
-print("MAE score:   " + str(score))
-score = str(r2_score(reg_bayes.predict(x_test), y_test))
-print("r2 score test data: " + str(score))
-score = str(r2_score(reg_bayes.predict(x_train), y_train))
-print("r2 score:   " + str(score))
 
-print("................................................")
-score = reg_ridge.score(list(x_test), y_test)
-print("ridge score:                " + str(score))
-score = str(mean_squared_error(reg_ridge.predict(x_test), y_test))
-print("MSE score:   " + str(score) )
-score = str(mean_absolute_error(reg_ridge.predict(x_test), y_test))
-print("MAE score:   " + str(score))
-score = str(r2_score(reg_ridge.predict(x_test), y_test))
-print("r2 score test data:   " + str(score))
-score = str(r2_score(reg_ridge.predict(x_train), y_train))
-print("r2 score:   " + str(score))
-'''
-print("................................................")
-score = reg_rf.score(list(x_test), y_test)
-print("rf score:                " + str(score))
-score = str(mean_squared_error(reg_rf.predict(x_test), y_test))
-print("MSE score:   " + str(score) )
-score = str(mean_absolute_error(reg_rf.predict(x_test), y_test))
-print("MAE score:   " + str(score))
-score = str(r2_score(reg_rf.predict(x_test), y_test))
-print("r2 score test data:   " + str(score))
-score = str(r2_score(reg_rf.predict(x_train), y_train))
-print("r2 score:   " + str(score))
+#reg_rf.fit(list(x_train), y_train)
+reg_xgb.fit(x_train, y_train)
+score(reg_xgb, x_train, x_test, y_train, y_test)
+
+
