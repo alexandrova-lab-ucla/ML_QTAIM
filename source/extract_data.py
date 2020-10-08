@@ -1,4 +1,5 @@
 import os
+import multiprocessing as mp
 import numpy as np
 import pandas as pd
 from extract_helpers import *
@@ -221,7 +222,10 @@ params_svr_rbf = {"C": Real(1e-5, 1e+1, prior='log-uniform'),
 
 params_rf = {"max_depth": Integer(5, 40),
           "min_samples_split": Integer(2, 6),
-          "n_estimators": Integer(300, 5000)}
+          "n_estimators": Integer(300, 5000),
+	"n_jobs": [mp.cpu_count()]
+
+}
 
 params_nn = {"alpha": Real(1e-10, 1e-1, prior='log-uniform'),
                   "max_iter": Integer(100, 10000),
@@ -241,7 +245,7 @@ params_xgb = {
         "alpha": Real(0, 0.2),
         "eta": Real(0, 0.1),
         "gamma": Real(0, 0.1),
-        "n_estimators": Integer(500, 5000),
+        "n_estimators": Integer(300, 5000),
         "objective": ["reg:squarederror"],
         "tree_method": ["gpu_hist"]
     }
@@ -263,10 +267,11 @@ reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=200, verbose=3, 
 reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=200, verbose=3, cv=3, n_jobs=10)
 reg_bayes = BayesSearchCV(reg_bayes, params_bayes, n_iter=1000, verbose=3, cv=3, n_jobs=10)
 reg_ridge = BayesSearchCV(reg_ridge, params_ridge, n_iter=1000, verbose=3, cv=3, n_jobs=10)
-reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=200, verbose=3, cv=3, n_jobs=10)
+reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=100, verbose=3, cv=3, n_jobs=10)
 reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=200, verbose=3, cv=3, n_jobs=10)
 reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=200, verbose=3, cv=3, n_jobs=10)
-reg_xgb = BayesSearchCV(reg_xgb, params_xgb, n_iter=50, verbose=4, cv=3)
+reg_xgb = BayesSearchCV(reg_xgb, params_xgb, n_iter=500, verbose=4, cv=3)
+
 #x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
 x_train, x_test, y_train, y_test = train_test_split(reduced_x_2, y , test_size=0.2)
 
@@ -276,8 +281,11 @@ x_train, x_test, y_train, y_test = train_test_split(reduced_x_2, y , test_size=0
 #reg_ridge.fit(list(x_train), y_train)
 
 
-#reg_rf.fit(list(x_train), y_train)
-reg_xgb.fit(x_train, y_train)
-score(reg_xgb, x_train, x_test, y_train, y_test)
+reg_rf.fit(list(x_train), y_train)
+
+#reg_xgb.fit(x_train, y_train)
+
+score(reg_rf, x_train, x_test, y_train, y_test)
+#score(reg_xgb, x_train, x_test, y_train, y_test)
 
 
