@@ -392,7 +392,7 @@ def atom_xyz_from_sum(filename=""):
                     temp.append(float(line.split()[-3]))
                     temp.append(float(line.split()[-2]))
                     temp.append(float(line.split()[-1]))
-                    print(temp[0], temp[1], temp[2], temp[3])
+                    #print(temp[0], temp[1], temp[2], temp[3])
                     xyz.append(temp)
                     temp = []
 
