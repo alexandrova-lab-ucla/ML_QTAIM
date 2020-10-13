@@ -19,7 +19,7 @@ from sklearn.ensemble import RandomForestRegressor
 def lasso(x, y):
     # lasso importance sampping
     x_scaled = scale(x)
-    sel = SelectFromModel(Lasso(alpha=1, max_iter=20000, normalize = True))
+    sel = SelectFromModel(Lasso(alpha=0.75, max_iter=20000, normalize = True))
     sel.fit(x_scaled, y)
     print("number of features selected via lasso: " + str(np.count_nonzero(sel.get_support())))
     for i, j in enumerate(sel.get_support()):
@@ -43,7 +43,7 @@ def lasso_cv(x, y):
 
 def recursive_feat_elim(x, y):
 
-    rf = RandomForestRegressor(n_jobs=-1, max_depth=5)
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=7)
     sgd = SGDRegressor(max_iter=100000, penalty="elasticnet", alpha=0.00001)
     svr = SVR(kernel="linear")
 
@@ -102,7 +102,7 @@ def variance_thresh(x, y):
 
 #######################################Method 5: PCA #########################################33
 def pca(x):
-    pca = PCA(n_components = 15)
+    pca = PCA(n_components = 25)
     x = scale(x)
     pca.fit(x)
     variance = pca.explained_variance_ratio_
@@ -120,9 +120,9 @@ def pca(x):
 #######################################Method 6: Boruta #########################################33
 
 def boruta(x,y):
-    rf = RandomForestRegressor(n_jobs=-1, max_depth=5)
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=3)
     feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, random_state=1,
-                             max_iter=1000)
+                             max_iter=1500)
 
     for i in x:
         print(i)
