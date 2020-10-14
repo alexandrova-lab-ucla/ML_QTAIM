@@ -1,11 +1,12 @@
 import os
+import seaborn as sns
 import multiprocessing as mp
 import numpy as np
 import pandas as pd
 from extract_helpers import *
 from feature_sel_util import *
 import xgboost as xgb
-import seaborn as sns
+
 import matplotlib.pyplot as plt
 from skopt.space import Real, Integer
 from skopt.searchcv import BayesSearchCV
@@ -13,22 +14,99 @@ from skopt.searchcv import BayesSearchCV
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectKBest
 from sklearn.model_selection import train_test_split
-from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import MinMaxScaler, scale
-from sklearn.gaussian_process.kernels import WhiteKernel, DotProduct, RBF
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
+from sklearn.linear_model import Lasso
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.neural_network import MLPRegressor
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import WhiteKernel, DotProduct, RBF
 from sklearn.linear_model import BayesianRidge, SGDRegressor, Ridge, HuberRegressor
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, ExtraTreesRegressor
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from sklearn.neural_network import MLPRegressor
-from sklearn.linear_model import Lasso
-from sklearn.neighbors import KNeighborsRegressor
 
 
+class custom_skopt_extra_scorer(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+    def __call__(self, res):
+
+        param_extra = {"n_estimators": res["x"][2],
+                       "min_samples_split": res["x"][1],
+                        "min_samples_leaf": res["x"][0]}
+
+        reg = ExtraTreesRegressor(**param_extra, criterion = "mae")
+        x_train, x_test, y_train, y_test = train_test_split(self.x, self.y, test_size=0.2)
+        reg.fit(x_train, y_train)
+        y_pred = np.array(reg.predict(x_test))
+        mse = mean_squared_error(y_test, y_pred)
+        mae = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        if (mae < 15):
+            print("------------------------------")
+            print("mae test:" + str(mae))
+            print("mse test:" + str(mse))
+            print("r2 test:" + str(r2))
+            print(param_extra)
+        return 0
+
+class custom_skopt_xgb_scorer(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+    def __call__(self, res):
+
+        dict = {
+            "objective":"reg:squarederror", "tree_method":"gpu_hist",
+             "alpha":res["x"][0], "colsample_bytree":res["x"][1],"eta":res["x"][2],
+            "gamma":res["x"][3], "lambda": res["x"][4], "learning_rate":res["x"][5],
+            "max_depth":res["x"][6],"n_estimators":res["x"][7]
+        }
+        reg = xgb.XGBRegressor(**dict)
+
+        x_train, x_test, y_train, y_test = train_test_split(self.x, self.y, test_size=0.2)
+        reg.fit(x_train, y_train)
+        y_pred = np.array(reg.predict(x_test))
+        mse = mean_squared_error(y_test, y_pred)
+        mae = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        if (mae < 15):
+            print("------------------------------")
+            print("mae test:" + str(mae))
+            print("mse test:" + str(mse))
+            print("r2 test:" + str(r2))
+            print(param_extra)
+        return 0
 
 
+class custom_skopt_rf_scorer(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+    def __call__(self, res):
+        params_rf = {"max_depth": res["x"][2],
+                     "min_samples_split": res["x"][1],
+                     "n_estimators": res["x"][0]
+                     }
+
+        reg = RandomForestRegressor(**params_rf, n_jobs= -1)
+
+        x_train, x_test, y_train, y_test = train_test_split(self.x, self.y, test_size=0.2)
+        reg.fit(x_train, y_train)
+        y_pred = np.array(reg.predict(x_test))
+        mse = mean_squared_error(y_test, y_pred)
+        mae = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        if (mae < 15):
+            print("------------------------------")
+            print("mae test:" + str(mae))
+            print("mse test:" + str(mse))
+            print("r2 test:" + str(r2))
+            print(param_extra)
+        return 0
 
 # takes: nothing
 # returns: two matrices. list_of_dicts is a list of dictionaries containing
@@ -295,9 +373,21 @@ reg_gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10)
 reg_nn = MLPRegressor(early_stopping = True, n_iter_no_change = 100, hidden_layer_sizes=(50,50,),
                       solver = "lbfgs")
 reg_ada = AdaBoostRegressor()
-reg_extra = ExtraTreesRegressor(criterion = "mse", bootstrap = True, ccp_alpha = 0.01)
+reg_extra = ExtraTreesRegressor(criterion = "mae")
 reg_huber = HuberRegressor(max_iter = 1000)
 reg_knn = KNeighborsRegressor(algorithm = "auto", weights = "distance")
+
+
+
+#ind_filtered = np.argsort(y)[10:-10]
+#filt_y = y[ind_filtered]
+#filt_x =  principal_components[ind_filtered]
+# x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
+#manually filter values found from other features
+x_train, x_test, y_train, y_test = train_test_split(reduced_x_2, y_scale , test_size=0.1)
+#pca + filter top values
+#x_train, x_test, y_train, y_test = train_test_split(filt_x, filt_y, test_size=0.1)
+
 
 reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=100, verbose=3, cv=3, n_jobs=10)
 reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=100, verbose=3, cv=3, n_jobs=10)
@@ -311,36 +401,29 @@ reg_ridge = BayesSearchCV(reg_ridge, params_ridge, verbose= 4, n_iter=100, cv=3)
 reg_gp = BayesSearchCV(reg_gp, params_gp, n_iter=100, verbose=4, cv=5)
 reg_kernelridge = BayesSearchCV(reg_kernelridge, params_kernelridge, n_iter=100, verbose=3, cv=3, n_jobs=10)
 reg_ada = BayesSearchCV(reg_ada, param_ada, n_iter=100, verbose=3, cv=3, n_jobs=10)
-
 reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=100, verbose=3, cv=3, n_jobs=10,  scoring = "neg_mean_absolute_error")
-reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=250, verbose=3, cv=3, n_jobs=10)
+reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=10, verbose=3, cv=3, n_jobs=10)
 reg_huber = BayesSearchCV(reg_huber, param_huber, n_iter=100, verbose=3, cv=3, n_jobs=10)
 reg_knn = BayesSearchCV(reg_knn, param_knn, n_iter=10, verbose=3, cv=3, n_jobs=10)
 
 
-#ind_filtered = np.argsort(y)[10:-10]
-#filt_y = y[ind_filtered]
-#filt_x =  principal_components[ind_filtered]
-# x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
-#manually filter values found from other features
-x_train, x_test, y_train, y_test = train_test_split(reduced_x_2, y_scale , test_size=0.1)
-#pca + filter top values
-#x_train, x_test, y_train, y_test = train_test_split(filt_x, filt_y, test_size=0.1)
-
+custom_scorer_extra = custom_skopt_extra_scorer
+custom_scorer_rf = custom_skopt_rf_scorer
+custom_scorer_xgb = custom_skopt_xgb_scorer
 
 #reg_sgd.fit(list(x_train),y_train)
 #reg_gp.fit(list(x_train),y_train)
 #reg_bayes.fit(list(x_train), y_train)
 #reg_ridge.fit(list(x_train), y_train)
 #reg_ada.fit(list(x_train), y_train)
-#reg_xgb.fit(x_train, y_train)
+#reg_xgb.fit(x_train, y_train,callback=[custom_skopt_xgb_scorer(x,y)])
 #reg_svr_lin.fit(list(x_train), y_train)
 #reg_svr_rbf.fit(list(x_train), y_train)
 #reg_lasso.fit(list(x_train), y_train)
 #reg_sgd.fit(list(x_train),y_train)
 #reg_nn.fit(list(x_train), y_train)
-#reg_rf.fit(list(x_train), y_train)
-reg_extra.fit(list(x_train), y_train)
+reg_rf.fit(list(x_train), y_train, callback=[custom_skopt_rf_scorer(x,y)])
+#reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
 #reg_huber.fit(list(x_train), y_train)
 #reg_knn.fit(list(x_train), y_train)
 
@@ -356,6 +439,9 @@ reg_extra.fit(list(x_train), y_train)
 #score(reg_sgd, x_train, x_test, y_train, y_test, max - min)
 #score(reg_svr_lin, x_train, x_test, y_train, y_test, max - min)
 #score(reg_svr_rbf, x_train, x_test, y_train, y_test, max - min)
-#score(reg_rf, x_train, x_test, y_train, y_test, max - min)
-score(reg_extra, x_train, x_test, y_train, y_test, max - min)
+score(reg_rf, x_train, x_test, y_train, y_test, max - min)
+#score(reg_extra, x_train, x_test, y_train, y_test, max - min)
 #score(reg_gp, x_train, x_test, y_train, y_test, max - min) # fuck with kernel
+
+
+
