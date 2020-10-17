@@ -426,7 +426,6 @@ reg_rf.fit(list(x_train), y_train, callback=[custom_skopt_rf_scorer(x,y)])
 #reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
 #reg_huber.fit(list(x_train), y_train)
 #reg_knn.fit(list(x_train), y_train)
-
 #score(reg_sgd, x_train, x_test, y_train, y_test, max - min)
 #score(reg_ridge, x_train, x_test, y_train, y_test, max - min)
 #score(reg_bayes, x_train, x_test, y_train, y_test, max - min)
