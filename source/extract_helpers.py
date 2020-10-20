@@ -1,4 +1,6 @@
 
+import numpy as np
+import pandas as pd
 
 #  CPs have different lengths, some dont have gbl
 #  types of critical points - might have to one-hot encode
@@ -392,12 +394,96 @@ def atom_xyz_from_sum(filename=""):
                     temp.append(float(line.split()[-3]))
                     temp.append(float(line.split()[-2]))
                     temp.append(float(line.split()[-1]))
-                    #print(temp[0], temp[1], temp[2], temp[3])
+                    print(temp[0], temp[1], temp[2], temp[3])
                     xyz.append(temp)
                     temp = []
 
             except:
                 pass
+
+
+
+def extract_all():
+    # add reactD once I get the files for it
+    fl_arr = []
+    y = []
+    list_of_dicts = []
+    df = pd.read_excel("../data/barriers.xlsx")
+    full_dictionary = {}
+
+    for i, j in enumerate(df["group"]):
+        if (j != "reactC"):
+            temp_name = "../sum_files/" + str(j) + "_" + str(df["file"].values[i]) + "-opt.sum"
+            fl_arr.append(temp_name)
+
+        else:
+            temp_name = "../sum_files/" + str(j) + "_" + str(df["file"].values[i]) + ".sum"
+            fl_arr.append(temp_name)
+
+    # extracts xyz position of the first diels-alder atom in the first file. Used to standardize position
+    atoms = df["AtomOrder"][0]
+    atoms = atoms.replace(" ", "")[1:-1]
+    atom_id = [x[1:-1] for x in atoms.split(",")]
+    basis = extract_basics(num=atom_id, filename=fl_arr[0])
+    basis_atom_1 = [basis["x_basic_1"], basis["y_basic_1"], basis["z_basic_1"]]
+
+    for ind, fl in enumerate(fl_arr):
+        # if (pd.isnull(df["AtomOrder"][ind]) or pd.isnull(df["CPOrder"][ind]) ):
+        #    #print("critical points not added here")
+        #    pass
+        # else:
+        atoms = df["AtomOrder"][ind]
+        atoms = atoms.replace(" ", "")[1:-1]
+        atom_id = [x[1:-1] for x in atoms.split(",")]
+        bond_cp = [int(x) for x in df["CPOrder"][ind].split(",")][6:13]
+        ring_cp = bond_cp[4:6]
+        bond_cp = bond_cp[0:4]
+
+        atoms = []
+        for i in atom_id:
+            if (len(i) == 3):
+                atoms.append(int(i[1:3]))
+            else:
+                atoms.append(int(i[-1]))
+
+        bond = extract_bond_crit(num=bond_cp, filename=fl)
+        ring = extract_ring_crit(num=ring_cp, filename=fl)
+        nuc = extract_nuc_crit(num=atoms, filename=fl)
+        charge = extract_charge_energies(num=atom_id, filename=fl)
+        spin = extract_spin(num=atom_id, filename=fl)
+        basics = extract_basics(num=atom_id, filename=fl)
+
+        translate = ["x_basic_0", "y_basic_0", "z_basic_0", "x_basic_1", "y_basic_1", "z_basic_1",
+                     "x_basic_2", "y_basic_2", "z_basic_2", "x_basic_3", "y_basic_3", "z_basic_3",
+                     "x_basic_4", "y_basic_4", "z_basic_5", "x_basic_5", "y_basic_5", "z_basic_5"]
+
+        for i in translate:
+
+            if (i[0] == 'x'):
+                basics[i] = basics[i] - basis_atom_1[0]
+            elif (i[0] == 'y'):
+                basics[i] = basics[i] - basis_atom_1[1]
+            else:
+                basics[i] = basics[i] - basis_atom_1[2]
+
+        # print(len(bond) + len(ring) + len(nuc) + len(charge)+\
+        #      len(spin) + len(basics))
+
+        full_dictionary.update(bond)
+        full_dictionary.update(ring)
+        full_dictionary.update(nuc)
+        full_dictionary.update(charge)
+        full_dictionary.update(spin)
+        full_dictionary.update(basics)
+
+        y.append(float(df["barrier(kj/mol)"][ind]))
+
+        list_of_dicts.append(full_dictionary)
+        full_dictionary = {}
+
+    df_results = pd.DataFrame(list_of_dicts)
+
+    return df_results, np.array(y)
 
 # from extract_helpers import atom_xyz_from_sum
 # atom_xyz_from_sum("../sum_files/A_1-opt.sum")

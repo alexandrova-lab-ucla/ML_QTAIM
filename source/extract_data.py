@@ -23,7 +23,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.neural_network import MLPRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import WhiteKernel, DotProduct, RBF
+from sklearn.gaussian_process.kernels import WhiteKernel, RBF
 from sklearn.linear_model import BayesianRidge, SGDRegressor, Ridge, HuberRegressor
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, ExtraTreesRegressor
 
@@ -45,7 +45,7 @@ class custom_skopt_extra_scorer(object):
         mse = mean_squared_error(y_test, y_pred)
         mae = mean_absolute_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
-        if (mae < 15):
+        if (mae < 10):
             print("------------------------------")
             print("mae test:" + str(mae))
             print("mse test:" + str(mse))
@@ -73,14 +73,13 @@ class custom_skopt_xgb_scorer(object):
         mse = mean_squared_error(y_test, y_pred)
         mae = mean_absolute_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
-        if (mae < 15):
+        if (mae < 10):
             print("------------------------------")
             print("mae test:" + str(mae))
             print("mse test:" + str(mse))
             print("r2 test:" + str(r2))
             print(param_extra)
         return 0
-
 
 class custom_skopt_rf_scorer(object):
     def __init__(self, x, y):
@@ -100,7 +99,7 @@ class custom_skopt_rf_scorer(object):
         mse = mean_squared_error(y_test, y_pred)
         mae = mean_absolute_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
-        if (mae < 15):
+        if (mae < 10):
             print("------------------------------")
             print("mae test:" + str(mae))
             print("mse test:" + str(mse))
@@ -146,90 +145,8 @@ def score(reg, x_train, x_test, y_train, y_test, scale=1):
     plt.clf()
 
 
-def extract_all():
-    # add reactD once I get the files for it
-    fl_arr = []
-    y = []
-    list_of_dicts = []
-    df = pd.read_excel("../data/barriers.xlsx")
-    full_dictionary = {}
-
-    for i, j in enumerate(df["group"]):
-        if (j != "reactC"):
-            temp_name = "../sum_files/" + str(j) + "_" + str(df["file"].values[i]) + "-opt.sum"
-            fl_arr.append(temp_name)
-
-        else:
-            temp_name = "../sum_files/" + str(j) + "_" + str(df["file"].values[i]) + ".sum"
-            fl_arr.append(temp_name)
-
-    # extracts xyz position of the first diels-alder atom in the first file. Used to standardize position
-    atoms = df["AtomOrder"][0]
-    atoms = atoms.replace(" ", "")[1:-1]
-    atom_id = [x[1:-1] for x in atoms.split(",")]
-    basis = extract_basics(num=atom_id, filename=fl_arr[0])
-    basis_atom_1 = [basis["x_basic_1"], basis["y_basic_1"], basis["z_basic_1"]]
-
-    for ind, fl in enumerate(fl_arr):
-        # if (pd.isnull(df["AtomOrder"][ind]) or pd.isnull(df["CPOrder"][ind]) ):
-        #    #print("critical points not added here")
-        #    pass
-        # else:
-        atoms = df["AtomOrder"][ind]
-        atoms = atoms.replace(" ", "")[1:-1]
-        atom_id = [x[1:-1] for x in atoms.split(",")]
-        bond_cp = [int(x) for x in df["CPOrder"][ind].split(",")][6:13]
-        ring_cp = bond_cp[4:6]
-        bond_cp = bond_cp[0:4]
-
-        atoms = []
-        for i in atom_id:
-            if (len(i) == 3):
-                atoms.append(int(i[1:3]))
-            else:
-                atoms.append(int(i[-1]))
-
-        bond = extract_bond_crit(num=bond_cp, filename=fl)
-        ring = extract_ring_crit(num=ring_cp, filename=fl)
-        nuc = extract_nuc_crit(num=atoms, filename=fl)
-        charge = extract_charge_energies(num=atom_id, filename=fl)
-        spin = extract_spin(num=atom_id, filename=fl)
-        basics = extract_basics(num=atom_id, filename=fl)
-
-        translate = ["x_basic_0", "y_basic_0", "z_basic_0", "x_basic_1", "y_basic_1", "z_basic_1",
-                     "x_basic_2", "y_basic_2", "z_basic_2", "x_basic_3", "y_basic_3", "z_basic_3",
-                     "x_basic_4", "y_basic_4", "z_basic_5", "x_basic_5", "y_basic_5", "z_basic_5"]
-
-        for i in translate:
-
-            if (i[0] == 'x'):
-                basics[i] = basics[i] - basis_atom_1[0]
-            elif (i[0] == 'y'):
-                basics[i] = basics[i] - basis_atom_1[1]
-            else:
-                basics[i] = basics[i] - basis_atom_1[2]
-
-        # print(len(bond) + len(ring) + len(nuc) + len(charge)+\
-        #      len(spin) + len(basics))
-
-        full_dictionary.update(bond)
-        full_dictionary.update(ring)
-        full_dictionary.update(nuc)
-        full_dictionary.update(charge)
-        full_dictionary.update(spin)
-        full_dictionary.update(basics)
-
-        y.append(float(df["barrier(kj/mol)"][ind]))
-
-        list_of_dicts.append(full_dictionary)
-        full_dictionary = {}
-
-    df_results = pd.DataFrame(list_of_dicts)
-
-    return df_results, np.array(y)
-
-
 x, y = extract_all()
+
 min = np.min(y)
 max = np.max(y)
 y_scale = (y - min) / (max - min)
@@ -279,10 +196,10 @@ importance_vars_v2 = \
         "x_basic_4", "x_basic_5", "z_basic_3", "z_basic_4", "z_basic_5"]
 reduced_x_1 = x[importance_vars_v1]
 reduced_x_2 = x[importance_vars_v2]
-corr = reduced_x_2.corr()
-#ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0, cmap=sns.diverging_palette(20, 220, n=200), square=False)
-#ax.set_xticklabels(ax.get_xticklabels(),rotation=45, horizontalalignment='right', fontsize='small')
-#plt.show()
+corr = reduced_x_1.corr()
+ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0, cmap=sns.diverging_palette(20, 220, n=200), square=False)
+ax.set_xticklabels(ax.get_xticklabels(),rotation=45, horizontalalignment='right', fontsize='small')
+plt.show()
 
 #print(corr)
 # feature selection
@@ -384,7 +301,32 @@ reg_knn = KNeighborsRegressor(algorithm = "auto", weights = "distance")
 #filt_x =  principal_components[ind_filtered]
 # x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
 #manually filter values found from other features
-x_train, x_test, y_train, y_test = train_test_split(reduced_x_2, y_scale , test_size=0.1)
+x_train, x_test, y_train, y_test = train_test_split(reduced_x_2, y_scale , test_size=0.2)
+
+''' # tensorflow
+import tensorflow as tf
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(128, activation='relu', input_shape=(reduced_x_2.shape[0], )),
+    tf.keras.layers.Dropout(0.3),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(1, activation="sigmoid")
+])
+
+model.compile(optimizer='adam',
+              loss="binary_crossentropy",
+              metrics=['accuracy'])
+model.fit(x_train,  np.ravel(y_train), epochs=100, verbose = 1)
+# tensorflow 
+
+y_pred = model.predict(x_test)
+print(confusion_matrix(y_test, y_pred))
+y_pred = model.predict(x_train)
+print(confusion_matrix(y_train, y_pred))
+'''
+#-------------------------------------------------
+
+
+
 #pca + filter top values
 #x_train, x_test, y_train, y_test = train_test_split(filt_x, filt_y, test_size=0.1)
 
@@ -392,20 +334,19 @@ x_train, x_test, y_train, y_test = train_test_split(reduced_x_2, y_scale , test_
 reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=100, verbose=3, cv=3, n_jobs=10)
 reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=100, verbose=3, cv=3, n_jobs=10)
 reg_bayes = BayesSearchCV(reg_bayes, params_bayes, n_iter=100, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
-reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=100, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
+reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=250, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
 reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=10, verbose=3, cv=3, n_jobs=10)
 reg_xgb = BayesSearchCV(reg_xgb, params_xgb, n_iter=20, verbose=4, cv=3)
 reg_lasso = BayesSearchCV(reg_lasso, params_lasso, n_iter=100, cv=3)
 reg_ridge = BayesSearchCV(reg_ridge, params_ridge, verbose= 4, n_iter=100, cv=3)
 # don't allow for selection of scoring algos
-reg_gp = BayesSearchCV(reg_gp, params_gp, n_iter=100, verbose=4, cv=5)
+reg_gp = BayesSearchCV(reg_gp, params_gp, n_iter=25, verbose=4, cv=5)
 reg_kernelridge = BayesSearchCV(reg_kernelridge, params_kernelridge, n_iter=100, verbose=3, cv=3, n_jobs=10)
 reg_ada = BayesSearchCV(reg_ada, param_ada, n_iter=100, verbose=3, cv=3, n_jobs=10)
-reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=100, verbose=3, cv=3, n_jobs=10,  scoring = "neg_mean_absolute_error")
+reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=10, verbose=3, cv=3, n_jobs=10,  scoring = "neg_mean_absolute_error")
 reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=10, verbose=3, cv=3, n_jobs=10)
 reg_huber = BayesSearchCV(reg_huber, param_huber, n_iter=100, verbose=3, cv=3, n_jobs=10)
 reg_knn = BayesSearchCV(reg_knn, param_knn, n_iter=10, verbose=3, cv=3, n_jobs=10)
-
 
 custom_scorer_extra = custom_skopt_extra_scorer
 custom_scorer_rf = custom_skopt_rf_scorer
@@ -422,10 +363,11 @@ custom_scorer_xgb = custom_skopt_xgb_scorer
 #reg_lasso.fit(list(x_train), y_train)
 #reg_sgd.fit(list(x_train),y_train)
 #reg_nn.fit(list(x_train), y_train)
-reg_rf.fit(list(x_train), y_train, callback=[custom_skopt_rf_scorer(x,y)])
-#reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
+#reg_rf.fit(list(x_train), y_train, callback=[custom_skopt_rf_scorer(x,y)])
+reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
 #reg_huber.fit(list(x_train), y_train)
 #reg_knn.fit(list(x_train), y_train)
+
 #score(reg_sgd, x_train, x_test, y_train, y_test, max - min)
 #score(reg_ridge, x_train, x_test, y_train, y_test, max - min)
 #score(reg_bayes, x_train, x_test, y_train, y_test, max - min)
@@ -438,8 +380,8 @@ reg_rf.fit(list(x_train), y_train, callback=[custom_skopt_rf_scorer(x,y)])
 #score(reg_sgd, x_train, x_test, y_train, y_test, max - min)
 #score(reg_svr_lin, x_train, x_test, y_train, y_test, max - min)
 #score(reg_svr_rbf, x_train, x_test, y_train, y_test, max - min)
-score(reg_rf, x_train, x_test, y_train, y_test, max - min)
-#score(reg_extra, x_train, x_test, y_train, y_test, max - min)
+#score(reg_rf, x_train, x_test, y_train, y_test, max - min)
+score(reg_extra, x_train, x_test, y_train, y_test, max - min)
 #score(reg_gp, x_train, x_test, y_train, y_test, max - min) # fuck with kernel
 
 
