@@ -165,22 +165,17 @@ importance_vars_v1 = [
     "Spin_tot_5",
     "V_9",  "Vnuc_0", "Vnuc_1", "Vnuc_2", "Vnuc_3", "Vnuc_9",
     "x_basic_4", "x_basic_5", "z_basic_3", "z_basic_4", "z_basic_5"]
-
-print(len(importance_vars_v1))
-#reduced_x = x[importance_vars_v1]
-#reduced_x = scale(reduced_x)
-#plt.matshow(reduced_x.corr())
-#plt.colorbar()
-#plt.show()
-
-# plots selected variable correlation
-#reduced_x = x[importance_vars_v1]
-#corr = reduced_x.corr()
-#ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
-#    cmap=sns.diverging_palette(20, 220, n=200), square=False)
-#ax.set_xticklabels(ax.get_xticklabels(),rotation=45, horizontalalignment='right', fontsize='small')
-#plt.show()
-
+importance_vars_v3 = \
+    [
+    "ESP_0","ESP_3","ESP_1","ESP_2","ESP_4","ESP_5","ESPe_9","ESPn_4",
+    "G_0","G_4","G_9",
+    "HessRho_EigVals_a_9","HessRho_EigVals_b_9","HessRho_EigVals_c_6",
+    "K|Scaled|_basic_3","Kinetic_basic_4","Lagr_basic_0","Lagr_basic_3",
+    "NetCharge_5",
+    "NetCharge_basic_1","NetCharge_basic_3","NetCharge_basic_4",
+    "Rho_0","Spin_tot_4","Spin_tot_5",
+    "Stress_EigVals_c_6","V_9","Vnuc_0","Vnuc_1","Vnuc_2",
+    "x_basic_4","y_basic_3","z_basic_4","z_basic_5"]
 
 importance_vars_v2 = \
     [
@@ -194,15 +189,43 @@ importance_vars_v2 = \
         "Rho_0",
         "Vnuc_0", "Vnuc_1", "Vnuc_2", "Vnuc_3",
         "x_basic_4", "x_basic_5", "z_basic_3", "z_basic_4", "z_basic_5"]
-reduced_x_1 = x[importance_vars_v1]
-reduced_x_2 = x[importance_vars_v2]
-corr = reduced_x_1.corr()
-ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0, cmap=sns.diverging_palette(20, 220, n=200), square=False)
-ax.set_xticklabels(ax.get_xticklabels(),rotation=45, horizontalalignment='right', fontsize='small')
+
+importance_vars_v4 = \
+    [
+    "ESP_0","ESP_3","ESP_1","ESP_2","ESP_4","ESP_5","ESPn_4",
+    "G_0","G_9",
+    "K|Scaled|_basic_3","Kinetic_basic_4","Lagr_basic_0","Lagr_basic_3",
+    "NetCharge_basic_1","NetCharge_basic_3","NetCharge_basic_4",
+    "Rho_0","Spin_tot_4","Spin_tot_5",
+    "Vnuc_0","Vnuc_1","Vnuc_2",
+    "z_basic_4","z_basic_5"]
+
+# plots selected variable correlation
+reduced_x = x[importance_vars_v3]
+corr = reduced_x.corr()
+ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
+    cmap=sns.diverging_palette(20, 220, n=200), square=False)
+ax.set_xticklabels(ax.get_xticklabels(),rotation=70, horizontalalignment='right', fontsize='x-small')
 plt.show()
 
-#print(corr)
-# feature selection
+reduced_x = x[importance_vars_v4]
+corr = reduced_x.corr()
+ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
+    cmap=sns.diverging_palette(20, 220, n=200), square=False)
+ax.set_xticklabels(ax.get_xticklabels(),rotation=70, horizontalalignment='right', fontsize='x-small')
+plt.show()
+
+
+reduced_x_1 = x[importance_vars_v1]
+reduced_x_2 = x[importance_vars_v2]
+reduced_x_3 = x[importance_vars_v3]
+reduced_x_4 = x[importance_vars_v4]
+reduced_x_4 = scale(reduced_x_4)
+reduced_x_3 = scale(reduced_x_3)
+reduced_x_2 = scale(reduced_x_2)
+reduced_x_1 = scale(reduced_x_1)
+
+#-------------------------feature selection
 # variance_thresh(x,y)
 # -------------------------------------
 #pca(x)
@@ -211,15 +234,13 @@ plt.show()
 # 25 pca components has 90% explained variance
 # ----------------Done and good
 #lasso(x, y)
-#boruta(x,y)
+#boruta(x,y, n = 7)
+#boruta(x,y, n = 5)
+#boruta(x,y, n = 3)
+
 #recursive_feat_elim(x, y)
-
-reduced_x_2 = scale(reduced_x_2)
-reduced_x_1 = scale(reduced_x_1)
-
-pca = PCA(0.90)
-principal_components = pca.fit_transform(x)
-
+#pca = PCA(0.90)
+#principal_components = pca.fit_transform(x)
 # principal_df = pd.DataFrame(data = principal_components)
 # principal_df
 
@@ -301,7 +322,7 @@ reg_knn = KNeighborsRegressor(algorithm = "auto", weights = "distance")
 #filt_x =  principal_components[ind_filtered]
 # x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
 #manually filter values found from other features
-x_train, x_test, y_train, y_test = train_test_split(reduced_x_2, y_scale , test_size=0.2)
+x_train, x_test, y_train, y_test = train_test_split(reduced_x_4, y_scale , test_size=0.2)
 
 ''' # tensorflow
 import tensorflow as tf
@@ -344,7 +365,7 @@ reg_gp = BayesSearchCV(reg_gp, params_gp, n_iter=25, verbose=4, cv=5)
 reg_kernelridge = BayesSearchCV(reg_kernelridge, params_kernelridge, n_iter=100, verbose=3, cv=3, n_jobs=10)
 reg_ada = BayesSearchCV(reg_ada, param_ada, n_iter=100, verbose=3, cv=3, n_jobs=10)
 reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=10, verbose=3, cv=3, n_jobs=10,  scoring = "neg_mean_absolute_error")
-reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=10, verbose=3, cv=3, n_jobs=10)
+reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=100, verbose=3, cv=3, n_jobs=10)
 reg_huber = BayesSearchCV(reg_huber, param_huber, n_iter=100, verbose=3, cv=3, n_jobs=10)
 reg_knn = BayesSearchCV(reg_knn, param_knn, n_iter=10, verbose=3, cv=3, n_jobs=10)
 

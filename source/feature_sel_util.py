@@ -9,6 +9,7 @@ from sklearn.feature_selection import RFE, RFECV, \
     SelectFromModel, VarianceThreshold
 from sklearn.model_selection import RepeatedKFold, cross_val_score
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, scale
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
@@ -18,9 +19,16 @@ from sklearn.ensemble import RandomForestRegressor
 #######################################Method 1: Lasso #########################################33
 def lasso(x, y):
     # lasso importance sampping
-    x_scaled = scale(x)
-    sel = SelectFromModel(Lasso(alpha=0.75, max_iter=20000, normalize = True))
+    #x_scaled = scale(x)
+
+    print("passed scale")
+    from sklearn import preprocessing
+    scaler = preprocessing.StandardScaler()
+    x_scaled = scaler.fit_transform(x, y)
+
+    sel = SelectFromModel(Lasso(alpha=0.25, max_iter=50000, normalize = True))
     sel.fit(x_scaled, y)
+
     print("number of features selected via lasso: " + str(np.count_nonzero(sel.get_support())))
     for i, j in enumerate(sel.get_support()):
         if j != 0:
@@ -43,11 +51,11 @@ def lasso_cv(x, y):
 
 def recursive_feat_elim(x, y):
 
-    rf = RandomForestRegressor(n_jobs=-1, max_depth=7)
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=3)
     sgd = SGDRegressor(max_iter=100000, penalty="elasticnet", alpha=0.00001)
     svr = SVR(kernel="linear")
 
-    rfe = RFE(estimator = rf, n_features_to_select = 20, step=1, verbose=1)
+    rfe = RFE(estimator = rf, n_features_to_select = 5, step=1, verbose=1)
 
     rfe.fit(x,y)
     ranking = rfe.ranking_.reshape(np.shape(x)[1])
@@ -119,14 +127,25 @@ def pca(x):
     plt.show()
 #######################################Method 6: Boruta #########################################33
 
-def boruta(x,y):
-    rf = RandomForestRegressor(n_jobs=-1, max_depth=3)
-    feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, random_state=1,
-                             max_iter=1500)
-
-    for i in x:
-        print(i)
+def boruta(x,y, n=5):
     x_scale = scale(x)
+
+    #rf = RandomForestRegressor(n_jobs=-1, max_depth=n)
+    #rf.fit(x_scale, y)
+    #y_test = rf.predict(x_scale)
+    #mse = mean_squared_error(y_test, y)
+    #mae = mean_absolute_error(y_test, y)
+    #r2 = r2_score(y_test, y)
+    #print("r2: " + str(r2))
+    #print("mse: "+ str(mse))
+    #print("mae: "+ str(mae))
+
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=n)
+
+    feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, max_iter=2500)
+
+    #for i in x:
+    #    print(i)
 
     feat_selector.fit(np.array(x_scale), y)
     #print(    feat_selector.support_)
