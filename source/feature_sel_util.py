@@ -139,14 +139,10 @@ def boruta(x,y, n=5):
     #print("r2: " + str(r2))
     #print("mse: "+ str(mse))
     #print("mae: "+ str(mae))
-
     rf = RandomForestRegressor(n_jobs=-1, max_depth=n)
-
     feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, max_iter=2500)
-
     #for i in x:
     #    print(i)
-
     feat_selector.fit(np.array(x_scale), y)
     #print(    feat_selector.support_)
     #print(feat_selector.ranking_)

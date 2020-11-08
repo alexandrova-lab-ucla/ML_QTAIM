@@ -1,11 +1,10 @@
-import os
-import seaborn as sns
+import argparse
 import multiprocessing as mp
 import numpy as np
-import pandas as pd
 from extract_helpers import *
 from feature_sel_util import *
 import xgboost as xgb
+import seaborn as sns; sns.set_theme()
 
 import matplotlib.pyplot as plt
 from skopt.space import Real, Integer
@@ -45,7 +44,7 @@ class custom_skopt_extra_scorer(object):
         mse = mean_squared_error(y_test, y_pred)
         mae = mean_absolute_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
-        if (mae < 10):
+        if (mae < 11):
             print("------------------------------")
             print("mae test:" + str(mae))
             print("mse test:" + str(mse))
@@ -146,7 +145,6 @@ def score(reg, x_train, x_test, y_train, y_test, scale=1):
 
 
 x, y = extract_all()
-
 min = np.min(y)
 max = np.max(y)
 y_scale = (y - min) / (max - min)
@@ -200,30 +198,49 @@ importance_vars_v4 = \
     "Vnuc_0","Vnuc_1","Vnuc_2",
     "z_basic_4","z_basic_5"]
 
+reduced_x_1_df = x[importance_vars_v1]
+reduced_x_2_df = x[importance_vars_v2]
+reduced_x_3_df = x[importance_vars_v3]
+reduced_x_4_df = x[importance_vars_v4]
+reduced_x_4 = scale(reduced_x_4_df)
+reduced_x_3 = scale(reduced_x_3_df)
+reduced_x_2 = scale(reduced_x_2_df)
+reduced_x_1 = scale(reduced_x_1_df)
+
 # plots selected variable correlation
-reduced_x = x[importance_vars_v3]
-corr = reduced_x.corr()
-ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
-    cmap=sns.diverging_palette(20, 220, n=200), square=False)
-ax.set_xticklabels(ax.get_xticklabels(),rotation=70, horizontalalignment='right', fontsize='x-small')
+#reduced_x = x[importance_vars_v3]
+#corr = reduced_x.corr()
+#ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
+#    cmap=sns.diverging_palette(20, 220, n=200), square=False)
+#ax.set_xticklabels(ax.get_xticklabels(),rotation=60, horizontalalignment='right', fontsize='small')
+
+#ax.set_yticks(0.5 + np.arange(len(importance_vars_v3)))
+#ax.set_yticklabels([i for i in importance_vars_v3], rotation="0", fontsize = "small", va="center")
+
+#plt.title("Correlation, Selected Features")
+#plt.show()
+
+plot_corr = reduced_x_3_df
+plot_corr["barrier"] = y_scale
+corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
+ax = plt.subplot(1,1,1)
+plt.title("Correlation Top Features vs. Barrier")
+
+ax.barh(range(np.shape(corr)[0]), corr)
+plt.xlabel("Correlation w/")
+print([str(i) for i in importance_vars_v3])
+ax.set_yticklabels([i for i in importance_vars_v3], rotation="0")
+ax.set_yticks(np.arange(len(importance_vars_v3)))
 plt.show()
 
-reduced_x = x[importance_vars_v4]
-corr = reduced_x.corr()
-ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
-    cmap=sns.diverging_palette(20, 220, n=200), square=False)
-ax.set_xticklabels(ax.get_xticklabels(),rotation=70, horizontalalignment='right', fontsize='x-small')
-plt.show()
+#reduced_x = x[importance_vars_v4]
+#corr = reduced_x.corr()
+#ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
+#    cmap=sns.diverging_palette(20, 220, n=200), square=False)
+#ax.set_xticklabels(ax.get_xticklabels(),rotation=70, horizontalalignment='right', fontsize='x-small')
+#plt.show()
 
 
-reduced_x_1 = x[importance_vars_v1]
-reduced_x_2 = x[importance_vars_v2]
-reduced_x_3 = x[importance_vars_v3]
-reduced_x_4 = x[importance_vars_v4]
-reduced_x_4 = scale(reduced_x_4)
-reduced_x_3 = scale(reduced_x_3)
-reduced_x_2 = scale(reduced_x_2)
-reduced_x_1 = scale(reduced_x_1)
 
 #-------------------------feature selection
 # variance_thresh(x,y)
@@ -243,6 +260,46 @@ reduced_x_1 = scale(reduced_x_1)
 #principal_components = pca.fit_transform(x)
 # principal_df = pd.DataFrame(data = principal_components)
 # principal_df
+
+#ind_filtered = np.argsort(y)[10:-10]
+#filt_y = y[ind_filtered]
+#filt_x =  principal_components[ind_filtered]
+# x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
+#manually filter values found from other features
+
+
+
+''' # tensorflow
+import tensorflow as tf
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(128, activation='relu', input_shape=(reduced_x_2.shape[0], )),
+    tf.keras.layers.Dropout(0.3),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(1, activation="sigmoid")
+])
+
+model.compile(optimizer='adam',
+              loss="binary_crossentropy",
+              metrics=['accuracy'])
+model.fit(x_train,  np.ravel(y_train), epochs=100, verbose = 1)
+# tensorflow 
+'''
+
+#-------------------------------------------------
+#pca + filter top values
+#x_train, x_test, y_train, y_test = train_test_split(filt_x, filt_y, test_size=0.1)
+
+x_train, x_test, y_train, y_test = train_test_split(reduced_x_4, y_scale, test_size=0.2)
+
+parser = argparse.ArgumentParser(description='select descriptor, and directory of files')
+parser.add_argument("--algo", action='store', dest="algo", default="xgb",
+                    help="select algorithm")
+parser.add_argument("-n", action='store', dest="n_iter", default="500",
+                    help="select number of trials")
+results = parser.parse_args()
+
+algo = results.algo
+n_iter = int(results.n_iter)
 
 params_bayes = {
     "n_iter": Integer(1000, 10000),
@@ -289,121 +346,114 @@ params_gp = {"alpha": Real(1e-12, 1e-4, prior="log-uniform")}
 params_lasso = {"alpha": Real(1e-5, 1, prior="log-uniform")}
 param_ada = {"n_estimators": Integer(1e1, 1e3, prior="log-uniform"),
              "learning_rate": Real(1e-2, 1e1, prior="log-uniform")}
-param_extra = {"n_estimators": Integer(1e1, 1e4, prior="log-uniform"),
-"min_samples_split": Integer(2,5),"min_samples_leaf" : Integer(1,2)}
+param_extra = {"n_estimators": Integer(1e2, 1e4, prior="log-uniform"),
+"min_samples_split": Integer(2,5),"min_samples_leaf" : Integer(1,3)}
 param_huber = { "epsilon":Real(1.01,1.5), "alpha": Real(1e-6,1e-1, prior="log-uniform"),
                 "tol": Real(1e-7,1e-2,prior="log-uniform")}
-param_knn = {"n_neighbors": Integer(3,7)
-}
-
-reg_lasso = Lasso()
-reg_svr_rbf = SVR(kernel="rbf")
-reg_svr_lin = SVR(kernel="linear")
-reg_bayes = BayesianRidge()
-reg_kernelridge = KernelRidge(kernel="poly", degree = 8)
-reg_rf = RandomForestRegressor()
-reg_sgd = SGDRegressor()
-reg_ridge = Ridge()
-reg_xgb = xgb.XGBRegressor()
-kernel = RBF(1.0) + 0.5 * WhiteKernel()
-reg_gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10)
-
-reg_nn = MLPRegressor(early_stopping = True, n_iter_no_change = 100, hidden_layer_sizes=(50,50,),
-                      solver = "lbfgs")
-reg_ada = AdaBoostRegressor()
-reg_extra = ExtraTreesRegressor(criterion = "mae")
-reg_huber = HuberRegressor(max_iter = 1000)
-reg_knn = KNeighborsRegressor(algorithm = "auto", weights = "distance")
+param_knn = {"n_neighbors": Integer(3, 7)}
 
 
 
-#ind_filtered = np.argsort(y)[10:-10]
-#filt_y = y[ind_filtered]
-#filt_x =  principal_components[ind_filtered]
-# x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
-#manually filter values found from other features
-x_train, x_test, y_train, y_test = train_test_split(reduced_x_4, y_scale , test_size=0.2)
 
-''' # tensorflow
-import tensorflow as tf
-model = tf.keras.Sequential([
-    tf.keras.layers.Dense(128, activation='relu', input_shape=(reduced_x_2.shape[0], )),
-    tf.keras.layers.Dropout(0.3),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(1, activation="sigmoid")
-])
+if (algo == "xgb"):
+    reg_xgb = xgb.XGBRegressor()
+    reg_xgb = BayesSearchCV(reg_xgb, params_xgb, n_iter=n_iter, verbose=4, cv=3)
+    custom_scorer_xgb = custom_skopt_xgb_scorer
+    reg_xgb.fit(x_train, y_train,callback=[custom_skopt_xgb_scorer(x,y)])
+    score(reg_xgb, x_train, x_test, y_train, y_test, max - min)
 
-model.compile(optimizer='adam',
-              loss="binary_crossentropy",
-              metrics=['accuracy'])
-model.fit(x_train,  np.ravel(y_train), epochs=100, verbose = 1)
-# tensorflow 
+elif(algo == "svr_rbf"):
+    reg_svr_rbf = SVR(kernel="rbf")
+    reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+    reg_svr_rbf.fit(list(x_train), y_train)
+    score(reg_svr_rbf, x_train, x_test, y_train, y_test, max - min)
 
-y_pred = model.predict(x_test)
-print(confusion_matrix(y_test, y_pred))
-y_pred = model.predict(x_train)
-print(confusion_matrix(y_train, y_pred))
-'''
-#-------------------------------------------------
+elif(algo == "svr_lin"):
+    reg_svr_lin = SVR(kernel="linear")
+    reg_svr_lin.fit(list(x_train), y_train)
+    score(reg_svr_lin, x_train, x_test, y_train, y_test, max - min)
+    reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
 
+elif(algo == "bayes"):
+    reg_bayes = BayesianRidge()
+    reg_bayes = BayesSearchCV(reg_bayes, params_bayes, n_iter=n_iter, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
+    reg_bayes.fit(list(x_train), y_train)
+    score(reg_bayes, x_train, x_test, y_train, y_test, max - min)
 
+elif(algo == "rf"):
+    reg_rf = RandomForestRegressor()
+    reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
+    custom_scorer_rf = custom_skopt_rf_scorer
+    reg_rf.fit(list(x_train), y_train, callback=[custom_skopt_rf_scorer(x,y)])
+    score(reg_rf, x_train, x_test, y_train, y_test, max - min)
 
-#pca + filter top values
-#x_train, x_test, y_train, y_test = train_test_split(filt_x, filt_y, test_size=0.1)
+elif(algo == "sgd"):
+    reg_sgd = SGDRegressor()
+    reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+    reg_sgd.fit(list(x_train),y_train)
+    score(reg_sgd, x_train, x_test, y_train, y_test, max - min)
 
+elif(algo == "lasso"):
+    reg_lasso = Lasso()
+    reg_lasso = BayesSearchCV(reg_lasso, params_lasso, n_iter=n_iter, cv=3)
+    reg_lasso.fit(list(x_train), y_train)
+    score(reg_lasso, x_train, x_test, y_train, y_test, max - min)
 
-reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=100, verbose=3, cv=3, n_jobs=10)
-reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=100, verbose=3, cv=3, n_jobs=10)
-reg_bayes = BayesSearchCV(reg_bayes, params_bayes, n_iter=100, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
-reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=250, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
-reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=10, verbose=3, cv=3, n_jobs=10)
-reg_xgb = BayesSearchCV(reg_xgb, params_xgb, n_iter=20, verbose=4, cv=3)
-reg_lasso = BayesSearchCV(reg_lasso, params_lasso, n_iter=100, cv=3)
-reg_ridge = BayesSearchCV(reg_ridge, params_ridge, verbose= 4, n_iter=100, cv=3)
-# don't allow for selection of scoring algos
-reg_gp = BayesSearchCV(reg_gp, params_gp, n_iter=25, verbose=4, cv=5)
-reg_kernelridge = BayesSearchCV(reg_kernelridge, params_kernelridge, n_iter=100, verbose=3, cv=3, n_jobs=10)
-reg_ada = BayesSearchCV(reg_ada, param_ada, n_iter=100, verbose=3, cv=3, n_jobs=10)
-reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=10, verbose=3, cv=3, n_jobs=10,  scoring = "neg_mean_absolute_error")
-reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=100, verbose=3, cv=3, n_jobs=10)
-reg_huber = BayesSearchCV(reg_huber, param_huber, n_iter=100, verbose=3, cv=3, n_jobs=10)
-reg_knn = BayesSearchCV(reg_knn, param_knn, n_iter=10, verbose=3, cv=3, n_jobs=10)
+elif(algo == "ridge"):
+    reg_ridge = Ridge()
+    reg_ridge = BayesSearchCV(reg_ridge, params_ridge, verbose= 4, n_iter=n_iter, cv=3)
+    reg_ridge.fit(list(x_train), y_train)
+    score(reg_ridge, x_train, x_test, y_train, y_test, max - min)
 
-custom_scorer_extra = custom_skopt_extra_scorer
-custom_scorer_rf = custom_skopt_rf_scorer
-custom_scorer_xgb = custom_skopt_xgb_scorer
+elif(algo == "gp"):
+    kernel = RBF(1.0) + 0.5 * WhiteKernel()
+    reg_gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10)
+    reg_gp = BayesSearchCV(reg_gp, params_gp, n_iter=n_iter, verbose=4, cv=5)
+    reg_gp.fit(list(x_train),y_train)
+    score(reg_gp, x_train, x_test, y_train, y_test, max - min)  # fuck with kernel
 
-#reg_sgd.fit(list(x_train),y_train)
-#reg_gp.fit(list(x_train),y_train)
-#reg_bayes.fit(list(x_train), y_train)
-#reg_ridge.fit(list(x_train), y_train)
-#reg_ada.fit(list(x_train), y_train)
-#reg_xgb.fit(x_train, y_train,callback=[custom_skopt_xgb_scorer(x,y)])
-#reg_svr_lin.fit(list(x_train), y_train)
-#reg_svr_rbf.fit(list(x_train), y_train)
-#reg_lasso.fit(list(x_train), y_train)
-#reg_sgd.fit(list(x_train),y_train)
-#reg_nn.fit(list(x_train), y_train)
-#reg_rf.fit(list(x_train), y_train, callback=[custom_skopt_rf_scorer(x,y)])
-reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
-#reg_huber.fit(list(x_train), y_train)
-#reg_knn.fit(list(x_train), y_train)
+elif(algo == "krr"):
+    reg_kernelridge = KernelRidge(kernel="poly", degree=8)
+    reg_kernelridge = BayesSearchCV(reg_kernelridge, params_kernelridge, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+    reg_kernelridge.fit(list(x_train), y_train)
+    score(reg_kernelridge, x_train, x_test, y_train, y_test, max - min)
 
-#score(reg_sgd, x_train, x_test, y_train, y_test, max - min)
-#score(reg_ridge, x_train, x_test, y_train, y_test, max - min)
-#score(reg_bayes, x_train, x_test, y_train, y_test, max - min)
-#score(reg_ada, x_train, x_test, y_train, y_test, max - min)
-#score(reg_nn, x_train, x_test, y_train, y_test, max - min)
-#score(reg_huber, x_train, x_test, y_train, y_test, max - min)
-#score(reg_knn, x_train, x_test, y_train, y_test, max - min)
-#score(reg_xgb, x_train, x_test, y_train, y_test, max - min)
-#score(reg_lasso, x_train, x_test, y_train, y_test, max - min)
-#score(reg_sgd, x_train, x_test, y_train, y_test, max - min)
-#score(reg_svr_lin, x_train, x_test, y_train, y_test, max - min)
-#score(reg_svr_rbf, x_train, x_test, y_train, y_test, max - min)
-#score(reg_rf, x_train, x_test, y_train, y_test, max - min)
-score(reg_extra, x_train, x_test, y_train, y_test, max - min)
-#score(reg_gp, x_train, x_test, y_train, y_test, max - min) # fuck with kernel
+elif(algo == "ada"):
+    reg_ada = AdaBoostRegressor()
+    reg_ada = BayesSearchCV(reg_ada, param_ada, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+    reg_ada.fit(list(x_train), y_train)
+    score(reg_ada, x_train, x_test, y_train, y_test, max - min)
 
+elif(algo == "nn"):
+    reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, hidden_layer_sizes=(50, 50, 50,),
+                          solver="lbfgs")
+    reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10,  scoring = "neg_mean_absolute_error")
+    reg_nn.fit(list(x_train), y_train)
+    score(reg_nn, x_train, x_test, y_train, y_test, max - min)
 
+elif(algo == "extra"):
+    reg_extra = ExtraTreesRegressor(criterion="mae")
+    reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+    custom_scorer_extra = custom_skopt_extra_scorer
+    reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
+    score(reg_extra, x_train, x_test, y_train, y_test, max - min)
+
+elif(algo == "huber"):
+    reg_huber = HuberRegressor(max_iter=1000)
+    reg_huber = BayesSearchCV(reg_huber, param_huber, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+    reg_huber.fit(list(x_train), y_train)
+    score(reg_huber, x_train, x_test, y_train, y_test, max - min)
+
+elif(algo == "knn"):
+    reg_knn = KNeighborsRegressor(algorithm="auto", weights="distance")
+    reg_knn = BayesSearchCV(reg_knn, param_knn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+    reg_knn.fit(list(x_train), y_train)
+    score(reg_knn, x_train, x_test, y_train, y_test, max - min)
+
+else:
+    reg_extra = ExtraTreesRegressor(criterion="mae")
+    reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+    custom_scorer_extra = custom_skopt_extra_scorer
+    reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
+    score(reg_extra, x_train, x_test, y_train, y_test, max - min)
 
