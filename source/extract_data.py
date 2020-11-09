@@ -198,40 +198,65 @@ importance_vars_v4 = \
     "Vnuc_0","Vnuc_1","Vnuc_2",
     "z_basic_4","z_basic_5"]
 
+importance_vars_v5 = \
+[
+    "-DivStress_0","-DivStress_1","-DivStress_10","-DivStress_11","-DivStress_2","-DivStress_5","-DivStress_7",
+    "ESP_0","ESP_1","ESP_10","ESP_2","ESP_3","ESP_4","ESP_5","ESP_9","ESPe_0","ESPe_9","ESPn_10","ESPn_3","ESPn_4","ESPn_5",
+    "GradRho_a_11","GradRho_a_9","GradRho_b_10","GradRho_b_11","GradRho_b_7","GradRho_c_10","GradRho_c_6",
+    "HessRho_EigVals_a_9","HessRho_EigVals_b_9","HessRho_EigVals_c_6",
+    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
+    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
+    "V_11","V_9","Vnuc_0","Vnuc_1","Vnuc_10","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
+]
+
+importance_vars_v6 = \
+[
+    "-DivStress_0","-DivStress_1","-DivStress_10","-DivStress_11","-DivStress_2","-DivStress_5","-DivStress_7",
+    "ESP_0","ESP_1","ESP_10","ESP_2","ESP_3","ESP_4","ESP_5","ESPe_0","ESPe_9",
+    "GradRho_a_11","GradRho_a_9","GradRho_b_10","GradRho_b_11","GradRho_b_7","GradRho_c_10","GradRho_c_6",
+    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
+    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
+    "V_11","Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
+]
+
 reduced_x_1_df = x[importance_vars_v1]
 reduced_x_2_df = x[importance_vars_v2]
 reduced_x_3_df = x[importance_vars_v3]
 reduced_x_4_df = x[importance_vars_v4]
+reduced_x_5_df = x[importance_vars_v5]
+reduced_x_6_df = x[importance_vars_v6]
+
+reduced_x_6 = scale(reduced_x_6_df)
+reduced_x_5 = scale(reduced_x_5_df)
 reduced_x_4 = scale(reduced_x_4_df)
 reduced_x_3 = scale(reduced_x_3_df)
 reduced_x_2 = scale(reduced_x_2_df)
 reduced_x_1 = scale(reduced_x_1_df)
 
 # plots selected variable correlation
-#reduced_x = x[importance_vars_v3]
-#corr = reduced_x.corr()
-#ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
-#    cmap=sns.diverging_palette(20, 220, n=200), square=False)
-#ax.set_xticklabels(ax.get_xticklabels(),rotation=60, horizontalalignment='right', fontsize='small')
 
-#ax.set_yticks(0.5 + np.arange(len(importance_vars_v3)))
-#ax.set_yticklabels([i for i in importance_vars_v3], rotation="0", fontsize = "small", va="center")
+print(len(importance_vars_v6))
+corr = reduced_x_6_df.corr()
+ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
+                 yticklabels=True)
+ax.set_xticklabels(ax.get_xticklabels(),rotation=60, horizontalalignment='center', fontsize='x-small')
+ax.set_yticklabels([i for i in reduced_x_6_df], rotation="0", fontsize = "x-small", va="center")
 
-#plt.title("Correlation, Selected Features")
-#plt.show()
-
-plot_corr = reduced_x_3_df
-plot_corr["barrier"] = y_scale
-corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
-ax = plt.subplot(1,1,1)
-plt.title("Correlation Top Features vs. Barrier")
-
-ax.barh(range(np.shape(corr)[0]), corr)
-plt.xlabel("Correlation w/")
-print([str(i) for i in importance_vars_v3])
-ax.set_yticklabels([i for i in importance_vars_v3], rotation="0")
-ax.set_yticks(np.arange(len(importance_vars_v3)))
+plt.title("Correlation, Selected Features")
 plt.show()
+
+#plot_corr = reduced_x_3_df
+#plot_corr["barrier"] = y_scale
+#corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
+
+#ax = plt.subplot(1,1,1)
+#plt.title("Correlation Top Features vs. Barrier")
+#ax.barh(range(np.shape(corr)[0]), corr)
+#plt.xlabel("Correlation w/")
+#print([str(i) for i in importance_vars_v3])
+#ax.set_yticklabels([i for i in importance_vars_v3], rotation="0")
+#ax.set_yticks(np.arange(len(importance_vars_v3)))
+#plt.show()
 
 #reduced_x = x[importance_vars_v4]
 #corr = reduced_x.corr()
@@ -245,7 +270,9 @@ plt.show()
 #-------------------------feature selection
 # variance_thresh(x,y)
 # -------------------------------------
-#pca(x)
+#pca(x, list(x), y)
+#lasso(x,y)
+#lasso_cv(x,y)
 # 15 pca components has 82% explained variance
 # 20 pca components has 87% explained variance
 # 25 pca components has 90% explained variance
@@ -289,7 +316,7 @@ model.fit(x_train,  np.ravel(y_train), epochs=100, verbose = 1)
 #pca + filter top values
 #x_train, x_test, y_train, y_test = train_test_split(filt_x, filt_y, test_size=0.1)
 
-x_train, x_test, y_train, y_test = train_test_split(reduced_x_4, y_scale, test_size=0.2)
+x_train, x_test, y_train, y_test = train_test_split(reduced_x_6, y_scale, test_size=0.2)
 
 parser = argparse.ArgumentParser(description='select descriptor, and directory of files')
 parser.add_argument("--algo", action='store', dest="algo", default="xgb",
@@ -297,7 +324,6 @@ parser.add_argument("--algo", action='store', dest="algo", default="xgb",
 parser.add_argument("-n", action='store', dest="n_iter", default="500",
                     help="select number of trials")
 results = parser.parse_args()
-
 algo = results.algo
 n_iter = int(results.n_iter)
 
@@ -351,9 +377,6 @@ param_extra = {"n_estimators": Integer(1e2, 1e4, prior="log-uniform"),
 param_huber = { "epsilon":Real(1.01,1.5), "alpha": Real(1e-6,1e-1, prior="log-uniform"),
                 "tol": Real(1e-7,1e-2,prior="log-uniform")}
 param_knn = {"n_neighbors": Integer(3, 7)}
-
-
-
 
 if (algo == "xgb"):
     reg_xgb = xgb.XGBRegressor()
@@ -425,7 +448,7 @@ elif(algo == "ada"):
     score(reg_ada, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "nn"):
-    reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, hidden_layer_sizes=(50, 50, 50,),
+    reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, hidden_layer_sizes=(500, 500,),
                           solver="lbfgs")
     reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10,  scoring = "neg_mean_absolute_error")
     reg_nn.fit(list(x_train), y_train)
