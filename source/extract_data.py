@@ -18,7 +18,7 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.neural_network import MLPRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import WhiteKernel, RBF
+from sklearn.gaussian_process.kernels import WhiteKernel, RBF, DotProduct, ConstantKernel as C
 from sklearn.linear_model import BayesianRidge, SGDRegressor, Ridge, HuberRegressor,Lasso
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, ExtraTreesRegressor
 
@@ -126,6 +126,7 @@ def score(reg, x_train, x_test, y_train, y_test, scale=1):
     print("MAE train score:   " + str(mae_train))
     score = str(r2_score(reg.predict(x_train), y_train))
     print("r2 score train:   " + str(score))
+    print(reg.best_estimator_)
 
     plt.plot(y_train, reg.predict(x_train), 'o', color='black', markersize = 5)
     plt.plot(y_test, reg.predict(x_test), 'o', color='red')
@@ -183,7 +184,6 @@ importance_vars_v5 = \
 ]
 
 # 1 without correlated features
-
 importance_vars_v2 = \
     [
         "DelSqV_6",
@@ -217,6 +217,20 @@ importance_vars_v6 = \
     "V_11","Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
 ]
 
+physical = \
+    [
+    "ESP_0","ESP_1","ESP_2","ESP_3","ESP_4","ESP_5","ESP_6",
+    "ESP_7", "ESP_8" ,"ESP_9", "ESP_10", "ESP_11",
+                                          
+    "ESPe_0","ESPe_9",
+    "G_0","G_9",
+    "K|Scaled|_basic_3","Kinetic_basic_4","Lagr_basic_0","Lagr_basic_3",
+    "NetCharge_basic_1","NetCharge_basic_3","NetCharge_basic_4",
+    "Rho_0","Spin_tot_4","Spin_tot_5",
+    "Vnuc_0","Vnuc_1","Vnuc_2", "Vnuc_3","Vnuc_4","Vnuc_5",
+    "z_basic_4","z_basic_5"
+]
+
 # extract all subsets of the original variable space
 reduced_x_1_df = x[importance_vars_v1]
 reduced_x_2_df = x[importance_vars_v2]
@@ -224,6 +238,9 @@ reduced_x_3_df = x[importance_vars_v3]
 reduced_x_4_df = x[importance_vars_v4]
 reduced_x_5_df = x[importance_vars_v5]
 reduced_x_6_df = x[importance_vars_v6]
+reduced_x_physical= x[physical]
+
+reduced_x_physical = scale(reduced_x_physical)
 reduced_x_6 = scale(reduced_x_6_df)
 reduced_x_5 = scale(reduced_x_5_df)
 reduced_x_4 = scale(reduced_x_4_df)
@@ -232,7 +249,7 @@ reduced_x_2 = scale(reduced_x_2_df)
 reduced_x_1 = scale(reduced_x_1_df)
 
 # plots selected variable correlation
-
+'''
 print(len(importance_vars_v6))
 corr = reduced_x_6_df.corr()
 ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
@@ -242,7 +259,7 @@ ax.set_yticklabels([i for i in reduced_x_6_df], rotation="0", fontsize = "x-smal
 
 plt.title("Correlation, Selected Features")
 plt.show()
-
+'''
 #plot_corr = reduced_x_3_df
 #plot_corr["barrier"] = y_scale
 #corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
@@ -321,192 +338,321 @@ parser.add_argument("--algo", action='store', dest="algo", default="xgb",
 parser.add_argument("-n", action='store', dest="n_iter", default="500",
                     help="select number of trials")
 parser.add_argument('--pca_space', dest="pca_space", action='store_true')
+parser.add_argument('--bayes', dest="bayes", action='store_true')
+parser.add_argument('--physical', dest="phys", action='store_true')
 
 results = parser.parse_args()
 algo = results.algo
 pca_space = results.pca_space
+physical_space = results.phys
+bayes = results.bayes
 n_iter = int(results.n_iter)
 
 if(pca_space == True):
     x_train, x_test, y_train, y_test = train_test_split(reduced_x_6, y_scale, test_size=0.2)
 else:
-    x_train, x_test, y_train, y_test = train_test_split(reduced_x_4, y_scale, test_size=0.2)
+    if(physical_space == True):
+        x_train, x_test, y_train, y_test = train_test_split(reduced_x_physical, y_scale, test_size=0.2)
 
+    else:
+        x_train, x_test, y_train, y_test = train_test_split(reduced_x_4, y_scale, test_size=0.2)
 
-params_bayes = {
-    "n_iter": Integer(1000, 10000),
-    "tol": Real(1e-9, 1e-3, prior='log-uniform'),
-    "alpha_1": Real(1e-6, 1e+1, prior='log-uniform'),
-    "alpha_2": Real(1e-6, 1e+1, prior='log-uniform'),
-    "lambda_1": Real(1e-6, 1e+1, prior='log-uniform'),
-    "lambda_2": Real(1e-6, 1e+1, prior='log-uniform')}
-params_kernelridge = {"alpha": Real(1e-6, 1e0, prior='log-uniform'),
-                "gamma": Real(1e-8, 1e0, prior='log-uniform')}
-params_svr_lin = {"C": Real(1e-6, 1e+1, prior='log-uniform'),
-                  "gamma": Real(1e-5, 1e-1, prior='log-uniform'),
-                  "cache_size": Integer(500, 8000)}
-params_svr_rbf = {"C": Real(1e-5, 1e+1, prior='log-uniform'),
-                  "gamma": Real(1e-5, 1e-1, prior='log-uniform'),
-                  "epsilon": Real(1e-2, 1e+1, prior='log-uniform'),
-                  "cache_size": Integer(500, 8000)}
-params_rf = {"max_depth": Integer(5, 40),
-             "min_samples_split": Integer(2, 6),
-             "n_estimators": Integer(300, 2000),
-            "min_samples_leaf": Integer(1,3),
-             "n_jobs": [mp.cpu_count()]
-             }
-params_nn = {"alpha": Real(1e-10, 1e-1, prior='log-uniform'),
-             "max_iter": Integer(100, 10000),
-             "tol": Real(1e-10, 1e1, prior='log-uniform'),
-             "learning_rate_init": Real(1e-5, 1e-1, prior='log-uniform')}
-params = {'l1_ratio': Real(0.1, 0.3),
-          'tol': Real(1e-3, 1e-1, prior="log-uniform"),
-          "epsilon": Real(1e-3, 1e0, prior="log-uniform"),
-          "eta0": Real(0.01, 0.2)}
-params_xgb = {
-    "colsample_bytree": Real(0.5, 0.99),
-    "max_depth": Integer(5, 25),
-    "lambda": Real(0, 0.25),
-    "learning_rate": Real(0.01, 0.25),
-    "alpha": Real(0, 0.2),
-    "eta": Real(0, 0.1),
-    "gamma": Real(0, 0.1),
-    "n_estimators": Integer(100, 2000),
-    "objective": ["reg:squarederror"],
-    "tree_method": ["gpu_hist"]}
-params_ridge = {"tol" : Real(1e-5,1e-1,prior = "log-uniform"), "alpha": Real(1e-2, 10, prior="log-uniform")}
-params_gp = {"alpha": Real(1e-12, 1e-4, prior="log-uniform")}
-params_lasso = {"alpha": Real(1e-5, 1, prior="log-uniform")}
-param_ada = {"n_estimators": Integer(1e1, 1e3, prior="log-uniform"),
-             "learning_rate": Real(1e-2, 1e1, prior="log-uniform")}
-param_extra = {"n_estimators": Integer(1, 1e4, prior="log-uniform"),
-"min_samples_split": Integer(2,6),"min_samples_leaf" : Integer(1,4),
-               "max_depth": Integer(10,50), "n_jobs": [mp.cpu_count()]}
-param_huber = { "epsilon":Real(1.01,1.5), "alpha": Real(1e-6,1e-1, prior="log-uniform"),
-                "tol": Real(1e-7,1e-2,prior="log-uniform")}
-param_knn = {"n_neighbors": Integer(3, 7)}
+if(bayes == True):
+    params_bayes = {
+        "n_iter": Integer(1000, 10000),
+        "tol": Real(1e-9, 1e-3, prior='log-uniform'),
+        "alpha_1": Real(1e-6, 1e+1, prior='log-uniform'),
+        "alpha_2": Real(1e-6, 1e+1, prior='log-uniform'),
+        "lambda_1": Real(1e-6, 1e+1, prior='log-uniform'),
+        "lambda_2": Real(1e-6, 1e+1, prior='log-uniform')}
+    params_kernelridge = {"alpha": Real(1e-6, 1e0, prior='log-uniform'),
+                    "gamma": Real(1e-8, 1e0, prior='log-uniform')}
+    params_svr_lin = {"C": Real(1e-6, 1e+1, prior='log-uniform'),
+                      "gamma": Real(1e-5, 1e-1, prior='log-uniform'),
+                      "cache_size": Integer(500, 8000)}
+    params_svr_rbf = {"C": Real(1e-5, 1e+1, prior='log-uniform'),
+                      "gamma": Real(1e-5, 1e-1, prior='log-uniform'),
+                      "epsilon": Real(1e-2, 1e+1, prior='log-uniform'),
+                      "cache_size": Integer(500, 8000)}
+    params_rf = {"min_samples_split": Integer(2, 8),
+                 "n_estimators": Integer(100, 1000),
+                "min_samples_leaf": Integer(1,10),
+                 "n_jobs": [mp.cpu_count()]
+                 }
+    params_nn = {"alpha": Real(1e-10, 1e-1, prior='log-uniform'),
+                 "max_iter": Integer(100, 10000),
+                 "tol": Real(1e-10, 1e1, prior='log-uniform'),
+                 "learning_rate_init": Real(1e-5, 1e-1, prior='log-uniform')}
+    params = {'l1_ratio': Real(0.1, 0.3),
+              'tol': Real(1e-3, 1e-1, prior="log-uniform"),
+              "epsilon": Real(1e-3, 1e0, prior="log-uniform"),
+              "eta0": Real(0.01, 0.2)}
+    params_xgb = {
+        "colsample_bytree": Real(0.5, 0.99),
+        "max_depth": Integer(5, 25),
+        "lambda": Real(0, 0.25),
+        "learning_rate": Real(0.01, 0.25),
+        "alpha": Real(0, 0.2),
+        "eta": Real(0, 0.2),
+        "gamma": Real(0, 0.2),
+        "n_estimators": Integer(100, 2000),
+        "objective": ["reg:squarederror"],
+        "tree_method": ["gpu_hist"]}
+    params_ridge = {"tol" : Real(1e-5,1e-1,prior = "log-uniform"), "alpha": Real(1e-2, 10, prior="log-uniform")}
+    params_gp = {"alpha": Real(1e-12, 1e-4, prior="log-uniform")}
+    params_lasso = {"alpha": Real(1e-5, 1, prior="log-uniform")}
+    param_ada = {"n_estimators": Integer(1e1, 1e3, prior="log-uniform"),
+                 "learning_rate": Real(1e-2, 1e1, prior="log-uniform")}
+    param_extra = {"n_estimators": Integer(10, 1e4, prior="log-uniform"),
+    "min_samples_split": Integer(2,6),"min_samples_leaf" : Integer(2,4),
+                   "max_depth": Integer(10,50), "n_jobs": [mp.cpu_count()]}
+    param_huber = { "epsilon":Real(1.01,1.5), "alpha": Real(1e-6,1e-1, prior="log-uniform"),
+                    "tol": Real(1e-7,1e-2,prior="log-uniform")}
+    param_knn = {"n_neighbors": Integer(3, 7)}
 
-if (algo == "xgb"):
-    print("xgb algorithms")
-    reg_xgb = xgb.XGBRegressor()
-    reg_xgb = BayesSearchCV(reg_xgb, params_xgb, n_iter=n_iter, verbose=4, cv=3)
-    custom_scorer_xgb = custom_skopt_xgb_scorer
-    reg_xgb.fit(x_train, y_train,callback=[custom_skopt_xgb_scorer(x,y)])
-    score(reg_xgb, x_train, x_test, y_train, y_test, max - min)
+    if (algo == "xgb"):
+        print("xgb algorithms")
+        reg_xgb = xgb.XGBRegressor()
+        reg_xgb = BayesSearchCV(reg_xgb, params_xgb, n_iter=n_iter, verbose=4, cv=3)
+        custom_scorer_xgb = custom_skopt_xgb_scorer
+        reg_xgb.fit(x_train, y_train,callback=[custom_skopt_xgb_scorer(x,y)])
+        score(reg_xgb, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "svr_rbf"):
-    print("svr rbf algorithms")
-    reg_svr_rbf = SVR(kernel="rbf")
-    reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-    reg_svr_rbf.fit(list(x_train), y_train)
-    score(reg_svr_rbf, x_train, x_test, y_train, y_test, max - min)
+    elif(algo == "svr_rbf"):
+        print("svr rbf algorithms")
+        reg_svr_rbf = SVR(kernel="rbf")
+        reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_svr_rbf.fit(list(x_train), y_train)
+        score(reg_svr_rbf, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "svr_lin"):
-    print("svr lin algorithms")
-    reg_svr_lin = SVR(kernel="linear")
-    reg_svr_lin.fit(list(x_train), y_train)
-    score(reg_svr_lin, x_train, x_test, y_train, y_test, max - min)
-    reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+    elif(algo == "svr_lin"):
+        print("svr lin algorithms")
+        reg_svr_lin = SVR(kernel="linear")
+        reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_svr_lin.fit(list(x_train), y_train)
+        score(reg_svr_lin, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "bayes"):
-    print("bayes algorithm")
-    reg_bayes = BayesianRidge()
-    reg_bayes = BayesSearchCV(reg_bayes, params_bayes, n_iter=n_iter, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
-    reg_bayes.fit(list(x_train), y_train)
-    score(reg_bayes, x_train, x_test, y_train, y_test, max - min)
+    elif(algo == "bayes"):
+        print("bayes algorithm")
+        reg_bayes = BayesianRidge()
+        reg_bayes = BayesSearchCV(reg_bayes, params_bayes, n_iter=n_iter, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
+        reg_bayes.fit(list(x_train), y_train)
+        score(reg_bayes, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "rf"):
-    print("random forest algorithms ")
-    reg_rf = RandomForestRegressor()
-    reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
-    custom_scorer_rf = custom_skopt_rf_scorer
-    reg_rf.fit(list(x_train), y_train, callback=[custom_skopt_rf_scorer(x,y)])
-    score(reg_rf, x_train, x_test, y_train, y_test, max - min)
+    elif(algo == "rf"):
+        print("random forest algorithms ")
+        reg_rf = RandomForestRegressor()
+        reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
+        custom_scorer_rf = custom_skopt_rf_scorer
+        reg_rf.fit(list(x_train), y_train, callback=[custom_skopt_rf_scorer(x,y)])
+        score(reg_rf, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "sgd"):
-    print("sgd algorithms")
-    reg_sgd = SGDRegressor()
-    reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-    reg_sgd.fit(list(x_train),y_train)
-    score(reg_sgd, x_train, x_test, y_train, y_test, max - min)
+    elif(algo == "sgd"):
+        print("sgd algorithms")
+        reg_sgd = SGDRegressor()
+        reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_sgd.fit(list(x_train),y_train)
+        score(reg_sgd, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "lasso"):
-    print("lasso algorithms")
-    reg_lasso = Lasso()
-    reg_lasso = BayesSearchCV(reg_lasso, params_lasso, n_iter=n_iter, cv=3)
-    reg_lasso.fit(list(x_train), y_train)
-    score(reg_lasso, x_train, x_test, y_train, y_test, max - min)
+    elif(algo == "lasso"):
+        print("lasso algorithms")
+        reg_lasso = Lasso()
+        reg_lasso = BayesSearchCV(reg_lasso, params_lasso, n_iter=n_iter, cv=3)
+        reg_lasso.fit(list(x_train), y_train)
+        score(reg_lasso, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "ridge"):
-    print("ridge algorithms")
-    reg_ridge = Ridge()
-    reg_ridge = BayesSearchCV(reg_ridge, params_ridge, verbose= 4, n_iter=n_iter, cv=3)
-    reg_ridge.fit(list(x_train), y_train)
-    score(reg_ridge, x_train, x_test, y_train, y_test, max - min)
+    elif(algo == "ridge"):
+        print("ridge algorithms")
+        reg_ridge = Ridge()
+        reg_ridge = BayesSearchCV(reg_ridge, params_ridge, verbose= 4, n_iter=n_iter, cv=3)
+        reg_ridge.fit(list(x_train), y_train)
+        score(reg_ridge, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "gp"):
-    print("gaussian process algorithm")
-    kernel = RBF(1.0) + 0.5 * WhiteKernel()
-    reg_gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10)
-    reg_gp = BayesSearchCV(reg_gp, params_gp, n_iter=n_iter, verbose=4, cv=5)
-    reg_gp.fit(list(x_train),y_train)
-    score(reg_gp, x_train, x_test, y_train, y_test, max - min)  # fuck with kernel
+    elif(algo == "gp"):
+        print("gaussian process algorithm")
+        kernel = RBF(0.3) + 0.5 * WhiteKernel()
+        kernel = C(1.0, (1e-4, 1e4)) + 0.5 * WhiteKernel() + RBF(0.3)
+        #kernel = C(1.0, (1e-4, 1e4)) * RBF(10, (1e-3, 1e3)) + 0.7 * WhiteKernel()
+        reg_gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10)
+        reg_gp = BayesSearchCV(reg_gp, params_gp, n_iter=n_iter, verbose=4, cv=5)
+        reg_gp.fit(list(x_train),y_train)
+        score(reg_gp, x_train, x_test, y_train, y_test, max - min)  # fuck with kernel
 
-elif(algo == "krr"):
-    print("krr algorithm")
-    reg_kernelridge = KernelRidge(kernel="poly", degree=8)
-    reg_kernelridge = BayesSearchCV(reg_kernelridge, params_kernelridge, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-    reg_kernelridge.fit(list(x_train), y_train)
-    score(reg_kernelridge, x_train, x_test, y_train, y_test, max - min)
+    elif(algo == "krr"):
+        print("krr algorithm")
+        reg_kernelridge = KernelRidge(kernel="poly", degree=8)
+        reg_kernelridge = BayesSearchCV(reg_kernelridge, params_kernelridge, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_kernelridge.fit(list(x_train), y_train)
+        score(reg_kernelridge, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "ada"):
-    print("ada algorithm")
+    elif(algo == "ada"):
+        print("ada algorithm")
 
-    reg_ada = AdaBoostRegressor()
-    reg_ada = BayesSearchCV(reg_ada, param_ada, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-    reg_ada.fit(list(x_train), y_train)
-    score(reg_ada, x_train, x_test, y_train, y_test, max - min)
+        reg_ada = AdaBoostRegressor()
+        reg_ada = BayesSearchCV(reg_ada, param_ada, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_ada.fit(list(x_train), y_train)
+        score(reg_ada, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "nn"):
-    print("nn algorithm")
+    elif(algo == "nn"):
+        print("nn algorithm")
 
-    reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, hidden_layer_sizes=(500, 500,),
-                          solver="lbfgs")
-    reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10,  scoring = "neg_mean_absolute_error")
-    reg_nn.fit(list(x_train), y_train)
-    score(reg_nn, x_train, x_test, y_train, y_test, max - min)
+        reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, hidden_layer_sizes=(500,),
+                              solver="adam")
+        reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10,  scoring = "neg_mean_absolute_error")
+        reg_nn.fit(list(x_train), y_train)
+        score(reg_nn, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "extra"):
-    print("extra algorithm")
+    elif(algo == "extra"):
+        print("extra algorithm")
 
-    reg_extra = ExtraTreesRegressor(criterion="mae")
-    reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-    custom_scorer_extra = custom_skopt_extra_scorer
-    reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
-    score(reg_extra, x_train, x_test, y_train, y_test, max - min)
+        reg_extra = ExtraTreesRegressor(criterion="mae")
+        reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        custom_scorer_extra = custom_skopt_extra_scorer
+        reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
+        score(reg_extra, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "huber"):
-    print("huber algorithm")
+    elif(algo == "huber"):
+        print("huber algorithm")
 
-    reg_huber = HuberRegressor(max_iter=1000)
-    reg_huber = BayesSearchCV(reg_huber, param_huber, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-    reg_huber.fit(list(x_train), y_train)
-    score(reg_huber, x_train, x_test, y_train, y_test, max - min)
+        reg_huber = HuberRegressor(max_iter=1000)
+        reg_huber = BayesSearchCV(reg_huber, param_huber, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_huber.fit(list(x_train), y_train)
+        score(reg_huber, x_train, x_test, y_train, y_test, max - min)
 
-elif(algo == "knn"):
-    print("knn algorithm")
+    elif(algo == "knn"):
+        print("knn algorithm")
 
-    reg_knn = KNeighborsRegressor(algorithm="auto", weights="distance")
-    reg_knn = BayesSearchCV(reg_knn, param_knn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-    reg_knn.fit(list(x_train), y_train)
-    score(reg_knn, x_train, x_test, y_train, y_test, max - min)
+        reg_knn = KNeighborsRegressor(algorithm="auto", weights="distance")
+        reg_knn = BayesSearchCV(reg_knn, param_knn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_knn.fit(list(x_train), y_train)
+        score(reg_knn, x_train, x_test, y_train, y_test, max - min)
+
+    else:
+        print("extra trees algorithm")
+
+        reg_extra = ExtraTreesRegressor(criterion="mae")
+        reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        custom_scorer_extra = custom_skopt_extra_scorer
+        reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
+        score(reg_extra, x_train, x_test, y_train, y_test, max - min)
 
 else:
-    print("extra trees algorithm")
+    if (algo == "xgb"):
+        print("xgb algorithms")
+        reg_xgb = xgb.XGBRegressor(
+            reg_alpha=0.2, colsample_bytree=0.5439259271671688, eta=0.0, gamma=0.0,
+            reg_lambda =0.2403238094603633, learning_rate=0.1, max_depth=25, n_estimators=4027,
+            objective="reg:squarederror", tree_method="gpu_hist"
+        )
+        custom_scorer_xgb = custom_skopt_xgb_scorer
+        reg_xgb.fit(x_train, y_train)
+        score(reg_xgb, x_train, x_test, y_train, y_test, max - min)
 
-    reg_extra = ExtraTreesRegressor(criterion="mae")
-    reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-    custom_scorer_extra = custom_skopt_extra_scorer
-    reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
-    score(reg_extra, x_train, x_test, y_train, y_test, max - min)
+    elif(algo == "svr_rbf"):
+        print("svr rbf algorithms")
+        reg_svr_rbf = SVR(kernel="rbf", C=0.6299017591106881, cache_size=500,
+                          epsilon=0.056183687320042426, gamma=0.059982132068042655)
+        reg_svr_rbf.fit(list(x_train), y_train)
+        score(reg_svr_rbf, x_train, x_test, y_train, y_test, max - min)
 
+    elif(algo == "svr_lin"):
+        print("svr lin algorithms")
+        reg_svr_lin = SVR(kernel="linear")
+        reg_svr_lin.fit(list(x_train), y_train)
+        score(reg_svr_lin, x_train, x_test, y_train, y_test, max - min)
+
+    elif(algo == "bayes"):
+        print("bayes algorithm")
+        reg_bayes = BayesianRidge()
+        reg_bayes.fit(list(x_train), y_train)
+        score(reg_bayes, x_train, x_test, y_train, y_test, max - min)
+
+    elif(algo == "rf"):
+        print("random forest algorithms ")
+        reg_rf = RandomForestRegressor( min_samples_leaf=3, min_samples_split=2,
+                                       n_estimators=1000, n_jobs = 10, max_features="sqrt")
+        reg_rf = RandomForestRegressor( n_jobs=10)
+        custom_scorer_rf = custom_skopt_rf_scorer
+        reg_rf.fit(list(x_train), y_train)
+        score(reg_rf, x_train, x_test, y_train, y_test, max - min)
+
+    elif(algo == "sgd"):
+        print("sgd algorithms")
+        reg_sgd = SGDRegressor()
+        reg_sgd.fit(list(x_train),y_train)
+        score(reg_sgd, x_train, x_test, y_train, y_test, max - min)
+
+    elif(algo == "lasso"):
+        print("lasso algorithms")
+        reg_lasso = Lasso(alpha = 0.01)
+        reg_lasso.fit(list(x_train), y_train)
+        score(reg_lasso, x_train, x_test, y_train, y_test, max - min)
+
+    elif(algo == "ridge"):
+        print("ridge algorithms")
+        reg_ridge = Ridge(alpha=10.0, tol=1e-05)
+        reg_ridge.fit(list(x_train), y_train)
+        score(reg_ridge, x_train, x_test, y_train, y_test, max - min)
+
+    elif(algo == "gp"):
+        print("gaussian process algorithm")
+        kernel = RBF(1.0) + 0.5 * WhiteKernel()
+        reg_gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10, alpha=0.0001)
+        reg_gp.fit(list(x_train),y_train)
+        score(reg_gp, x_train, x_test, y_train, y_test, max - min)  # fuck with kernel
+
+    elif(algo == "krr"):
+        print("krr algorithm")
+        reg_kernelridge = KernelRidge(kernel="poly", degree=8)
+        reg_kernelridge.fit(list(x_train), y_train)
+        score(reg_kernelridge, x_train, x_test, y_train, y_test, max - min)
+
+    elif(algo == "ada"):
+        print("ada algorithm")
+
+        reg_ada = AdaBoostRegressor()
+        reg_ada.fit(list(x_train), y_train)
+        score(reg_ada, x_train, x_test, y_train, y_test, max - min)
+
+    elif(algo == "nn"):
+        print("nn algorithm")
+
+        reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter,
+                              hidden_layer_sizes=(500, 500,),
+                              solver="lbfgs", alpha=8.64e-10,
+                              learning_rate_init=3.84e-05,
+                              max_iter=640, tol=1.86e-03)
+        reg_nn.fit(list(x_train), y_train)
+        score(reg_nn, x_train, x_test, y_train, y_test, max - min)
+
+    elif(algo == "extra"):
+        print("extra algorithm")
+
+        reg_extra = ExtraTreesRegressor(min_samples_split = 3,
+                                        min_samples_leaf = 3,
+                                        n_estimators=2200)
+        custom_scorer_extra = custom_skopt_extra_scorer
+        reg_extra.fit(list(x_train), y_train)
+        score(reg_extra, x_train, x_test, y_train, y_test, max - min)
+
+    elif(algo == "huber"):
+        print("huber algorithm")
+
+        reg_huber = HuberRegressor(max_iter=1000, alpha=1e-06, epsilon=1.01, tol=0.0012904985834892478)
+        reg_huber.fit(list(x_train), y_train)
+        score(reg_huber, x_train, x_test, y_train, y_test, max - min)
+
+    elif(algo == "knn"):
+        print("knn algorithm")
+
+        reg_knn = KNeighborsRegressor(algorithm="auto", weights="distance", n_neighbors=5)
+        reg_knn.fit(list(x_train), y_train)
+        score(reg_knn, x_train, x_test, y_train, y_test, max - min)
+
+    else:
+        print("extra trees algorithm")
+
+        reg_extra = ExtraTreesRegressor(criterion="mae")
+        custom_scorer_extra = custom_skopt_extra_scorer
+        reg_extra.fit(list(x_train), y_train)
+        score(reg_extra, x_train, x_test, y_train, y_test, max - min)
