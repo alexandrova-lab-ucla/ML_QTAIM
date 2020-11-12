@@ -10,20 +10,16 @@ import matplotlib.pyplot as plt
 from skopt.space import Real, Integer
 from skopt.searchcv import BayesSearchCV
 
-from sklearn.decomposition import PCA
-from sklearn.feature_selection import SelectKBest
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler, scale
-from sklearn.feature_selection import VarianceThreshold
+from sklearn.preprocessing import scale
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
-from sklearn.linear_model import Lasso
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.neural_network import MLPRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import WhiteKernel, RBF
-from sklearn.linear_model import BayesianRidge, SGDRegressor, Ridge, HuberRegressor
+from sklearn.linear_model import BayesianRidge, SGDRegressor, Ridge, HuberRegressor,Lasso
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, ExtraTreesRegressor
 
 
@@ -149,7 +145,8 @@ min = np.min(y)
 max = np.max(y)
 y_scale = (y - min) / (max - min)
 
-importance_vars_v1 = [
+importance_vars_v1 = \
+    [
     "DelSqV_6",
     "ESP_0", "ESP_4", "ESP_5",
     "ESPe_4", "ESPe_9", "ESPn_4",
@@ -174,6 +171,18 @@ importance_vars_v3 = \
     "Rho_0","Spin_tot_4","Spin_tot_5",
     "Stress_EigVals_c_6","V_9","Vnuc_0","Vnuc_1","Vnuc_2",
     "x_basic_4","y_basic_3","z_basic_4","z_basic_5"]
+importance_vars_v5 = \
+    [
+    "-DivStress_0","-DivStress_1","-DivStress_10","-DivStress_11","-DivStress_2","-DivStress_5","-DivStress_7",
+    "ESP_0","ESP_1","ESP_10","ESP_2","ESP_3","ESP_4","ESP_5","ESP_9","ESPe_0","ESPe_9","ESPn_10","ESPn_3","ESPn_4","ESPn_5",
+    "GradRho_a_11","GradRho_a_9","GradRho_b_10","GradRho_b_11","GradRho_b_7","GradRho_c_10","GradRho_c_6",
+    "HessRho_EigVals_a_9","HessRho_EigVals_b_9","HessRho_EigVals_c_6",
+    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
+    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
+    "V_11","V_9","Vnuc_0","Vnuc_1","Vnuc_10","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
+]
+
+# 1 without correlated features
 
 importance_vars_v2 = \
     [
@@ -187,7 +196,7 @@ importance_vars_v2 = \
         "Rho_0",
         "Vnuc_0", "Vnuc_1", "Vnuc_2", "Vnuc_3",
         "x_basic_4", "x_basic_5", "z_basic_3", "z_basic_4", "z_basic_5"]
-
+# 3 without correlated features
 importance_vars_v4 = \
     [
     "ESP_0","ESP_3","ESP_1","ESP_2","ESP_4","ESP_5","ESPn_4",
@@ -197,20 +206,9 @@ importance_vars_v4 = \
     "Rho_0","Spin_tot_4","Spin_tot_5",
     "Vnuc_0","Vnuc_1","Vnuc_2",
     "z_basic_4","z_basic_5"]
-
-importance_vars_v5 = \
-[
-    "-DivStress_0","-DivStress_1","-DivStress_10","-DivStress_11","-DivStress_2","-DivStress_5","-DivStress_7",
-    "ESP_0","ESP_1","ESP_10","ESP_2","ESP_3","ESP_4","ESP_5","ESP_9","ESPe_0","ESPe_9","ESPn_10","ESPn_3","ESPn_4","ESPn_5",
-    "GradRho_a_11","GradRho_a_9","GradRho_b_10","GradRho_b_11","GradRho_b_7","GradRho_c_10","GradRho_c_6",
-    "HessRho_EigVals_a_9","HessRho_EigVals_b_9","HessRho_EigVals_c_6",
-    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
-    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
-    "V_11","V_9","Vnuc_0","Vnuc_1","Vnuc_10","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
-]
-
+# 5 without correlated features
 importance_vars_v6 = \
-[
+    [
     "-DivStress_0","-DivStress_1","-DivStress_10","-DivStress_11","-DivStress_2","-DivStress_5","-DivStress_7",
     "ESP_0","ESP_1","ESP_10","ESP_2","ESP_3","ESP_4","ESP_5","ESPe_0","ESPe_9",
     "GradRho_a_11","GradRho_a_9","GradRho_b_10","GradRho_b_11","GradRho_b_7","GradRho_c_10","GradRho_c_6",
@@ -219,13 +217,13 @@ importance_vars_v6 = \
     "V_11","Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
 ]
 
+# extract all subsets of the original variable space
 reduced_x_1_df = x[importance_vars_v1]
 reduced_x_2_df = x[importance_vars_v2]
 reduced_x_3_df = x[importance_vars_v3]
 reduced_x_4_df = x[importance_vars_v4]
 reduced_x_5_df = x[importance_vars_v5]
 reduced_x_6_df = x[importance_vars_v6]
-
 reduced_x_6 = scale(reduced_x_6_df)
 reduced_x_5 = scale(reduced_x_5_df)
 reduced_x_4 = scale(reduced_x_4_df)
@@ -316,16 +314,24 @@ model.fit(x_train,  np.ravel(y_train), epochs=100, verbose = 1)
 #pca + filter top values
 #x_train, x_test, y_train, y_test = train_test_split(filt_x, filt_y, test_size=0.1)
 
-x_train, x_test, y_train, y_test = train_test_split(reduced_x_6, y_scale, test_size=0.2)
 
 parser = argparse.ArgumentParser(description='select descriptor, and directory of files')
 parser.add_argument("--algo", action='store', dest="algo", default="xgb",
                     help="select algorithm")
 parser.add_argument("-n", action='store', dest="n_iter", default="500",
                     help="select number of trials")
+parser.add_argument('--pca_space', dest="pca_space", action='store_true')
+
 results = parser.parse_args()
 algo = results.algo
+pca_space = results.pca_space
 n_iter = int(results.n_iter)
+
+if(pca_space == True):
+    x_train, x_test, y_train, y_test = train_test_split(reduced_x_6, y_scale, test_size=0.2)
+else:
+    x_train, x_test, y_train, y_test = train_test_split(reduced_x_4, y_scale, test_size=0.2)
+
 
 params_bayes = {
     "n_iter": Integer(1000, 10000),
@@ -345,7 +351,8 @@ params_svr_rbf = {"C": Real(1e-5, 1e+1, prior='log-uniform'),
                   "cache_size": Integer(500, 8000)}
 params_rf = {"max_depth": Integer(5, 40),
              "min_samples_split": Integer(2, 6),
-             "n_estimators": Integer(300, 5000),
+             "n_estimators": Integer(300, 2000),
+            "min_samples_leaf": Integer(1,3),
              "n_jobs": [mp.cpu_count()]
              }
 params_nn = {"alpha": Real(1e-10, 1e-1, prior='log-uniform'),
@@ -360,11 +367,11 @@ params_xgb = {
     "colsample_bytree": Real(0.5, 0.99),
     "max_depth": Integer(5, 25),
     "lambda": Real(0, 0.25),
-    "learning_rate": Real(0.1, 0.25),
+    "learning_rate": Real(0.01, 0.25),
     "alpha": Real(0, 0.2),
     "eta": Real(0, 0.1),
     "gamma": Real(0, 0.1),
-    "n_estimators": Integer(300, 5000),
+    "n_estimators": Integer(100, 2000),
     "objective": ["reg:squarederror"],
     "tree_method": ["gpu_hist"]}
 params_ridge = {"tol" : Real(1e-5,1e-1,prior = "log-uniform"), "alpha": Real(1e-2, 10, prior="log-uniform")}
@@ -372,13 +379,15 @@ params_gp = {"alpha": Real(1e-12, 1e-4, prior="log-uniform")}
 params_lasso = {"alpha": Real(1e-5, 1, prior="log-uniform")}
 param_ada = {"n_estimators": Integer(1e1, 1e3, prior="log-uniform"),
              "learning_rate": Real(1e-2, 1e1, prior="log-uniform")}
-param_extra = {"n_estimators": Integer(1e2, 1e4, prior="log-uniform"),
-"min_samples_split": Integer(2,5),"min_samples_leaf" : Integer(1,3)}
+param_extra = {"n_estimators": Integer(1, 1e4, prior="log-uniform"),
+"min_samples_split": Integer(2,6),"min_samples_leaf" : Integer(1,4),
+               "max_depth": Integer(10,50), "n_jobs": [mp.cpu_count()]}
 param_huber = { "epsilon":Real(1.01,1.5), "alpha": Real(1e-6,1e-1, prior="log-uniform"),
                 "tol": Real(1e-7,1e-2,prior="log-uniform")}
 param_knn = {"n_neighbors": Integer(3, 7)}
 
 if (algo == "xgb"):
+    print("xgb algorithms")
     reg_xgb = xgb.XGBRegressor()
     reg_xgb = BayesSearchCV(reg_xgb, params_xgb, n_iter=n_iter, verbose=4, cv=3)
     custom_scorer_xgb = custom_skopt_xgb_scorer
@@ -386,24 +395,28 @@ if (algo == "xgb"):
     score(reg_xgb, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "svr_rbf"):
+    print("svr rbf algorithms")
     reg_svr_rbf = SVR(kernel="rbf")
     reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
     reg_svr_rbf.fit(list(x_train), y_train)
     score(reg_svr_rbf, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "svr_lin"):
+    print("svr lin algorithms")
     reg_svr_lin = SVR(kernel="linear")
     reg_svr_lin.fit(list(x_train), y_train)
     score(reg_svr_lin, x_train, x_test, y_train, y_test, max - min)
     reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
 
 elif(algo == "bayes"):
+    print("bayes algorithm")
     reg_bayes = BayesianRidge()
     reg_bayes = BayesSearchCV(reg_bayes, params_bayes, n_iter=n_iter, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
     reg_bayes.fit(list(x_train), y_train)
     score(reg_bayes, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "rf"):
+    print("random forest algorithms ")
     reg_rf = RandomForestRegressor()
     reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
     custom_scorer_rf = custom_skopt_rf_scorer
@@ -411,24 +424,28 @@ elif(algo == "rf"):
     score(reg_rf, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "sgd"):
+    print("sgd algorithms")
     reg_sgd = SGDRegressor()
     reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
     reg_sgd.fit(list(x_train),y_train)
     score(reg_sgd, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "lasso"):
+    print("lasso algorithms")
     reg_lasso = Lasso()
     reg_lasso = BayesSearchCV(reg_lasso, params_lasso, n_iter=n_iter, cv=3)
     reg_lasso.fit(list(x_train), y_train)
     score(reg_lasso, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "ridge"):
+    print("ridge algorithms")
     reg_ridge = Ridge()
     reg_ridge = BayesSearchCV(reg_ridge, params_ridge, verbose= 4, n_iter=n_iter, cv=3)
     reg_ridge.fit(list(x_train), y_train)
     score(reg_ridge, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "gp"):
+    print("gaussian process algorithm")
     kernel = RBF(1.0) + 0.5 * WhiteKernel()
     reg_gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10)
     reg_gp = BayesSearchCV(reg_gp, params_gp, n_iter=n_iter, verbose=4, cv=5)
@@ -436,18 +453,23 @@ elif(algo == "gp"):
     score(reg_gp, x_train, x_test, y_train, y_test, max - min)  # fuck with kernel
 
 elif(algo == "krr"):
+    print("krr algorithm")
     reg_kernelridge = KernelRidge(kernel="poly", degree=8)
     reg_kernelridge = BayesSearchCV(reg_kernelridge, params_kernelridge, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
     reg_kernelridge.fit(list(x_train), y_train)
     score(reg_kernelridge, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "ada"):
+    print("ada algorithm")
+
     reg_ada = AdaBoostRegressor()
     reg_ada = BayesSearchCV(reg_ada, param_ada, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
     reg_ada.fit(list(x_train), y_train)
     score(reg_ada, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "nn"):
+    print("nn algorithm")
+
     reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, hidden_layer_sizes=(500, 500,),
                           solver="lbfgs")
     reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10,  scoring = "neg_mean_absolute_error")
@@ -455,6 +477,8 @@ elif(algo == "nn"):
     score(reg_nn, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "extra"):
+    print("extra algorithm")
+
     reg_extra = ExtraTreesRegressor(criterion="mae")
     reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
     custom_scorer_extra = custom_skopt_extra_scorer
@@ -462,18 +486,24 @@ elif(algo == "extra"):
     score(reg_extra, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "huber"):
+    print("huber algorithm")
+
     reg_huber = HuberRegressor(max_iter=1000)
     reg_huber = BayesSearchCV(reg_huber, param_huber, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
     reg_huber.fit(list(x_train), y_train)
     score(reg_huber, x_train, x_test, y_train, y_test, max - min)
 
 elif(algo == "knn"):
+    print("knn algorithm")
+
     reg_knn = KNeighborsRegressor(algorithm="auto", weights="distance")
     reg_knn = BayesSearchCV(reg_knn, param_knn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
     reg_knn.fit(list(x_train), y_train)
     score(reg_knn, x_train, x_test, y_train, y_test, max - min)
 
 else:
+    print("extra trees algorithm")
+
     reg_extra = ExtraTreesRegressor(criterion="mae")
     reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
     custom_scorer_extra = custom_skopt_extra_scorer
