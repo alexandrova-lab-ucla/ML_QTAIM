@@ -29,12 +29,10 @@ plt.hist(y,bins=30)
 plt.show()
 
 for i in y:
-    if (float(i) < float(50)):
+    if (float(i) < float(90)):
         class_dist.append([0])
-    elif (float(i) < float(145)):
-        class_dist.append([1])
     else:
-        class_dist.append([2])
+        class_dist.append([1])
 # this plus rf is pretty good
 np.ravel(class_dist)
 
