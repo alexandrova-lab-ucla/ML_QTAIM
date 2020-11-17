@@ -1,20 +1,20 @@
 import argparse
 import multiprocessing as mp
+
 import numpy as np
+import seaborn as sns;
+import xgboost as xgb
 from extract_helpers import *
 from feature_sel_util import *
-import xgboost as xgb
-import seaborn as sns; sns.set_theme()
+
+sns.set_theme()
 
 import matplotlib.pyplot as plt
 from skopt.space import Real, Integer
 from skopt.searchcv import BayesSearchCV
 
-from sklearn.decomposition import PCA
-from sklearn.feature_selection import SelectKBest
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler, scale
-from sklearn.feature_selection import VarianceThreshold
+from sklearn.preprocessing import scale
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 from sklearn.linear_model import Lasso
@@ -145,6 +145,9 @@ def score(reg, x_train, x_test, y_train, y_test, scale=1):
 
 
 x, y = extract_all()
+
+print(np.shape(x))
+print(np.shape(y))
 min = np.min(y)
 max = np.max(y)
 y_scale = (y - min) / (max - min)
@@ -211,7 +214,6 @@ importance_vars_v5 = \
 
 importance_vars_v6 = \
 [
-    "-DivStress_0","-DivStress_1","-DivStress_10","-DivStress_11","-DivStress_2","-DivStress_5","-DivStress_7",
     "ESP_0","ESP_1","ESP_10","ESP_2","ESP_3","ESP_4","ESP_5","ESPe_0","ESPe_9",
     "GradRho_a_11","GradRho_a_9","GradRho_b_10","GradRho_b_11","GradRho_b_7","GradRho_c_10","GradRho_c_6",
     "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
@@ -219,12 +221,28 @@ importance_vars_v6 = \
     "V_11","Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
 ]
 
+importance_var_physical_final= \
+["ESP_0", "ESP_1", "ESP_2", "ESP_3", "ESP_4", "ESP_5", "ESP_6", "ESP_7", "ESP_8", "ESP_9", "ESP_10", "ESP_11",
+"ESPe_0","ESPe_9","ESPn_0", "ESPn_1", "ESPn_2", "ESPn_3", "ESPn_4", "ESPn_5", "ESPn_10",
+"K|Scaled|_basic_0", "K|Scaled|_basic_1", "K|Scaled|_basic_2", "K|Scaled|_basic_3", "K|Scaled|_basic_4", "K|Scaled|_basic_5",
+"Lagr_basic_0", "Lagr_basic_1", "Lagr_basic_2", "Lagr_basic_3", "Lagr_basic_4", "Lagr_basic_5",
+"Vnuc_0", "Vnuc_1", "Vnuc_2", "Vnuc_3", "Vnuc_4", "Vnuc_5", "V_6", "V_7", "V_8", "V_9", "V_11"
+]
+#TODO
+importance_var_physical_uncorr= \
+["ESP_0", "ESP_1", "ESP_2", "ESP_3", "ESP_4", "ESP_5", "ESP_6", "ESP_7", "ESP_8", "ESP_9", "ESP_10", "ESP_11",
+"ESPe_0","ESPe_9","ESPn_0", "ESPn_1", "ESPn_2", "ESPn_3", "ESPn_4", "ESPn_5", "ESPn_10",
+"K|Scaled|_basic_0", "K|Scaled|_basic_1", "K|Scaled|_basic_2", "K|Scaled|_basic_3", "K|Scaled|_basic_4", "K|Scaled|_basic_5",
+"Lagr_basic_0", "Lagr_basic_1", "Lagr_basic_2", "Lagr_basic_3", "Lagr_basic_4", "Lagr_basic_5",
+"Vnuc_0", "Vnuc_1", "Vnuc_2", "Vnuc_3", "Vnuc_4", "Vnuc_5", "V_6", "V_7", "V_8", "V_9", "V_11"
+]
 reduced_x_1_df = x[importance_vars_v1]
 reduced_x_2_df = x[importance_vars_v2]
 reduced_x_3_df = x[importance_vars_v3]
 reduced_x_4_df = x[importance_vars_v4]
 reduced_x_5_df = x[importance_vars_v5]
 reduced_x_6_df = x[importance_vars_v6]
+reduce_x_final_df = x[importance_var_physical_final]
 
 reduced_x_6 = scale(reduced_x_6_df)
 reduced_x_5 = scale(reduced_x_5_df)
@@ -232,17 +250,18 @@ reduced_x_4 = scale(reduced_x_4_df)
 reduced_x_3 = scale(reduced_x_3_df)
 reduced_x_2 = scale(reduced_x_2_df)
 reduced_x_1 = scale(reduced_x_1_df)
+reduced_x_final = scale(importance_var_physical_final)
 
 # plots selected variable correlation
 
-print(len(importance_vars_v6))
-corr = reduced_x_6_df.corr()
+print(len(importance_vars_v5))
+corr = reduced_x_5_df.corr()
 ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
                  yticklabels=True)
-ax.set_xticklabels(ax.get_xticklabels(),rotation=60, horizontalalignment='center', fontsize='x-small')
-ax.set_yticklabels([i for i in reduced_x_6_df], rotation="0", fontsize = "x-small", va="center")
+ax.set_xticklabels(ax.get_xticklabels(),rotation=60, horizontalalignment='center', fontsize='small')
+ax.set_yticklabels([i for i in reduced_x_5_df], rotation="0", fontsize = "small", va="center")
 
-plt.title("Correlation, Selected Features")
+plt.title("Correlation, Selected Features", fontsize=22)
 plt.show()
 
 #plot_corr = reduced_x_3_df
@@ -270,8 +289,9 @@ plt.show()
 #-------------------------feature selection
 # variance_thresh(x,y)
 # -------------------------------------
-#pca(x, list(x), y)
+pca(x, list(x), y)
 #lasso(x,y)
+lasso_rand(x,y)
 #lasso_cv(x,y)
 # 15 pca components has 82% explained variance
 # 20 pca components has 87% explained variance
@@ -316,7 +336,7 @@ model.fit(x_train,  np.ravel(y_train), epochs=100, verbose = 1)
 #pca + filter top values
 #x_train, x_test, y_train, y_test = train_test_split(filt_x, filt_y, test_size=0.1)
 
-x_train, x_test, y_train, y_test = train_test_split(reduced_x_6, y_scale, test_size=0.2)
+x_train, x_test, y_train, y_test = train_test_split(reduced_x_4, y_scale, test_size=0.2)
 
 parser = argparse.ArgumentParser(description='select descriptor, and directory of files')
 parser.add_argument("--algo", action='store', dest="algo", default="xgb",

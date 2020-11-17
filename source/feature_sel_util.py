@@ -3,12 +3,10 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from boruta import BorutaPy
 import pandas as pd
-from mpl_toolkits.mplot3d import Axes3D
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import RFE, RFECV, \
     SelectFromModel, VarianceThreshold
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, scale
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.svm import SVR
 from sklearn.linear_model import SGDRegressor, Lasso, LassoCV
 from sklearn.ensemble import RandomForestRegressor
@@ -252,5 +250,22 @@ def boruta(x,y, n=5):
     #print(feat_selector.ranking_)
     for i, j in enumerate(feat_selector.support_):
         if j == True:
+            print(x.columns.values[i])
+
+###################################Method 6: Randomized Lasso/Stability #################################33
+def lasso_rand(x, y):
+    from stability_selection import RandomizedLasso
+    from sklearn import preprocessing
+
+    scaler = preprocessing.StandardScaler()
+    x_scaled = scaler.fit_transform(x, y)
+    print("passed scale")
+
+    rlasso = RandomizedLasso(alpha=0.025)
+    rlasso.fit(x_scaled, y)
+
+    print("number of features selected via lasso: " + str(np.count_nonzero(rlasso.get_support())))
+    for i, j in enumerate(rlasso.get_support()):
+        if j != 0:
             print(x.columns.values[i])
 

@@ -401,8 +401,6 @@ def atom_xyz_from_sum(filename=""):
             except:
                 pass
 
-
-
 def extract_all():
     # add reactD once I get the files for it
     fl_arr = []
@@ -468,13 +466,13 @@ def extract_all():
 
         # print(len(bond) + len(ring) + len(nuc) + len(charge)+\
         #      len(spin) + len(basics))
-
         full_dictionary.update(bond)
         full_dictionary.update(ring)
         full_dictionary.update(nuc)
         full_dictionary.update(charge)
         full_dictionary.update(spin)
         full_dictionary.update(basics)
+
 
         y.append(float(df["barrier(kj/mol)"][ind]))
 
