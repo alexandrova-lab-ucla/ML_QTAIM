@@ -21,7 +21,7 @@ def lasso(x, y):
     scaler = preprocessing.StandardScaler()
     x_scaled = scaler.fit_transform(x, y)
 
-    sel = SelectFromModel(Lasso(alpha=0.021324, max_iter=50000, normalize = True))
+    sel = SelectFromModel(Lasso(alpha=0.1, max_iter=50000, normalize = True))
     sel.fit(x_scaled, y)
 
     print("number of features selected via lasso: " + str(np.count_nonzero(sel.get_support())))
@@ -43,7 +43,6 @@ def lasso_cv(x, y):
 #######################################Method 2: Recursive #########################################33
 # recursive feature elimination, tune to the number of features we want
 
-
 def recursive_feat_elim(x, y):
 
     rf = RandomForestRegressor(n_jobs=-1, max_depth=3)
@@ -61,7 +60,6 @@ def recursive_feat_elim(x, y):
 
 
 #######################################Method 3: Recursive  #########################################33
-
 def recursive_feat_cv(x, y):
 
 
@@ -87,7 +85,6 @@ def recursive_feat_cv(x, y):
 
 #######################################Method 4: Var Threshold #########################################33
 # variance threshold filtering
-
 def variance_thresh(x, y):
     print("feature length: " + str(np.shape(x)[1]))
     # ----------------------- not scaling features
@@ -124,7 +121,7 @@ def pca(x, labels=[], barriers=np.array([])):
     mid = (min + max)/2
     norm = cm.colors.Normalize(vmin=np.min(barriers), vmax=np.max(barriers))
 
-    '''
+
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     pl = ax.scatter(pc_0, pc_1, pc_2,
@@ -138,7 +135,7 @@ def pca(x, labels=[], barriers=np.array([])):
     cbar.set_label("Barrier Energy")
     cbar.ax.set_yticklabels([str(min), str((min + mid)/2), str(mid), str((max+mid)/2), str(max)])
     plt.show()
-    '''
+    """
     comp = []
     coeff_pca = []
     for i in pca.components_:
@@ -163,7 +160,7 @@ def pca(x, labels=[], barriers=np.array([])):
     #print(pca.components_)
     print(pca.explained_variance_ratio_)
     print(sum(pca.explained_variance_ratio_))
-    '''
+
     fig, axs = plt.subplots(2,2)
     axs[0,0].scatter(pc_1, pc_2,
                     s=10, cmap="seismic",
@@ -194,7 +191,7 @@ def pca(x, labels=[], barriers=np.array([])):
     fig.suptitle("2D Principal Components")
     fig.subplots_adjust(top=0.88)
     plt.show()
-    '''
+    """
 
     '''
     variance = pca.explained_variance_ratio_
@@ -268,4 +265,3 @@ def lasso_rand(x, y):
     for i, j in enumerate(rlasso.get_support()):
         if j != 0:
             print(x.columns.values[i])
-

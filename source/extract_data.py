@@ -27,14 +27,16 @@ from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, ExtraTree
 
 
 class custom_skopt_extra_scorer(object):
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
     def __call__(self, res):
 
         param_extra = {"n_estimators": res["x"][2],
                        "min_samples_split": res["x"][1],
-                        "min_samples_leaf": res["x"][0]}
+                       "min_samples_leaf": res["x"][0]}
 
         reg = ExtraTreesRegressor(**param_extra, criterion = "mae")
         x_train, x_test, y_train, y_test = train_test_split(self.x, self.y, test_size=0.2)
@@ -52,9 +54,11 @@ class custom_skopt_extra_scorer(object):
         return 0
 
 class custom_skopt_xgb_scorer(object):
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
     def __call__(self, res):
 
         dict = {
@@ -80,9 +84,11 @@ class custom_skopt_xgb_scorer(object):
         return 0
 
 class custom_skopt_rf_scorer(object):
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
     def __call__(self, res):
         params_rf = {"max_depth": res["x"][2],
                      "min_samples_split": res["x"][1],
@@ -109,6 +115,7 @@ class custom_skopt_rf_scorer(object):
 # returns: two matrices. list_of_dicts is a list of dictionaries containing
 # critical values for each file. Y is the energies of each file.
 def score(reg, x_train, x_test, y_train, y_test, scale=1):
+
     print("................................................")
     try:
         score = reg.score(list(x_test), y_test)
@@ -149,6 +156,7 @@ min = np.min(y)
 max = np.max(y)
 y_scale = (y - min) / (max - min)
 
+# first trial, incomplete data
 importance_vars_v1 = \
     [
     "DelSqV_6",
@@ -164,6 +172,7 @@ importance_vars_v1 = \
     "Spin_tot_5",
     "V_9",  "Vnuc_0", "Vnuc_1", "Vnuc_2", "Vnuc_3", "Vnuc_9",
     "x_basic_4", "x_basic_5", "z_basic_3", "z_basic_4", "z_basic_5"]
+# before adding noisy data points, pooled
 importance_vars_v3 = \
     [
     "ESP_0","ESP_3","ESP_1","ESP_2","ESP_4","ESP_5","ESPe_9","ESPn_4",
@@ -175,6 +184,7 @@ importance_vars_v3 = \
     "Rho_0","Spin_tot_4","Spin_tot_5",
     "Stress_EigVals_c_6","V_9","Vnuc_0","Vnuc_1","Vnuc_2",
     "x_basic_4","y_basic_3","z_basic_4","z_basic_5"]
+# final trial with full dataset, pooled
 importance_vars_v5 = \
     [
     "-DivStress_0","-DivStress_1","-DivStress_10","-DivStress_11","-DivStress_2","-DivStress_5","-DivStress_7",
@@ -185,6 +195,16 @@ importance_vars_v5 = \
     "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
     "V_11","V_9","Vnuc_0","Vnuc_1","Vnuc_10","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
 ]
+# physical set - 1
+importance_final_feats = \
+    [
+    "ESP_0","ESP_1","ESP_10","ESP_2","ESP_3","ESP_4","ESP_5","ESP_9",
+    "ESPe_0","ESPe_9",
+    "ESPn_10","ESPn_3","ESPn_4","ESPn_5",
+    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
+    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
+    "Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5",
+    ]
 
 # 1 without correlated features
 importance_vars_v2 = \
@@ -209,7 +229,7 @@ importance_vars_v4 = \
     "Rho_0","Spin_tot_4","Spin_tot_5",
     "Vnuc_0","Vnuc_1","Vnuc_2",
     "z_basic_4","z_basic_5"]
-# 5 without correlated features
+# final trial with full dataset, no correlation
 importance_vars_v6 = \
     [
     "-DivStress_0","-DivStress_1","-DivStress_10","-DivStress_11","-DivStress_2","-DivStress_5","-DivStress_7",
@@ -219,20 +239,17 @@ importance_vars_v6 = \
     "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
     "V_11","Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
 ]
-
+# physical set, general model
 physical = \
     [
     "ESP_0","ESP_1","ESP_2","ESP_3","ESP_4","ESP_5","ESP_6",
-    "ESP_7", "ESP_8" ,"ESP_9", "ESP_10", "ESP_11",
-
-    "ESPe_0","ESPe_9",
-    "G_0","G_9",
-    "K|Scaled|_basic_3","Kinetic_basic_4","Lagr_basic_0","Lagr_basic_3",
-    "NetCharge_basic_1","NetCharge_basic_3","NetCharge_basic_4",
-    "Rho_0","Spin_tot_4","Spin_tot_5",
-    "Vnuc_0","Vnuc_1","Vnuc_2", "Vnuc_3","Vnuc_4","Vnuc_5",
-    "z_basic_4","z_basic_5"
+    "ESP_7", "ESP_8" ,"ESP_9",
+    "ESPn_0", "ESPn_1", "ESPn_2", "ESPn_3", "ESPn_4","ESPn_5",
+    "K|Scaled|_basic_0","K|Scaled|_basic_1","K|Scaled|_basic_2", "K|Scaled|_basic_3","K|Scaled|_basic_4","K|Scaled|_basic_5",
+    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
+    "Vnuc_0","Vnuc_1","Vnuc_2", "Vnuc_3","Vnuc_4","Vnuc_5"
 ]
+
 
 # extract all subsets of the original variable space
 reduced_x_1_df = x[importance_vars_v1]
@@ -241,56 +258,23 @@ reduced_x_3_df = x[importance_vars_v3]
 reduced_x_4_df = x[importance_vars_v4]
 reduced_x_5_df = x[importance_vars_v5]
 reduced_x_6_df = x[importance_vars_v6]
-reduce_x_final_df = x[importance_var_physical_final]
+reduce_x_final_df = x[physical]
 
+reduced_x_physical = scale(reduce_x_final_df)
 reduced_x_6 = scale(reduced_x_6_df)
 reduced_x_5 = scale(reduced_x_5_df)
 reduced_x_4 = scale(reduced_x_4_df)
 reduced_x_3 = scale(reduced_x_3_df)
 reduced_x_2 = scale(reduced_x_2_df)
 reduced_x_1 = scale(reduced_x_1_df)
-reduced_x_final = scale(importance_var_physical_final)
-
-# plots selected variable correlation
-'''
-print(len(importance_vars_v6))
-corr = reduced_x_6_df.corr()
-ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
-                 yticklabels=True)
-ax.set_xticklabels(ax.get_xticklabels(),rotation=60, horizontalalignment='center', fontsize='x-small')
-ax.set_yticklabels([i for i in reduced_x_6_df], rotation="0", fontsize = "x-small", va="center")
-
-plt.title("Correlation, Selected Features")
-plt.show()
-'''
-#plot_corr = reduced_x_3_df
-#plot_corr["barrier"] = y_scale
-#corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
-
-#ax = plt.subplot(1,1,1)
-#plt.title("Correlation Top Features vs. Barrier")
-#ax.barh(range(np.shape(corr)[0]), corr)
-#plt.xlabel("Correlation w/")
-#print([str(i) for i in importance_vars_v3])
-#ax.set_yticklabels([i for i in importance_vars_v3], rotation="0")
-#ax.set_yticks(np.arange(len(importance_vars_v3)))
-#plt.show()
-
-#reduced_x = x[importance_vars_v4]
-#corr = reduced_x.corr()
-#ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
-#    cmap=sns.diverging_palette(20, 220, n=200), square=False)
-#ax.set_xticklabels(ax.get_xticklabels(),rotation=70, horizontalalignment='right', fontsize='x-small')
-#plt.show()
 
 
 
 #-------------------------feature selection
 # variance_thresh(x,y)
 # -------------------------------------
-pca(x, list(x), y)
+#pca(x, list(x), y)
 #lasso(x,y)
-lasso_rand(x,y)
 #lasso_cv(x,y)
 # 15 pca components has 82% explained variance
 # 20 pca components has 87% explained variance
@@ -335,22 +319,26 @@ model.fit(x_train,  np.ravel(y_train), epochs=100, verbose = 1)
 #pca + filter top values
 #x_train, x_test, y_train, y_test = train_test_split(filt_x, filt_y, test_size=0.1)
 
-x_train, x_test, y_train, y_test = train_test_split(reduced_x_6, y_scale, test_size=0.2)
+x_train, x_test, y_train, y_test = train_test_split(reduced_x_physical, y_scale, test_size=0.2)
 
 parser = argparse.ArgumentParser(description='select descriptor, and directory of files')
 parser.add_argument("--algo", action='store', dest="algo", default="xgb",
                     help="select algorithm")
 parser.add_argument("-n", action='store', dest="n_iter", default="500",
                     help="select number of trials")
+
 parser.add_argument('--pca_space', dest="pca_space", action='store_true')
-parser.add_argument('--bayes', dest="bayes", action='store_true')
 parser.add_argument('--physical', dest="phys", action='store_true')
+
+parser.add_argument('--bayes', dest="bayes", action='store_true')
+parser.add_argument('--single', dest="single", action='store_true')
 
 results = parser.parse_args()
 algo = results.algo
 pca_space = results.pca_space
 physical_space = results.phys
 bayes = results.bayes
+single = results.single
 n_iter = int(results.n_iter)
 
 if(pca_space == True):
@@ -358,9 +346,8 @@ if(pca_space == True):
 else:
     if(physical_space == True):
         x_train, x_test, y_train, y_test = train_test_split(reduced_x_physical, y_scale, test_size=0.2)
-
     else:
-        x_train, x_test, y_train, y_test = train_test_split(reduced_x_4, y_scale, test_size=0.2)
+        x_train, x_test, y_train, y_test = train_test_split(reduced_x_5, y_scale, test_size=0.2)
 
 if(bayes == True):
     params_bayes = {
@@ -541,7 +528,7 @@ if(bayes == True):
         reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
         score(reg_extra, x_train, x_test, y_train, y_test, max - min)
 
-else:
+elif(single == True):
     if (algo == "xgb"):
         print("xgb algorithms")
         reg_xgb = xgb.XGBRegressor(
@@ -661,3 +648,34 @@ else:
         custom_scorer_extra = custom_skopt_extra_scorer
         reg_extra.fit(list(x_train), y_train)
         score(reg_extra, x_train, x_test, y_train, y_test, max - min)
+
+else:
+    print("no training selected, feature selection")
+
+
+    # -------------------------feature selection
+    # variance_thresh(x,y)
+    # -------------------------------------
+    # pca(x, list(x), y)
+    # lasso(x,y)
+    # lasso_cv(x,y)
+    # 15 pca components has 82% explained variance
+    # 20 pca components has 87% explained variance
+    # 25 pca components has 90% explained variance
+    # ----------------Done and good
+    lasso(x, y)
+    # boruta(x,y, n = 7)
+    #boruta(x,y, n = 5)
+    # boruta(x,y, n = 3)
+
+    # recursive_feat_elim(x, y)
+    # pca = PCA(0.90)
+    # principal_components = pca.fit_transform(x)
+    # principal_df = pd.DataFrame(data = principal_components)
+    # principal_df
+
+    # ind_filtered = np.argsort(y)[10:-10]
+    # filt_y = y[ind_filtered]
+    # filt_x =  principal_components[ind_filtered]
+    # x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
+    # manually filter values found from other features
