@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from boruta import BorutaPy
 import pandas as pd
+
+from scipy.stats import spearmanr
+from scipy.cluster import hierarchy
+
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import RFE, RFECV, \
     SelectFromModel, VarianceThreshold
@@ -10,6 +14,8 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, scale
 from sklearn.svm import SVR
 from sklearn.linear_model import SGDRegressor, Lasso, LassoCV
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.inspection import permutation_importance
+
 
 #######################################Method 1: Lasso #########################################33
 def lasso(x, y):
@@ -81,7 +87,6 @@ def recursive_feat_cv(x, y):
     plt.ylabel("Score")
     plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_)
     plt.show()
-
 
 #######################################Method 4: Var Threshold #########################################33
 # variance threshold filtering
@@ -224,6 +229,38 @@ def pca(x, labels=[], barriers=np.array([])):
              ec='black')
     plt.show()
     '''
+
+
+def quant_feat(x_train, x_test, y_train, y_test, names):
+
+    reg = RandomForestRegressor(n_jobs=-1)
+    reg.fit(x_train, y_train)
+    result = permutation_importance(reg, x_test, y_test, n_repeats=20, random_state=42)
+
+    perm_sorted_idx = result.importances_mean.argsort()
+    tree_importance_sorted_idx = np.argsort(reg.feature_importances_)
+
+    tree_indices = np.arange(0, len(reg.feature_importances_)) + 0.5
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 8))
+
+    fig.suptitle("Permutation Importance, Physical Set", fontsize=18)
+
+    ax1.barh(tree_indices,
+             reg.feature_importances_[tree_importance_sorted_idx], height=0.7)
+    ax1.axvline(x=0, c = "red", linestyle="--")
+
+    ax1.set_yticklabels(names.columns[tree_importance_sorted_idx])
+    ax1.set_yticks(tree_indices)
+    ax1.set_ylim((0, len(reg.feature_importances_)))
+    ax2.boxplot(result.importances[perm_sorted_idx].T, vert=False,
+                labels=names.columns[perm_sorted_idx])
+    ax2.axvline(x=0, c = "red", linestyle="--")
+    fig.tight_layout()
+    plt.show()
+
+
+
 #######################################Method 6: Boruta #########################################33
 
 def boruta(x,y, n=5):
@@ -249,19 +286,13 @@ def boruta(x,y, n=5):
         if j == True:
             print(x.columns.values[i])
 
-###################################Method 6: Randomized Lasso/Stability #################################33
-def lasso_rand(x, y):
-    from stability_selection import RandomizedLasso
-    from sklearn import preprocessing
 
-    scaler = preprocessing.StandardScaler()
-    x_scaled = scaler.fit_transform(x, y)
-    print("passed scale")
+def dendo(x):
+    corr = spearmanr(x).correlation
+    corr_linkage = hierarchy.ward(corr)
+    dendro = hierarchy.dendrogram(
+        corr_linkage, labels=x.columns, leaf_rotation=90, leaf_font_size=16)
+    dendro_idx = np.arange(0, len(dendro['ivl']))
+    plt.title("Feature Clustering, Full PCA Space", fontsize=18)
+    plt.show()
 
-    rlasso = RandomizedLasso(alpha=0.025)
-    rlasso.fit(x_scaled, y)
-
-    print("number of features selected via lasso: " + str(np.count_nonzero(rlasso.get_support())))
-    for i, j in enumerate(rlasso.get_support()):
-        if j != 0:
-            print(x.columns.values[i])

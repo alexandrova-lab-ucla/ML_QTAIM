@@ -144,104 +144,55 @@ plt.ylabel("Counts")
 plt.show()
 
 
-# first trial, incomplete data
-importance_vars_v1 = \
-    [
-    "DelSqV_6",
-    "ESP_0", "ESP_4", "ESP_5",
-    "ESPe_4", "ESPe_9", "ESPn_4",
-    "G_0", "G_4", "GradRho_b_10",
-    "HessRho_EigVals_a_9", "HessRho_EigVals_b_9", "HessRho_EigVals_c_6",
-    "K|Scaled|_basic_1", "K|Scaled|_basic_3",
-    "Lagr_basic_0",
-    "NetCharge_5", "NetCharge_basic_1",
-    "Rho_0",
-    "Stress_EigVals_c_6",
-    "Spin_tot_5",
-    "V_9",  "Vnuc_0", "Vnuc_1", "Vnuc_2", "Vnuc_3", "Vnuc_9",
-    "x_basic_4", "x_basic_5", "z_basic_3", "z_basic_4", "z_basic_5"]
-# before adding noisy data points, pooled
-importance_vars_v3 = \
-    [
-    "ESP_0","ESP_3","ESP_1","ESP_2","ESP_4","ESP_5","ESPe_9","ESPn_4",
-    "G_0","G_4","G_9",
-    "HessRho_EigVals_a_9","HessRho_EigVals_b_9","HessRho_EigVals_c_6",
-    "K|Scaled|_basic_3","Kinetic_basic_4","Lagr_basic_0","Lagr_basic_3",
-    "NetCharge_5",
-    "NetCharge_basic_1","NetCharge_basic_3","NetCharge_basic_4",
-    "Rho_0","Spin_tot_4","Spin_tot_5",
-    "Stress_EigVals_c_6","V_9","Vnuc_0","Vnuc_1","Vnuc_2",
-    "x_basic_4","y_basic_3","z_basic_4","z_basic_5"]
 # final trial with full dataset, pooled
 importance_vars_v5 = \
     [
-    "-DivStress_0","-DivStress_1","-DivStress_10","-DivStress_11","-DivStress_2","-DivStress_5","-DivStress_7",
-    "ESP_0","ESP_1","ESP_10","ESP_2","ESP_3","ESP_4","ESP_5","ESP_9","ESPe_0","ESPe_9","ESPn_10","ESPn_3","ESPn_4","ESPn_5",
-    "GradRho_a_11","GradRho_a_9","GradRho_b_10","GradRho_b_11","GradRho_b_7","GradRho_c_10","GradRho_c_6",
-    "HessRho_EigVals_a_9","HessRho_EigVals_b_9","HessRho_EigVals_c_6",
-    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
-    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
-    "V_11","V_9","Vnuc_0","Vnuc_1","Vnuc_10","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
-]
+    "-DivStress_1","-DivStress_2", "-DivStress_3","-DivStress_6","-DivStress_8",
+    "GradRho_a_10","GradRho_b_8","GradRho_c_7",
+    "HessRho_EigVals_a_10","HessRho_EigVals_b_10","HessRho_EigVals_c_7",
+    "K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_4","K|Scaled|_basic_5",
+    "Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5","Lagr_basic_6",
+    "V_10","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5", "Vnuc_6",
+    
+    "ESP_1", "ESP_10", "ESP_2", "ESP_3", "ESP_4", "ESP_5", "ESP_6", "ESP_10",
+    "ESPe_1", "ESPe_10",
+    "ESPn_11", "ESPn_4", "ESPn_5", "ESPn_6",
+    ]
+
 # physical set - 1
 importance_final_feats = \
     [
-    "ESP_0","ESP_1","ESP_10","ESP_2","ESP_3","ESP_4","ESP_5","ESP_9",
-    "ESPe_0","ESPe_9",
-    "ESPn_10","ESPn_3","ESPn_4","ESPn_5",
-    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
-    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
-    "Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5",
+    "ESP_1","ESP_2","ESP_11","ESP_3","ESP_4","ESP_5","ESP_6","ESP_10",
+    "ESPe_1","ESPe_10",
+    "ESPn_11","ESPn_4","ESPn_5","ESPn_6",
+    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5","Lagr_basic_6",
+    "Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
+    "Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5","Vnuc_6"
     ]
 
-# 1 without correlated features
-importance_vars_v2 = \
-    [
-        "DelSqV_6",
-        "ESP_0", "ESP_4", "ESP_5",
-        "ESPe_4",
-        "G_0", "GradRho_b_10",
-        "K|Scaled|_basic_1", "K|Scaled|_basic_3",
-        "Lagr_basic_0",
-        "NetCharge_5", "NetCharge_basic_1",
-        "Rho_0",
-        "Vnuc_0", "Vnuc_1", "Vnuc_2", "Vnuc_3",
-        "x_basic_4", "x_basic_5", "z_basic_3", "z_basic_4", "z_basic_5"]
-# 3 without correlated features
-importance_vars_v4 = \
-    [
-    "ESP_0","ESP_3","ESP_1","ESP_2","ESP_4","ESP_5","ESPn_4",
-    "G_0","G_9",
-    "K|Scaled|_basic_3","Kinetic_basic_4","Lagr_basic_0","Lagr_basic_3",
-    "NetCharge_basic_1","NetCharge_basic_3","NetCharge_basic_4",
-    "Rho_0","Spin_tot_4","Spin_tot_5",
-    "Vnuc_0","Vnuc_1","Vnuc_2",
-    "z_basic_4","z_basic_5"]
+
 # final trial with full dataset, no correlation
 importance_vars_v6 = \
     [
-    "-DivStress_0","-DivStress_1","-DivStress_10","-DivStress_11","-DivStress_2","-DivStress_5","-DivStress_7",
-    "ESP_0","ESP_1","ESP_10","ESP_2","ESP_3","ESP_4","ESP_5","ESPe_0","ESPe_9",
-    "GradRho_a_11","GradRho_a_9","GradRho_b_10","GradRho_b_11","GradRho_b_7","GradRho_c_10","GradRho_c_6",
+    "-DivStress_1","-DivStress_1","-DivStress_2","-DivStress_6","-DivStress_8",
+    "ESP_1","ESP_2","ESP_3","ESP_4", "ESP_5","ESP_6","ESPe_1","ESPe_9",
+    "GradRho_a_10","GradRho_b_8","GradRho_c_7",
     "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
-    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
-    "V_11","Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
+    "Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5","Lagr_basic_6",
+    "Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5", "Vnuc_6"
 ]
 # physical set, general model
 physical = \
     [
-    "ESP_0","ESP_1","ESP_2","ESP_3","ESP_4","ESP_5","ESP_6",
-    "ESP_7", "ESP_8" ,"ESP_9",
-    "ESPn_0", "ESPn_1", "ESPn_2", "ESPn_3", "ESPn_4","ESPn_5",
-    "K|Scaled|_basic_0","K|Scaled|_basic_1","K|Scaled|_basic_2", "K|Scaled|_basic_3","K|Scaled|_basic_4","K|Scaled|_basic_5",
-    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
-    "Vnuc_0","Vnuc_1","Vnuc_2", "Vnuc_3","Vnuc_4","Vnuc_5"
+    "ESP_1","ESP_2","ESP_3","ESP_4","ESP_5","ESP_6",
+    "ESP_7", "ESP_8" ,"ESP_9","ESP_10"
+    "ESPn_1", "ESPn_2", "ESPn_3", "ESPn_4","ESPn_5","ESPn_6"
+    "K|Scaled|_basic_1","K|Scaled|_basic_2", "K|Scaled|_basic_3","K|Scaled|_basic_4","K|Scaled|_basic_5","K|Scaled|_basic_6"
+    "Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5","Lagr_basic_6",
+    "Vnuc_1","Vnuc_2", "Vnuc_3","Vnuc_4","Vnuc_5", "Vnuc_6"
 ]
 # select subset of full dictionary
-reduced_x_1_df = x[importance_vars_v1]
-reduced_x_2_df = x[importance_vars_v2]
-reduced_x_3_df = x[importance_vars_v3]
-reduced_x_4_df = x[importance_vars_v4]
+
 reduced_x_5_df = x[importance_vars_v5]
 reduced_x_6_df = x[importance_vars_v6]
 reduce_x_final_df = x[physical]
@@ -249,19 +200,15 @@ reduce_x_final_df = x[physical]
 reduced_x_physical = scale(reduce_x_final_df)
 reduced_x_6 = scale(reduced_x_6_df)
 reduced_x_5 = scale(reduced_x_5_df)
-reduced_x_4 = scale(reduced_x_4_df)
-reduced_x_3 = scale(reduced_x_3_df)
-reduced_x_2 = scale(reduced_x_2_df)
-reduced_x_1 = scale(reduced_x_1_df)
 
 
-corr = reduced_x_6_df.corr()
+
+corr = reduce_x_final_df.corr()
 ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
                  yticklabels=True)
 ax.set_xticklabels(ax.get_xticklabels(),rotation=60, horizontalalignment='center', fontsize='x-small')
-ax.set_yticklabels([i for i in reduced_x_6_df], rotation="0", fontsize = "x-small", va="center")
-
-plt.title("Correlation, Selected Features")
+ax.set_yticklabels([i for i in reduce_x_final_df], rotation="0", fontsize = "x-small", va="center")
+plt.title("Correlation, Physical Descriptors")
 plt.show()
 
 #plot_corr = reduced_x_3_df
@@ -284,17 +231,17 @@ plt.show()
 #ax.set_xticklabels(ax.get_xticklabels(),rotation=70, horizontalalignment='right', fontsize='x-small')
 #plt.show()
 
-
-corr = reduce_x_final_df.corr()
+"""
+corr = x.corr()
 ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
                  yticklabels=True)
 ax.set_xticklabels(ax.get_xticklabels(),rotation=60, horizontalalignment='center', fontsize='medium')
-ax.set_yticklabels([i for i in reduce_x_final_df], rotation="0", fontsize = "medium", va="center")
+ax.set_yticklabels([i for i in x], rotation="0", fontsize = "x-small", va="center")
 plt.title("Correlation, Selected Features")
 plt.show()
+"""
 
-
-plot_corr = reduce_x_final_df
+plot_corr = reduced_x_5_df
 plot_corr["barrier"] = y_scale
 corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
 corr_barrier = plot_corr.corr()["barrier"].to_numpy()[0:-1]
@@ -302,7 +249,7 @@ corr_barriers_labels = plot_corr.corr()["barrier"].keys()[0:-1]
 
 
 ax = plt.subplot(1,1,1)
-plt.title("Correlation Top Features vs. Barrier")
+plt.title("Compiled Descriptor Correlation vs. Barrier")
 plt.xlabel("Correlation w/Barrier")
 ax.barh(range(np.shape(corr_barrier)[0]), corr_barrier)
 ax.set_yticklabels([i for i in corr_barriers_labels], rotation="0")
@@ -310,8 +257,7 @@ ax.set_yticks(np.arange(np.shape(corr_barriers_labels)[0]))
 plt.show()
 
 
-pca(x,list(x), y)
-
+#pca(x,list(x), y)
 # Box Plots
 #fig1, ax1 = plt.subplots()
 #V_Var =\

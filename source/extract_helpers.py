@@ -52,7 +52,7 @@ def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     iter_lookup = 0
     control = 0
     ret_list = {}
-    cp_of_interest = 5
+    cp_of_interest = 6
     with open(filename) as myFile:
         for line_num, line in enumerate(myFile.readlines()):
             try:
@@ -121,7 +121,7 @@ def extract_ring_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     iter_lookup = 0
     control = 0
     ret_list = {}
-    cp_of_interest = 9
+    cp_of_interest = 10
 
     with open(filename) as myFile:
         for line_num, line in enumerate(myFile.readlines()):
@@ -169,7 +169,7 @@ def extract_ring_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     #make this a duplicate term
     if (num[0] == num[1]):
         for key in ret_list.copy():
-            ret_list[key[0:-3]+"_11"] = ret_list[key]
+            ret_list[key[0:-3]+"_12"] = ret_list[key]
 
     return ret_list
 
@@ -206,7 +206,7 @@ def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
         "-DivStress",
         "ESP",
         "ESPe",
-        "ESPn",
+        "ESPn"
     ]
 
     #num = sorted(num)
@@ -214,7 +214,7 @@ def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     iter = 0
     iter_lookup = 0
     control = 0
-    cp_of_interest = -1
+    cp_of_interest = 0
 
     with open(filename) as myFile:
         for line_num, line in enumerate(myFile.readlines()):
@@ -259,8 +259,8 @@ def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
     control_1 = 0
     control_2 = 0
-    iter_1 = 0
-    iter_2 = 0
+    iter_1 = 1
+    iter_2 = 1
     ret_list = {}
 
     with open(filename) as myFile:
@@ -293,12 +293,12 @@ def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
                     ret_list["z_basic_"+str(iter_2)] = float(line.split()[5])
                     iter_2 += 1
 
-                if (iter_1 >= len(num)):
+                if (iter_1-1 >= len(num)):
                     control_1 = 0
-                    iter_1 = 0
-                if (iter_2 >= len(num)):
+                    iter_1 = 1
+                if (iter_2-1 >= len(num)):
                     control_2 = 0
-                    iter_2 = 0
+                    iter_2 = 1
 
             except:
                 pass
@@ -310,7 +310,7 @@ def extract_charge_energies(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
     with open(filename) as myFile:
         control = 0
-        iter = 0
+        iter = 1
         ret_list = {}
         for line_num, line in enumerate(myFile.readlines()):
             try:
@@ -326,7 +326,7 @@ def extract_charge_energies(num, filename="../sum_files/reactC_endo10MVc.sum"):
                     ret_list["Lagrangian_" + str(iter)] = float(line.split()[2])
                     iter += 1
 
-                if (iter >= len(num)):
+                if (iter-1 >= len(num)):
                     control = 0
 
             except:
@@ -341,7 +341,7 @@ def extract_spin(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
         control = 0
         ret_dic = {}
-        iter = 0
+        iter = 1
 
         for line_num, line in enumerate(myFile.readlines()):
             try:
@@ -356,7 +356,7 @@ def extract_spin(num, filename="../sum_files/reactC_endo10MVc.sum"):
                     ret_dic["Spin_net_" + str(iter)] = float(line.split()[4])
                     iter += 1
 
-                if (iter >= len(num)):
+                if (iter-1 >= len(num)):
                     control = 0
 
             except:
@@ -451,9 +451,10 @@ def extract_all():
         spin = extract_spin(num=atom_id, filename=fl)
         basics = extract_basics(num=atom_id, filename=fl)
 
-        translate = ["x_basic_0", "y_basic_0", "z_basic_0", "x_basic_1", "y_basic_1", "z_basic_1",
+        translate = ["x_basic_1", "y_basic_1", "z_basic_1",
                      "x_basic_2", "y_basic_2", "z_basic_2", "x_basic_3", "y_basic_3", "z_basic_3",
-                     "x_basic_4", "y_basic_4", "z_basic_5", "x_basic_5", "y_basic_5", "z_basic_5"]
+                     "x_basic_4", "y_basic_4", "z_basic_5", "x_basic_5", "y_basic_5", "z_basic_5",
+                     "x_basic_6", "y_basic_6", "z_basic_6"]
 
         for i in translate:
 
