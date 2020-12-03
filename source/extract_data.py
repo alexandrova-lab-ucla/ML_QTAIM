@@ -27,158 +27,69 @@ from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, ExtraTree
 # takes: nothing
 # returns: two matrices. list_of_dicts is a list of dictionaries containing
 # critical values for each file. Y is the energies of each file.
-def score(reg, x_train, x_test, y_train, y_test, scale=1):
-
-    print("................................................")
-    try:
-        score = reg.score(list(x_test), y_test)
-    except:
-        score = reg.score(x_test, y_test)
-
-    print("score:                " + str(score))
-    score = str(mean_squared_error(reg.predict(x_test) * scale, y_test * scale))
-    print("MSE score test:   " + str(score))
-    mae_test = str(mean_absolute_error(reg.predict(x_test) * scale, y_test * scale))
-    print("MAE score test:   " + str(mae_test))
-    score = str(r2_score(reg.predict(x_test), y_test))
-    print("r2 score test:   " + str(score))
-
-    score = str(mean_squared_error(reg.predict(x_train) * scale, y_train * scale))
-    print("MSE train score:   " + str(score))
-    mae_train = str(mean_absolute_error(reg.predict(x_train) * scale, y_train * scale))
-    print("MAE train score:   " + str(mae_train))
-    score = str(r2_score(reg.predict(x_train), y_train))
-    print("r2 score train:   " + str(score))
-    print(reg.best_estimator_)
-
-    plt.plot(y_train, reg.predict(x_train), 'o', color='black', markersize = 5)
-    plt.plot(y_test, reg.predict(x_test), 'o', color='red')
-    #plt.text(0.5, 0.15, "MAE test: " +str(mae_test))
-    #plt.text(0.5, 0.25, "MAE train: " +str(mae_train))
-
-    plt.xlabel("Normalized Predicted Value")
-    plt.ylabel("Normalized True Values")
-    name = str(reg.get_params()["estimator"]).split("(")[0]
-    plt.title(name)
-    plt.savefig(name + ".png")
-    plt.clf()
 
 x, y = extract_all()
+min = np.min(y)
+max = np.max(y)
 #y_scale = (y - min) / (max - min)
-std = np.std(y)
+std = (np.std(y), np.mean(y))
+#std = max - min
 y_scale = (y - np.mean(y))/np.std(y)
-
-# first trial, incomplete data
-importance_vars_v1 = \
-    [
-    "DelSqV_6",
-    "ESP_0", "ESP_4", "ESP_5",
-    "ESPe_4", "ESPe_9", "ESPn_4",
-    "G_0", "G_4", "GradRho_b_10",
-    "HessRho_EigVals_a_9", "HessRho_EigVals_b_9", "HessRho_EigVals_c_6",
-    "K|Scaled|_basic_1", "K|Scaled|_basic_3",
-    "Lagr_basic_0",
-    "NetCharge_5", "NetCharge_basic_1",
-    "Rho_0",
-    "Stress_EigVals_c_6",
-    "Spin_tot_5",
-    "V_9",  "Vnuc_0", "Vnuc_1", "Vnuc_2", "Vnuc_3", "Vnuc_9",
-    "x_basic_4", "x_basic_5", "z_basic_3", "z_basic_4", "z_basic_5"]
-# before adding noisy data points, pooled
-importance_vars_v3 = \
-    [
-    "ESP_0","ESP_3","ESP_1","ESP_2","ESP_4","ESP_5","ESPe_9","ESPn_4",
-    "G_0","G_4","G_9",
-    "HessRho_EigVals_a_9","HessRho_EigVals_b_9","HessRho_EigVals_c_6",
-    "K|Scaled|_basic_3","Kinetic_basic_4","Lagr_basic_0","Lagr_basic_3",
-    "NetCharge_5",
-    "NetCharge_basic_1","NetCharge_basic_3","NetCharge_basic_4",
-    "Rho_0","Spin_tot_4","Spin_tot_5",
-    "Stress_EigVals_c_6","V_9","Vnuc_0","Vnuc_1","Vnuc_2",
-    "x_basic_4","y_basic_3","z_basic_4","z_basic_5"]
 
 # final trial with full dataset, pooled
 importance_vars_v5 = \
     [
-    "-DivStress_0","-DivStress_1","-DivStress_2","-DivStress_5","-DivStress_7",
-    "ESP_0","ESP_1","ESP_2","ESP_3","ESP_4","ESP_5","ESP_9","ESPe_0","ESPe_9","ESPn_3","ESPn_4","ESPn_5",
-    "GradRho_a_9","GradRho_b_7","GradRho_c_6",
-    "HessRho_EigVals_a_9","HessRho_EigVals_b_9","HessRho_EigVals_c_6",
-    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
-    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
-    "V_9","Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
-]
+        "-DivStress_0", "-DivStress_1", "-DivStress_10", "-DivStress_11", "-DivStress_2", "-DivStress_5",
+        "-DivStress_7",
+        "ESP_0", "ESP_1", "ESP_10", "ESP_2", "ESP_3", "ESP_4", "ESP_5", "ESP_9", "ESPe_0", "ESPe_9", "ESPn_10",
+        "ESPn_3", "ESPn_4", "ESPn_5",
+        "GradRho_a_11", "GradRho_a_9", "GradRho_b_10", "GradRho_b_11", "GradRho_b_7", "GradRho_c_10", "GradRho_c_6",
+        "HessRho_EigVals_a_9", "HessRho_EigVals_b_9", "HessRho_EigVals_c_6",
+        "K|Scaled|_basic_1", "K|Scaled|_basic_2", "K|Scaled|_basic_3", "K|Scaled|_basic_5",
+        "Lagr_basic_0", "Lagr_basic_1", "Lagr_basic_2", "Lagr_basic_3", "Lagr_basic_4", "Lagr_basic_5",
+        "V_11", "V_9", "Vnuc_0", "Vnuc_1", "Vnuc_10", "Vnuc_2", "Vnuc_3", "Vnuc_4", "Vnuc_5"
+    ]
 # physical set - 1
 importance_final_feats = \
     [
-    "ESP_0","ESP_1","ESP_2","ESP_3","ESP_4","ESP_5","ESP_9",
+    "ESP_0","ESP_1","ESP_10","ESP_2","ESP_3","ESP_4","ESP_5","ESP_9",
     "ESPe_0","ESPe_9",
     "ESPn_10","ESPn_3","ESPn_4","ESPn_5",
     "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
     "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
     "Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5",
     ]
-# 1 without correlated features
-importance_vars_v2 = \
-    [
-        "DelSqV_6",
-        "ESP_0", "ESP_4", "ESP_5",
-        "ESPe_4",
-        "G_0", "GradRho_b_10",
-        "K|Scaled|_basic_1", "K|Scaled|_basic_3",
-        "Lagr_basic_0",
-        "NetCharge_5", "NetCharge_basic_1",
-        "Rho_0",
-        "Vnuc_0", "Vnuc_1", "Vnuc_2", "Vnuc_3",
-        "x_basic_4", "x_basic_5", "z_basic_3", "z_basic_4", "z_basic_5"]
-# 3 without correlated features
-importance_vars_v4 = \
-    [
-    "ESP_0","ESP_3","ESP_1","ESP_2","ESP_4","ESP_5","ESPn_4",
-    "G_0","G_9",
-    "K|Scaled|_basic_3","Kinetic_basic_4","Lagr_basic_0","Lagr_basic_3",
-    "NetCharge_basic_1","NetCharge_basic_3","NetCharge_basic_4",
-    "Rho_0","Spin_tot_4","Spin_tot_5",
-    "Vnuc_0","Vnuc_1","Vnuc_2",
-    "z_basic_4","z_basic_5"]
 # final trial with full dataset, no correlation
 importance_vars_v6 = \
     [
-    "-DivStress_0","-DivStress_1","-DivStress_2","-DivStress_5","-DivStress_7",
-    "ESP_0","ESP_1","ESP_2","ESP_3","ESP_4","ESP_5","ESPe_0","ESPe_9",
-    "GradRho_a_9","GradRho_b_7","GradRho_c_6",
-    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
-    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
-    "Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"
-]
+        "-DivStress_0", "-DivStress_1", "-DivStress_10", "-DivStress_11", "-DivStress_2", "-DivStress_5",
+        "-DivStress_7",
+        "ESP_0", "ESP_1", "ESP_10", "ESP_2", "ESP_3", "ESP_4", "ESP_5", "ESPe_0", "ESPe_9",
+        "GradRho_a_11", "GradRho_a_9", "GradRho_b_10", "GradRho_b_11", "GradRho_b_7", "GradRho_c_10", "GradRho_c_6",
+        "K|Scaled|_basic_1", "K|Scaled|_basic_2", "K|Scaled|_basic_3", "K|Scaled|_basic_5",
+        "Lagr_basic_0", "Lagr_basic_1", "Lagr_basic_2", "Lagr_basic_3", "Lagr_basic_4", "Lagr_basic_5",
+        "V_11", "Vnuc_0", "Vnuc_1", "Vnuc_2", "Vnuc_3", "Vnuc_4", "Vnuc_5"
+    ]
 # physical set, general model
 physical = \
     [
-    "ESP_0","ESP_1","ESP_2","ESP_3","ESP_4","ESP_5","ESP_6",
+    "ESP_0", "ESP_1", "ESP_2", "ESP_3", "ESP_4", "ESP_5", "ESP_6",
     "ESP_7", "ESP_8" ,"ESP_9",
     "ESPn_0", "ESPn_1", "ESPn_2", "ESPn_3", "ESPn_4","ESPn_5",
     "K|Scaled|_basic_0","K|Scaled|_basic_1","K|Scaled|_basic_2", "K|Scaled|_basic_3","K|Scaled|_basic_4","K|Scaled|_basic_5",
     "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
     "Vnuc_0","Vnuc_1","Vnuc_2", "Vnuc_3","Vnuc_4","Vnuc_5",
     "HessRho_EigVals_c_6"
-]
+    ]
 
-# extract all subsets of the original variable space
-reduced_x_1_df = x[importance_vars_v1]
-reduced_x_2_df = x[importance_vars_v2]
-reduced_x_3_df = x[importance_vars_v3]
-reduced_x_4_df = x[importance_vars_v4]
+# select subset of full dictionary
 reduced_x_5_df = x[importance_vars_v5]
 reduced_x_6_df = x[importance_vars_v6]
 reduce_x_final_df = x[physical]
-
+#  scales features down
 reduced_x_physical = scale(reduce_x_final_df)
 reduced_x_6 = scale(reduced_x_6_df)
 reduced_x_5 = scale(reduced_x_5_df)
-reduced_x_4 = scale(reduced_x_4_df)
-reduced_x_3 = scale(reduced_x_3_df)
-reduced_x_2 = scale(reduced_x_2_df)
-reduced_x_1 = scale(reduced_x_1_df)
 full_input = scale(x)
 
 parser = argparse.ArgumentParser(description='select descriptor, and directory of files')
@@ -188,7 +99,6 @@ parser.add_argument("-n", action='store', dest="n_iter", default="500",
                     help="select number of trials")
 parser.add_argument('--bayes', dest="bayes", action='store_true')
 parser.add_argument('--single', dest="single", action='store_true')
-
 parser.add_argument('--pca_space', dest="pca_space", action='store_true')
 parser.add_argument('--physical', dest="phys", action='store_true')
 parser.add_argument('--all', dest="all", action='store_true')
@@ -209,7 +119,6 @@ else:
     if(physical_space == True):
         dataset = reduced_x_physical
         ref_df = reduce_x_final_df
-
     else:
         if (all == True):
             dataset = full_input
@@ -218,15 +127,10 @@ else:
             dataset = reduced_x_5
             ref_df = reduced_x_5_df
 
-x_train, x_test, y_train, y_test = train_test_split(dataset, y_scale, test_size=0.2)
+x_train, x_test, y_train, y_test = train_test_split(ref_df, y_scale, test_size=0.2, random_state=1)
+#x_train, x_test, y_train, y_test = train_test_split(dataset, y_scale, test_size=0.2, random_state=1)
+
 names = ref_df
-x_train = np.asarray(x_train)
-x_test = np.asarray(x_test)
-x_scaler = StandardScaler()
-x_train = x_scaler.fit_transform(x_train)
-x_test = x_scaler.transform(x_test)
-x_train = x_train.astype(np.float64)
-x_test = x_test.astype(np.float64)
 
 if(bayes == True):
     params_bayes = {
@@ -300,21 +204,21 @@ if(bayes == True):
         print("svr rbf algorithms")
         reg_svr_rbf = SVR(kernel="rbf")
         reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-        reg_svr_rbf.fit(list(x_train), y_train)
+        reg_svr_rbf.fit(x_train, y_train)
         score(reg_svr_rbf, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "svr_lin"):
         print("svr lin algorithms")
         reg_svr_lin = SVR(kernel="linear")
         reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-        reg_svr_lin.fit(list(x_train), y_train)
+        reg_svr_lin.fit(x_train, y_train)
         score(reg_svr_lin, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "bayes"):
         print("bayes algorithm")
         reg_bayes = BayesianRidge()
         reg_bayes = BayesSearchCV(reg_bayes, params_bayes, n_iter=n_iter, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
-        reg_bayes.fit(list(x_train), y_train)
+        reg_bayes.fit(x_train, y_train)
         score(reg_bayes, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "rf"):
@@ -322,28 +226,28 @@ if(bayes == True):
         reg_rf = RandomForestRegressor()
         reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10, scoring = "neg_mean_absolute_error")
         custom_scorer_rf = custom_skopt_rf_scorer
-        reg_rf.fit(list(x_train), y_train, callback=[custom_skopt_rf_scorer(x,y)])
+        reg_rf.fit(x_train, y_train, callback=[custom_skopt_rf_scorer(x,y)])
         score(reg_rf, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "sgd"):
         print("sgd algorithms")
         reg_sgd = SGDRegressor()
         reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-        reg_sgd.fit(list(x_train),y_train)
+        reg_sgd.fit(x_train,y_train)
         score(reg_sgd, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "lasso"):
         print("lasso algorithms")
         reg_lasso = Lasso()
         reg_lasso = BayesSearchCV(reg_lasso, params_lasso, n_iter=n_iter, cv=3)
-        reg_lasso.fit(list(x_train), y_train)
+        reg_lasso.fit(x_train, y_train)
         score(reg_lasso, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "ridge"):
         print("ridge algorithms")
         reg_ridge = Ridge()
         reg_ridge = BayesSearchCV(reg_ridge, params_ridge, verbose= 4, n_iter=n_iter, cv=3)
-        reg_ridge.fit(list(x_train), y_train)
+        reg_ridge.fit(x_train, y_train)
         score(reg_ridge, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "gp"):
@@ -351,14 +255,14 @@ if(bayes == True):
         kernel = Matern(length_scale=1, nu=5/2) + WhiteKernel(noise_level=1)
         reg_gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10)
         reg_gp = BayesSearchCV(reg_gp, params_gp, n_iter=n_iter, verbose=4, cv=5)
-        reg_gp.fit(list(x_train),y_train)
+        reg_gp.fit(x_train,y_train)
         score(reg_gp, x_train, x_test, y_train, y_test, std)  # fuck with kernel
 
     elif(algo == "krr"):
         print("krr algorithm")
         reg_kernelridge = KernelRidge(kernel="poly", degree=8)
         reg_kernelridge = BayesSearchCV(reg_kernelridge, params_kernelridge, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-        reg_kernelridge.fit(list(x_train), y_train)
+        reg_kernelridge.fit(x_train, y_train)
         score(reg_kernelridge, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "ada"):
@@ -366,7 +270,7 @@ if(bayes == True):
 
         reg_ada = AdaBoostRegressor()
         reg_ada = BayesSearchCV(reg_ada, param_ada, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-        reg_ada.fit(list(x_train), y_train)
+        reg_ada.fit(x_train, y_train)
         score(reg_ada, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "nn"):
@@ -375,7 +279,7 @@ if(bayes == True):
         reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, hidden_layer_sizes=(500,),
                               solver="adam")
         reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10,  scoring = "neg_mean_absolute_error")
-        reg_nn.fit(list(x_train), y_train)
+        reg_nn.fit(x_train, y_train)
         score(reg_nn, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "extra"):
@@ -384,7 +288,7 @@ if(bayes == True):
         reg_extra = ExtraTreesRegressor(criterion="mae")
         reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
         custom_scorer_extra = custom_skopt_extra_scorer
-        reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
+        reg_extra.fit(x_train, y_train, callback=[custom_scorer_extra(x,y)])
         score(reg_extra, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "huber"):
@@ -392,7 +296,7 @@ if(bayes == True):
 
         reg_huber = HuberRegressor(max_iter=1000)
         reg_huber = BayesSearchCV(reg_huber, param_huber, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-        reg_huber.fit(list(x_train), y_train)
+        reg_huber.fit(x_train, y_train)
         score(reg_huber, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "knn"):
@@ -400,14 +304,14 @@ if(bayes == True):
 
         reg_knn = KNeighborsRegressor(algorithm="auto", weights="distance")
         reg_knn = BayesSearchCV(reg_knn, param_knn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-        reg_knn.fit(list(x_train), y_train)
+        reg_knn.fit(x_train, y_train)
         score(reg_knn, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "grad"):
         print("grad algorithm")
         reg_grad = GradientBoostingRegressor(n_iter_no_change=250)
         reg_grad = BayesSearchCV(reg_grad, param_grad, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-        reg_grad.fit(list(x_train), y_train, callback=[custom_skopt_grad_scorer(x,y)])
+        reg_grad.fit(x_train, y_train, callback=[custom_skopt_grad_scorer(x,y)])
         score(reg_grad, x_train, x_test, y_train, y_test, std)
 
     else:
@@ -415,67 +319,47 @@ if(bayes == True):
         reg_extra = ExtraTreesRegressor(criterion="mae")
         reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
         custom_scorer_extra = custom_skopt_extra_scorer
-        reg_extra.fit(list(x_train), y_train, callback=[custom_scorer_extra(x,y)])
+        reg_extra.fit(x_train, y_train, callback=[custom_scorer_extra(x,y)])
         score(reg_extra, x_train, x_test, y_train, y_test, std)
 
 elif(single == True):
 
-    if (algo == "xgb"):
-        print("xgb algorithms")
-        reg_xgb = xgb.XGBRegressor(
-            reg_alpha=0.2, colsample_bytree=0.5439259271671688, eta=0.0, gamma=0.0,
-            reg_lambda =0.2403238094603633, learning_rate=0.1, max_depth=25, n_estimators=4027,
-            objective="reg:squarederror", tree_method="gpu_hist"
-        )
-        custom_scorer_xgb = custom_skopt_xgb_scorer
-        reg_xgb.fit(x_train, y_train)
-        score(reg_xgb, x_train, x_test, y_train, y_test, max - min)
-
-    elif(algo == "svr_rbf"):
+    if(algo == "svr_rbf"):
         print("svr rbf algorithms")
         reg_svr_rbf = SVR(kernel="rbf", C=0.6299017591106881, cache_size=500,
                           epsilon=0.056183687320042426, gamma=0.059982132068042655)
-        reg_svr_rbf.fit(list(x_train), y_train)
-        score(reg_svr_rbf, x_train, x_test, y_train, y_test, max - min)
+        reg_svr_rbf.fit(x_train, y_train)
+        score_single(reg_svr_rbf, x_train, x_test, y_train, y_test,std)
 
     elif(algo == "svr_lin"):
         print("svr lin algorithms")
         reg_svr_lin = SVR(kernel="linear")
-        reg_svr_lin.fit(list(x_train), y_train)
-        score(reg_svr_lin, x_train, x_test, y_train, y_test, max - min)
+        reg_svr_lin.fit(x_train, y_train)
+        score_single(reg_svr_lin, x_train, x_test, y_train, y_test,std)
 
     elif(algo == "bayes"):
         print("bayes algorithm")
         reg_bayes = BayesianRidge()
-        reg_bayes.fit(list(x_train), y_train)
-        score(reg_bayes, x_train, x_test, y_train, y_test, max - min)
-
-    elif(algo == "rf"):
-        print("random forest algorithms ")
-        reg_rf = RandomForestRegressor( min_samples_leaf=3, min_samples_split=2,
-                                       n_estimators=1000, n_jobs = 10, max_features="sqrt")
-        reg_rf = RandomForestRegressor( n_jobs=10)
-        custom_scorer_rf = custom_skopt_rf_scorer
-        reg_rf.fit(list(x_train), y_train)
-        score(reg_rf, x_train, x_test, y_train, y_test, max - min)
+        reg_bayes.fit(x_train, y_train)
+        score_single(reg_bayes, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "sgd"):
         print("sgd algorithms")
         reg_sgd = SGDRegressor()
-        reg_sgd.fit(list(x_train),y_train)
-        score(reg_sgd, x_train, x_test, y_train, y_test, max - min)
+        reg_sgd.fit(x_train,y_train)
+        score_single(reg_sgd, x_train, x_test, y_train, y_test,std)
 
     elif(algo == "lasso"):
         print("lasso algorithms")
         reg_lasso = Lasso(alpha = 0.01)
-        reg_lasso.fit(list(x_train), y_train)
-        score(reg_lasso, x_train, x_test, y_train, y_test, max - min)
+        reg_lasso.fit(x_train, y_train)
+        score_single(reg_lasso, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "ridge"):
         print("ridge algorithms")
         reg_ridge = Ridge(alpha=10.0, tol=1e-05)
-        reg_ridge.fit(list(x_train), y_train)
-        score(reg_ridge, x_train, x_test, y_train, y_test, max - min)
+        reg_ridge.fit(x_train, y_train)
+        score_single(reg_ridge, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "gp"):
 
@@ -484,27 +368,26 @@ elif(single == True):
         from tensorflow_probability import distributions as tfd
         from kernels import Tanimoto
         import tensorflow_probability as tfp
+        import tensorflow as tf
 
         opt = gpflow.optimizers.Scipy()
         k = gpflow.kernels.RationalQuadratic()
-        k = gpflow.kernels.Matern52() + gpflow.kernels.White()
-        k = Tanimoto() + gpflow.kernels.White()
+        k = gpflow.kernels.Matern52()
+        #k = Tanimoto()
 
         reg_gp = gpflow.models.GPR(data=(x_train, y_train.reshape(-1,1)), kernel=k,
                               noise_variance=1)
-        opt_logs = opt.minimize(reg_gp.training_loss, reg_gp.trainable_variables, options=dict(maxiter=10000),
-                                )
+        opt_logs = opt.minimize(reg_gp.training_loss, reg_gp.trainable_variables, options=dict(maxiter=10000),)
         f64 = gpflow.utilities.to_default_float
+
         # matern
-        #reg_gp.kernel.lengthscales.prior = tfd.Gamma(f64(1.0), f64(1.0))
-        #reg_gp.kernel.variance.prior = tfd.Gamma(f64(1.0), f64(1.0))
-        #reg_gp.likelihood.variance.prior = tfd.Gamma(f64(1.0), f64(1.0))
+        reg_gp.kernel.lengthscales.prior = tfd.Gamma(f64(1.0), f64(1.0))
+        reg_gp.kernel.variance.prior = tfd.Gamma(f64(1.0), f64(1.0))
+        reg_gp.likelihood.variance.prior = tfd.Gamma(f64(1.0), f64(1.0))
 
         # tanimoto
-        reg_gp.likelihood.variance.prior = tfd.Gamma(f64(1.0), f64(1.0))
-        reg_gp.kernel.variance.prior = tfd.Gamma(f64(1.0), f64(1.0))
-
-        print(reg_gp.kernel)
+        #reg_gp.likelihood.variance.prior = tfd.Gamma(f64(1.0), f64(1.0))
+        #reg_gp.kernel.variance.prior = tfd.Gamma(f64(1.0), f64(1.0))
 
         num_burnin_steps = ci_niter(500)
         num_samples = ci_niter(1000)
@@ -535,18 +418,29 @@ elif(single == True):
         parameter_samples = hmc_helper.convert_to_constrained_values(samples)
         param_to_name = {param: name for name, param in gpflow.utilities.parameter_dict(reg_gp).items()}
 
-        y_pred, y_var = reg_gp.predict_f(x_test)
-        print(reg_gp.training_loss)
-        mse = mean_squared_error(y_test, y_pred)
-        mae = mean_absolute_error(y_test, y_pred)
-        r2 = r2_score(y_test, y_pred)
+        y_pred, y_var = reg_gp.predict_f(np.array(x_test))
+        y_pred_test, y_var = reg_gp.predict_f(np.array(x_test))
+        y_pred_train, y_var = reg_gp.predict_f(np.array(x_train))
 
+        print(reg_gp.training_loss)
 
         print("------------------------------")
         print("gaussian process algorithm")
-        print(mse)
-        print(mae*std)
-        print(r2)
+
+        mse_test = str(mean_squared_error(y_test * std[0], y_pred_test * std[0]))
+        mse_train = str(mean_squared_error(y_train * std[0], y_pred_train * std[0]))
+        mae_test = str(mean_absolute_error(y_test * std[0], y_pred_test * std[0]))
+        mae_train = str(mean_absolute_error(y_train * std[0], y_pred_train * std[0]))
+        r2_test = str(r2_score(y_test, y_pred_test))
+        r2_train = str(r2_score(y_train, y_pred_train))
+
+        print("MSE test score: \t" + str(mse_test))
+        print("MSE train score:\t" + str(mse_train))
+        print("MAE test score: \t" + str(mae_test))
+        print("MAE train score:\t" + str(mae_train))
+        print("r2 score test: \t\t" + str(r2_test))
+        print("r2 score train:\t\t" + str(r2_train))
+
         #kernel = C() + Matern(length_scale=1, nu=5/2) + WhiteKernel(noise_level=1)
         #kernel = Matern(length_scale=1, nu=5/2) + WhiteKernel(noise_level=1)
         #kernel = Matern(length_scale=1, nu=5/2)
@@ -557,15 +451,15 @@ elif(single == True):
     elif(algo == "krr"):
         print("krr algorithm")
         reg_kernelridge = KernelRidge(kernel="poly", degree=8)
-        reg_kernelridge.fit(list(x_train), y_train)
-        score(reg_kernelridge, x_train, x_test, y_train, y_test, std)
+        reg_kernelridge.fit(x_train, y_train)
+        score_single(reg_kernelridge, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "ada"):
         print("ada algorithm")
 
         reg_ada = AdaBoostRegressor()
-        reg_ada.fit(list(x_train), y_train)
-        score(reg_ada, x_train, x_test, y_train, y_test, std)
+        reg_ada.fit(x_train, y_train)
+        score_single(reg_ada, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "nn"):
 
@@ -576,36 +470,58 @@ elif(single == True):
                               solver="lbfgs", alpha=8.64e-10,
                               learning_rate_init=3.84e-05,
                               max_iter=640, tol=1.86e-03)
-        reg_nn.fit(list(x_train), y_train)
-        score(reg_nn, x_train, x_test, y_train, y_test, std)
+        reg_nn.fit(x_train, y_train)
+        score_single(reg_nn, x_train, x_test, y_train, y_test, std)
 
         # tensorflow
         import tensorflow as tf
         from tensorflow.keras import regularizers
 
         model = tf.keras.Sequential([
-            tf.keras.layers.Dense(100, activation='relu', input_shape=(np.shape(x_train)[0], ), bias_regularizer=regularizers.l2(1e-5)),
-            tf.keras.layers.Dropout(0.3),
-            tf.keras.layers.Dense(100, activation='relu', bias_regularizer=regularizers.l2(1e-5)),
+            tf.keras.layers.Dense(50, activation='relu', input_shape=(np.shape(x_train)[1], ), bias_regularizer=regularizers.l2(1e-4)),
+            tf.keras.layers.Dense(50, activation='relu', bias_regularizer=regularizers.l2(1e-4)),
+            tf.keras.layers.Dense(50, activation='relu', bias_regularizer=regularizers.l2(1e-4)),
 
             tf.keras.layers.Dense(1, activation="linear")
         ])
-
+        #tf.keras.layers.Dropout(0.3),
+        #tf.keras.layers.Dense(250, activation='sigmoid', bias_regularizer=regularizers.l2(1e-4)),
         model.compile(optimizer='adam',
                       loss="MSE",
                       metrics=["MAE","MSE"])
-        print(np.shape(x_train))
 
-        model.fit(x_train,  np.ravel(y_train), epochs=100, verbose = 1)
+        model.fit(x_train, np.ravel(y_train), epochs=200,batch_size=np.shape(x_train)[0], verbose = 1)
+
         y_hat = model.predict(x_test)
         mse = mean_squared_error(y_test, y_hat)
         mae = mean_absolute_error(y_test, y_hat)
         r2 = r2_score(y_test, y_hat)
         print("------------------------------")
-        print("mae test:" + str(mae * (max-min)))
+        print(np.shape(x_train))
+        print("mae test:" + str(mae * (std)))
         print("mse test:" + str(mse))
         print("r2 test:" + str(r2))
         # tensorflow
+
+    elif (algo == "xgb"):
+
+        print("xgb algorithms")
+        reg_xgb = xgb.XGBRegressor(
+            reg_alpha=0.01, colsample_bytree=0.3, eta=0.0, gamma=0.0,
+            reg_lambda =0.0, learning_rate=0.01, max_depth=5, n_estimators=1000,
+                   objective="reg:squarederror", tree_method ="gpu_hist")
+        #reg_xgb = xgb.XGBRegressor()
+        reg_xgb.fit(x_train, y_train)
+        score_single(reg_xgb, x_train, x_test, y_train, y_test, std)
+
+    elif(algo == "rf"):
+        print("random forest algorithms ")
+        reg_rf = RandomForestRegressor( min_samples_leaf=1, min_samples_split=2,
+                                       n_estimators=2500, n_jobs = 10, criterion="entropy")
+        reg_rf = RandomForestRegressor( n_jobs=10)
+        custom_scorer_rf = custom_skopt_rf_scorer
+        reg_rf.fit(x_train, y_train)
+        score_single(reg_rf, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "extra"):
         print("extra algorithm")
@@ -614,36 +530,40 @@ elif(single == True):
                                         min_samples_leaf = 3,
                                         n_estimators=2200)
         custom_scorer_extra = custom_skopt_extra_scorer
-        reg_extra.fit(list(x_train), y_train)
-        score(reg_extra, x_train, x_test, y_train, y_test, std)
-        quant_feat(x, y)
+        reg_extra.fit(x_train, y_train)
+        score_single(reg_extra, x_train, x_test, y_train, y_test, std)
+
+    elif(algo == "grad"):
+        print("grad algorithm")
+
+
+        dict = {'learning_rate': 0.029850214667088548, 'min_samples_split': 3, 'min_samples_leaf': 4, 'max_depth': 2,
+         'n_estimators': 611, 'subsample': 0.4}
+        reg_grad = GradientBoostingRegressor(**dict)
+        reg_grad.fit(x_train, y_train)
+        score_single(reg_grad, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "huber"):
         print("huber algorithm")
 
         reg_huber = HuberRegressor(max_iter=1000, alpha=1e-06, epsilon=1.01, tol=0.0012904985834892478)
-        reg_huber.fit(list(x_train), y_train)
-        score(reg_huber, x_train, x_test, y_train, y_test, std)
+        reg_huber.fit(x_train, y_train)
+        score_single(reg_huber, x_train, x_test, y_train, y_test, std)
 
     elif(algo == "knn"):
         print("knn algorithm")
 
         reg_knn = KNeighborsRegressor(algorithm="auto", weights="distance", n_neighbors=5)
-        reg_knn.fit(list(x_train), y_train)
-        score(reg_knn, x_train, x_test, y_train, y_test, std)
-
-    elif(algo == "grad"):
-        print("grad algorithm")
-        reg_grad = GradientBoostingRegressor(learning_rate = 0.01, n_estimators = 5000, tol=1e-5, n_iter_no_change=250)
-        reg_grad.fit(list(x_train), y_train)
-        score(reg_grad, x_train, x_test, y_train, y_test, std)
+        reg_knn.fit(x_train, y_train)
+        score_single(reg_knn, x_train, x_test, y_train, y_test, std)
 
     else:
         print("extra trees algorithm")
         reg_extra = ExtraTreesRegressor(min_samples_split = 3,
                                         min_samples_leaf = 3,
                                         n_estimators=2200)
-        reg_extra.fit(list(x_train), y_train)
+        reg_extra.fit(x_train, y_train)
+        score_single(reg_extra, x_train, x_test, y_train, y_test, std)
 
 else:
     print("no training selected, feature selection")
@@ -663,10 +583,11 @@ else:
     # boruta(x,y, n = 7)
     #boruta(x,y, n = 5)
     # boruta(x,y, n = 3)
-    #print("dendrogram")
-    #dendo(names)
+    print("dendrogram")
+    dendo(names)
     print("quantitative feature selction")
     quant_feat(x_train, x_test, y_train, y_test, names)
+
     # recursive_feat_elim(x, y)
     # pca = PCA(0.90)
     # principal_components = pca.fit_transform(x)

@@ -244,7 +244,7 @@ def quant_feat(x_train, x_test, y_train, y_test, names):
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 8))
 
-    fig.suptitle("Permutation Importance, Physical Set", fontsize=18)
+    fig.suptitle("Permutation Importance, Compiled Set", fontsize=18)
 
     ax1.barh(tree_indices,
              reg.feature_importances_[tree_importance_sorted_idx], height=0.7)
@@ -293,6 +293,6 @@ def dendo(x):
     dendro = hierarchy.dendrogram(
         corr_linkage, labels=x.columns, leaf_rotation=90, leaf_font_size=16)
     dendro_idx = np.arange(0, len(dendro['ivl']))
-    plt.title("Feature Clustering, Full PCA Space", fontsize=18)
+    plt.title("Feature Clustering, Compiled Space", fontsize=18)
     plt.show()
 

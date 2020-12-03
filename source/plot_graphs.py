@@ -179,17 +179,19 @@ importance_vars_v6 = \
     "GradRho_a_10","GradRho_b_8","GradRho_c_7",
     "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
     "Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5","Lagr_basic_6",
-    "Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5", "Vnuc_6"
+    "Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5", "Vnuc_6",
+    "HessRho_EigVals_c_7"
 ]
 # physical set, general model
 physical = \
     [
     "ESP_1","ESP_2","ESP_3","ESP_4","ESP_5","ESP_6",
-    "ESP_7", "ESP_8" ,"ESP_9","ESP_10"
-    "ESPn_1", "ESPn_2", "ESPn_3", "ESPn_4","ESPn_5","ESPn_6"
-    "K|Scaled|_basic_1","K|Scaled|_basic_2", "K|Scaled|_basic_3","K|Scaled|_basic_4","K|Scaled|_basic_5","K|Scaled|_basic_6"
+    "ESP_7", "ESP_8" ,"ESP_9","ESP_10",
+    "ESPn_1", "ESPn_2", "ESPn_3", "ESPn_4","ESPn_5","ESPn_6",
+    "K|Scaled|_basic_1","K|Scaled|_basic_2", "K|Scaled|_basic_3","K|Scaled|_basic_4","K|Scaled|_basic_5","K|Scaled|_basic_6",
     "Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5","Lagr_basic_6",
-    "Vnuc_1","Vnuc_2", "Vnuc_3","Vnuc_4","Vnuc_5", "Vnuc_6"
+    "Vnuc_1","Vnuc_2", "Vnuc_3","Vnuc_4","Vnuc_5", "Vnuc_6",
+    "HessRho_EigVals_c_7"
 ]
 # select subset of full dictionary
 
@@ -201,52 +203,19 @@ reduced_x_physical = scale(reduce_x_final_df)
 reduced_x_6 = scale(reduced_x_6_df)
 reduced_x_5 = scale(reduced_x_5_df)
 
-
-
-corr = reduce_x_final_df.corr()
+corr = reduced_x_5_df.corr()
 ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
                  yticklabels=True)
 ax.set_xticklabels(ax.get_xticklabels(),rotation=60, horizontalalignment='center', fontsize='x-small')
-ax.set_yticklabels([i for i in reduce_x_final_df], rotation="0", fontsize = "x-small", va="center")
-plt.title("Correlation, Physical Descriptors")
+ax.set_yticklabels([i for i in reduced_x_5_df], rotation="0", fontsize = "x-small", va="center")
+plt.title("Correlation, Compiled Descriptors")
 plt.show()
-
-#plot_corr = reduced_x_3_df
-#plot_corr["barrier"] = y_scale
-#corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
-
-#ax = plt.subplot(1,1,1)
-#plt.title("Correlation Top Features vs. Barrier")
-#ax.barh(range(np.shape(corr)[0]), corr)
-#plt.xlabel("Correlation w/")
-#print([str(i) for i in importance_vars_v3])
-#ax.set_yticklabels([i for i in importance_vars_v3], rotation="0")
-#ax.set_yticks(np.arange(len(importance_vars_v3)))
-#plt.show()
-
-#reduced_x = x[importance_vars_v4]
-#corr = reduced_x.corr()
-#ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,
-#    cmap=sns.diverging_palette(20, 220, n=200), square=False)
-#ax.set_xticklabels(ax.get_xticklabels(),rotation=70, horizontalalignment='right', fontsize='x-small')
-#plt.show()
-
-"""
-corr = x.corr()
-ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
-                 yticklabels=True)
-ax.set_xticklabels(ax.get_xticklabels(),rotation=60, horizontalalignment='center', fontsize='medium')
-ax.set_yticklabels([i for i in x], rotation="0", fontsize = "x-small", va="center")
-plt.title("Correlation, Selected Features")
-plt.show()
-"""
 
 plot_corr = reduced_x_5_df
 plot_corr["barrier"] = y_scale
 corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
 corr_barrier = plot_corr.corr()["barrier"].to_numpy()[0:-1]
 corr_barriers_labels = plot_corr.corr()["barrier"].keys()[0:-1]
-
 
 ax = plt.subplot(1,1,1)
 plt.title("Compiled Descriptor Correlation vs. Barrier")
@@ -257,16 +226,3 @@ ax.set_yticks(np.arange(np.shape(corr_barriers_labels)[0]))
 plt.show()
 
 
-#pca(x,list(x), y)
-# Box Plots
-#fig1, ax1 = plt.subplots()
-#V_Var =\
-#[ "V_11","Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5"]
-#esp =\
-#[ "ESP_0","ESP_1","ESP_2","ESP_3","ESP_4","ESP_5","ESP_9"]
-#v =  reduced_x_barrier_corr[V_Var]
-#ESP = reduced_x_barrier_corr[esp]
-#ax = sns.boxplot(data=v, orient="h", palette="Set2")
-#plt.show()
-#ax = sns.boxplot(data=ESP, orient="h", palette="Set2")
-#plt.show()
