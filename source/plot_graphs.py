@@ -6,7 +6,7 @@ from matplotlib import cm
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, scale
-from extract_helpers import *
+from extract_helpers_shifted import *
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 
 def pca(x, labels=[], barriers=np.array([])):
@@ -137,92 +137,115 @@ max = np.max(y)
 y_scale = (y - min) / (max - min)
 sns.set_theme()
 
-plt.hist(y)
-plt.title("Distribution of Dataset Energies")
-plt.xlabel("Energy (kJ/Mol)")
-plt.ylabel("Counts")
-plt.show()
+#plt.hist(y)
+#plt.title("Distribution of Dataset Energies")
+#plt.xlabel("Energy (kJ/Mol)")
+#plt.ylabel("Counts")
+#plt.show()
 
 
-# final trial with full dataset, pooled
-importance_vars_v5 = \
+pooled_set = \
     [
-    "-DivStress_1","-DivStress_2", "-DivStress_3","-DivStress_6","-DivStress_8",
-    "GradRho_a_10","GradRho_b_8","GradRho_c_7",
-    "HessRho_EigVals_a_10","HessRho_EigVals_b_10","HessRho_EigVals_c_7",
-    "K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_4","K|Scaled|_basic_5",
-    "Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5","Lagr_basic_6",
-    "V_10","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5", "Vnuc_6",
-    
-    "ESP_1", "ESP_10", "ESP_2", "ESP_3", "ESP_4", "ESP_5", "ESP_6", "ESP_10",
-    "ESPe_1", "ESPe_10",
-    "ESPn_11", "ESPn_4", "ESPn_5", "ESPn_6",
+     "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$","$\mathcal{Bond}_{9}$",
+     "$\mathcal{DelocIndBond}_{5}$",
+     "$\mathcal{DelSqRho}_{1}$",
+     "$\mathcal{DelSqV}_{7}$",
+     "$\mathcal{ESP}_{1}$","$\mathcal{ESP}_{2}$","$\mathcal{ESP}_{4}$","$\mathcal{ESP}_{5}$","$\mathcal{ESP}_{6}$",
+     "$\mathcal{ESPe}_{10}$",
+     "$\mathcal{ESPn}_{4}$","$\mathcal{ESPn}_{5}$",
+     "$\mathcal{HessRhoEigVals}_{c,7}$",
+     "$\mathcal{K|Scaled|}_{basic,1}$","$\mathcal{K|Scaled|}_{basic,2}$",
+     "$\mathcal{K|Scaled|}_{basic,3}$","$\mathcal{K|Scaled|}_{basic,4}$",
+     "$\mathcal{K|Scaled|}_{basic,6}$",
+     "$\mathcal{Kinetic}_{basic,5}$","$\mathcal{Kinetic}_{basic,6}$",
+     "$\mathcal{Lagr}_{basic,1}$","$\mathcal{Lagr}_{basic,5}$","$\mathcal{Lagrangian}_{2}$",
+     "$\mathcal{Rho}_{8}$",
+     "$\mathcal{Stress_EigVals}_{c,7}$",
+    "$\mathcal{Vnuc}_{1}$","$\mathcal{Vnuc}_{2}$","$\mathcal{Vnuc}_{3}$",
+    "$\mathcal{Vnuc}_{4}$","$\mathcal{Vnuc}_{5}$","$\mathcal{Vnuc}_{6}$"
     ]
 
-# physical set - 1
-importance_final_feats = \
+pool_uncorr = \
     [
-    "ESP_1","ESP_2","ESP_11","ESP_3","ESP_4","ESP_5","ESP_6","ESP_10",
-    "ESPe_1","ESPe_10",
-    "ESPn_11","ESPn_4","ESPn_5","ESPn_6",
-    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5","Lagr_basic_6",
-    "Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
-    "Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5","Vnuc_6"
+        "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
+        "$\mathcal{DelocIndBond}_{5}$",
+        "$\mathcal{DelSqRho}_{1}$",
+        "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{6}$",
+        "$\mathcal{ESPn}_{5}$",
+        "$\mathcal{HessRhoEigVals}_{c,7}$",
+        "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$",
+        "$\mathcal{K|Scaled|}_{basic,3}$", "$\mathcal{K|Scaled|}_{basic,4}$",
+        "$\mathcal{Kinetic}_{basic,5}$", "$\mathcal{Kinetic}_{basic,6}$",
+        "$\mathcal{Lagr}_{basic,1}$", "$\mathcal{Lagr}_{basic,5}$", "$\mathcal{Lagrangian}_{2}$",
+        "$\mathcal{Rho}_{8}$",
+        "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
+        "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
     ]
 
-
-# final trial with full dataset, no correlation
-importance_vars_v6 = \
-    [
-    "-DivStress_1","-DivStress_1","-DivStress_2","-DivStress_6","-DivStress_8",
-    "ESP_1","ESP_2","ESP_3","ESP_4", "ESP_5","ESP_6","ESPe_1","ESPe_9",
-    "GradRho_a_10","GradRho_b_8","GradRho_c_7",
-    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
-    "Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5","Lagr_basic_6",
-    "Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5", "Vnuc_6",
-    "HessRho_EigVals_c_7"
-]
 # physical set, general model
 physical = \
     [
-    "ESP_1","ESP_2","ESP_3","ESP_4","ESP_5","ESP_6",
-    "ESP_7", "ESP_8" ,"ESP_9","ESP_10",
-    "ESPn_1", "ESPn_2", "ESPn_3", "ESPn_4","ESPn_5","ESPn_6",
-    "K|Scaled|_basic_1","K|Scaled|_basic_2", "K|Scaled|_basic_3","K|Scaled|_basic_4","K|Scaled|_basic_5","K|Scaled|_basic_6",
-    "Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5","Lagr_basic_6",
-    "Vnuc_1","Vnuc_2", "Vnuc_3","Vnuc_4","Vnuc_5", "Vnuc_6",
-    "HessRho_EigVals_c_7"
-]
-# select subset of full dictionary
+        "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
+        "$\mathcal{DelocIndBond}_{5}$",
+        "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$", "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
+        "$\mathcal{ESPn}_{4}$", "$\mathcal{ESPn}_{5}$",
+        "$\mathcal{HessRhoEigVals}_{c,7}$",
+        "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$", "$\mathcal{K|Scaled|}_{basic,3}$",
+        "$\mathcal{K|Scaled|}_{basic,4}$", "$\mathcal{K|Scaled|}_{basic,5}$", "$\mathcal{K|Scaled|}_{basic,6}$",
+        "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$", "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$",
+        "$\mathcal{Vnuc}_{6}$"
+    ]
+pool_x_df           = x[pooled_set]
+phys_x_df           = x[physical_set]
+pool_x_uncorr_df    = x[pool_uncorr]
 
-reduced_x_5_df = x[importance_vars_v5]
-reduced_x_6_df = x[importance_vars_v6]
-reduce_x_final_df = x[physical]
-#  scales features down
-reduced_x_physical = scale(reduce_x_final_df)
-reduced_x_6 = scale(reduced_x_6_df)
-reduced_x_5 = scale(reduced_x_5_df)
+full_input = scale(x)
+pool_x          = scale(x[pooled_set].to_numpy())
+phys_x          = scale(x[physical_set].to_numpy())
+pool_x_uncorr   = scale(x[pool_uncorr].to_numpy())
 
-corr = reduced_x_5_df.corr()
+#--------------------------------------------------------------
+corr = pool_x_df.corr()
+lbls = []
+for i in pool_x_df:
+    if (str.split(i, "\mathcal")[1][1:5] != "Bond"):
+        lbls.append(r"$" + str.split(str(i), "\mathcal")[1])
+    else:
+        tmp = r"$BondEllipt_" + str(i)[-3] + "$"
+        lbls.append(tmp)
+
 ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
-                 yticklabels=True)
-ax.set_xticklabels(ax.get_xticklabels(),rotation=60, horizontalalignment='center', fontsize='x-small')
-ax.set_yticklabels([i for i in reduced_x_5_df], rotation="0", fontsize = "x-small", va="center")
+                 yticklabels=lbls, xticklabels=False)
+
+#ax.set_yticklabels(lbls, rotation="0", fontsize = "small", va="center")
 plt.title("Correlation, Compiled Descriptors")
 plt.show()
-
-plot_corr = reduced_x_5_df
+#--------------------------------------------------------------
+plot_corr = pool_x_df
 plot_corr["barrier"] = y_scale
 corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
 corr_barrier = plot_corr.corr()["barrier"].to_numpy()[0:-1]
 corr_barriers_labels = plot_corr.corr()["barrier"].keys()[0:-1]
 
 ax = plt.subplot(1,1,1)
-plt.title("Compiled Descriptor Correlation vs. Barrier")
+plt.title("Physical Descriptor Correlation vs. Barrier")
 plt.xlabel("Correlation w/Barrier")
 ax.barh(range(np.shape(corr_barrier)[0]), corr_barrier)
-ax.set_yticklabels([i for i in corr_barriers_labels], rotation="0")
+lbls = []
+
+for i in corr_barriers_labels:
+    if (str.split(i, "\mathcal")[1][1:5] != "Bond"):
+        lbls.append(r"$" + str.split(i, "\mathcal")[1])
+
+    else:
+        tmp = r"$BondEllipt_" + i[-3] + "$"
+        lbls.append(tmp)
+ax.set_yticklabels(lbls, rotation="0")
 ax.set_yticks(np.arange(np.shape(corr_barriers_labels)[0]))
 plt.show()
+
+
+
+
 
 

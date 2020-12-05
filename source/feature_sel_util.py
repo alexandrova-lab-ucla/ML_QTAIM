@@ -1,7 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+params = {'mathtext.default': 'it' }
+plt.rcParams.update(params)
+
 from boruta import BorutaPy
+import seaborn as sns
 import pandas as pd
 
 from scipy.stats import spearmanr
@@ -15,7 +19,6 @@ from sklearn.svm import SVR
 from sklearn.linear_model import SGDRegressor, Lasso, LassoCV
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.inspection import permutation_importance
-
 
 #######################################Method 1: Lasso #########################################33
 def lasso(x, y):
@@ -51,11 +54,8 @@ def lasso_cv(x, y):
 
 def recursive_feat_elim(x, y):
 
-    rf = RandomForestRegressor(n_jobs=-1, max_depth=3)
-    sgd = SGDRegressor(max_iter=100000, penalty="elasticnet", alpha=0.00001)
-    svr = SVR(kernel="linear")
-
-    rfe = RFE(estimator = rf, n_features_to_select = 5, step=1, verbose=1)
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=7)
+    rfe = RFE(estimator = rf, n_features_to_select = 20, step=1, verbose=1)
 
     rfe.fit(x,y)
     ranking = rfe.ranking_.reshape(np.shape(x)[1])
@@ -63,7 +63,6 @@ def recursive_feat_elim(x, y):
     for i, j in enumerate(ranking):
         if j <= 1:
             print(x.columns.values[i])
-
 
 #######################################Method 3: Recursive  #########################################33
 def recursive_feat_cv(x, y):
@@ -140,13 +139,13 @@ def pca(x, labels=[], barriers=np.array([])):
     cbar.set_label("Barrier Energy")
     cbar.ax.set_yticklabels([str(min), str((min + mid)/2), str(mid), str((max+mid)/2), str(max)])
     plt.show()
-    """
     comp = []
     coeff_pca = []
     for i in pca.components_:
         for ind, j in enumerate(labels):
             if(np.absolute(i[ind]) > 0.1):
                 comp.append(labels[ind])
+                print(labels[ind])
                 coeff_pca.append(i[ind])
         print(comp)
         print(len(comp))
@@ -196,12 +195,12 @@ def pca(x, labels=[], barriers=np.array([])):
     fig.suptitle("2D Principal Components")
     fig.subplots_adjust(top=0.88)
     plt.show()
-    """
 
-    '''
+
+
     variance = pca.explained_variance_ratio_
     var = np.cumsum(np.round(variance, decimals=3) * 100)
-    seaborn.set_theme(style="ticks")
+    sns.set_theme(style="ticks")
     fig, ax = plt.subplots()
     plt.ylabel('% Variance Explained')
     plt.xlabel('# of Features')
@@ -210,7 +209,7 @@ def pca(x, labels=[], barriers=np.array([])):
     plt.xlim(0,50)
     plt.style.context('seaborn-whitegrid')
     #plt.plot(var)
-    seaborn.lineplot(range(len(var)), var)
+    sns.lineplot(range(len(var)), var)
     plt.hlines(95, linestyles= "dashdot", xmin=0, xmax=50)
     plt.hlines(90, linestyles= "dashdot", xmin=0, xmax=50)
     plt.hlines(85, linestyles= "dashdot", xmin=0, xmax=50)
@@ -228,8 +227,6 @@ def pca(x, labels=[], barriers=np.array([])):
     ax.arrow(40,81, 0, 14, fc='black',             #arrow fill color
              ec='black')
     plt.show()
-    '''
-
 
 def quant_feat(x_train, x_test, y_train, y_test, names):
 
@@ -239,27 +236,44 @@ def quant_feat(x_train, x_test, y_train, y_test, names):
 
     perm_sorted_idx = result.importances_mean.argsort()
     tree_importance_sorted_idx = np.argsort(reg.feature_importances_)
-
     tree_indices = np.arange(0, len(reg.feature_importances_)) + 0.5
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 8))
 
-    fig.suptitle("Permutation Importance, Compiled Set", fontsize=18)
+    fig.suptitle("Permutation Importance, Physical Set", fontsize=18)
 
     ax1.barh(tree_indices,
              reg.feature_importances_[tree_importance_sorted_idx], height=0.7)
     ax1.axvline(x=0, c = "red", linestyle="--")
 
-    ax1.set_yticklabels(names.columns[tree_importance_sorted_idx])
+    lbls = []
+    for i in names.columns[tree_importance_sorted_idx]:
+        if (str.split(i, "\mathcal")[1][1:5] != "Bond"):
+            lbls.append(r"$" + str.split(i, "\mathcal")[1])
+
+        else:
+            tmp = r"$BondEllipt_" + i[-3]+ "$"
+            lbls.append(tmp)
+
+    ax1.set_yticklabels(lbls)
     ax1.set_yticks(tree_indices)
     ax1.set_ylim((0, len(reg.feature_importances_)))
+
+    lbls = []
+    for i in names.columns[perm_sorted_idx]:
+        if (str.split(i, "\mathcal")[1][1:5] != "Bond"):
+            lbls.append(r"$" + str.split(i, "\mathcal")[1])
+
+        else:
+            tmp = r"$BondEllipt_" + i[-3]+ "$"
+            print(tmp)
+            lbls.append(tmp)
+
     ax2.boxplot(result.importances[perm_sorted_idx].T, vert=False,
-                labels=names.columns[perm_sorted_idx])
+                labels=lbls)
     ax2.axvline(x=0, c = "red", linestyle="--")
     fig.tight_layout()
     plt.show()
-
-
 
 #######################################Method 6: Boruta #########################################33
 
@@ -290,9 +304,25 @@ def boruta(x,y, n=5):
 def dendo(x):
     corr = spearmanr(x).correlation
     corr_linkage = hierarchy.ward(corr)
+
+    lbls = []
+    for i in x.columns:
+        if (str.split(i, "\mathcal")[1][1:5] != "Bond"):
+            lbls.append(r"$" + str.split(i, "\mathcal")[1])
+
+        else:
+            tmp = r"$BondEllipt_" + i[-3]+ "$"
+            lbls.append(tmp)
+
     dendro = hierarchy.dendrogram(
-        corr_linkage, labels=x.columns, leaf_rotation=90, leaf_font_size=16)
+        corr_linkage,labels =lbls,
+        leaf_rotation=90, leaf_font_size=16)
     dendro_idx = np.arange(0, len(dendro['ivl']))
-    plt.title("Feature Clustering, Compiled Space", fontsize=18)
+    #plt.xticks("$" + str.split(x.columns[0], "\mathcal")[1])
+    #plt.xticks(["$"+str.split(i, "\mathcal")[1] for i in x.columns])
+
+
+    #plt.xticks(x.columns)
+    plt.title("Feature Clustering, Physical Space", fontsize=18)
     plt.show()
 

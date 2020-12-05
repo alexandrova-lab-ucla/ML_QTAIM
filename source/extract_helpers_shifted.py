@@ -31,9 +31,9 @@ import pandas as pd
 def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     lookup_other = [
         "Rho",
-        "GradRho",
         "HessRho_EigVals",
         "DelSqRho",
+        "Bond",
         "V",
         "G",
         "K",
@@ -44,7 +44,7 @@ def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
         "-DivStress",
         "ESP",
         "ESPe",
-        "ESPn"
+        "ESP"
     ]
 
     #num = sorted(num)
@@ -69,27 +69,24 @@ def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
                     if (lookup_other[iter_lookup] == line.split()[0]):
 
                         if (line.split()[0] == "Stress_EigVals"):
-                            ret_list["Stress_EigVals_a_" + str(cp_of_interest)] = float(line.split()[2])
-                            ret_list["Stress_EigVals_b_" + str(cp_of_interest)] = float(line.split()[3])
-                            ret_list["Stress_EigVals_c_" + str(cp_of_interest)] = float(line.split()[4])
+                            ret_list["$\mathcal{Stress_EigVals}_{a," + str(cp_of_interest) +"}$"] = float(line.split()[2])
+                            ret_list["$\mathcal{Stress_EigVals}_{b," + str(cp_of_interest) +"}$"] = float(line.split()[3])
+                            ret_list["$\mathcal{Stress_EigVals}_{c," + str(cp_of_interest) +"}$"] = float(line.split()[4])
 
-                        elif (line.split()[0] == "GradRho"):
-                            ret_list["GradRho_a_"+ str(cp_of_interest) ] = float(line.split()[2])
-                            ret_list["GradRho_b_"+ str(cp_of_interest) ] = float(line.split()[3])
-                            ret_list["GradRho_c_"+ str(cp_of_interest) ] = float(line.split()[4])
 
                         elif (line.split()[0] == "Bond"):
                             if (line.split()[3] == "NA"):
-                                ret_list["Bond_" + str(cp_of_interest)] = 0
+                                ret_list["$\mathcal{Bond}_{" + str(cp_of_interest)+"}$"] = 0
                             else:
-                                ret_list["Bond_" + str(cp_of_interest)] = float(line.split()[3])
+                                ret_list["$\mathcal{Bond}_{" + str(cp_of_interest)+"}$"] = float(line.split()[3])
 
                         elif (line.split()[0] == "HessRho_EigVals"):
-                            ret_list["HessRho_EigVals_a_"+ str(cp_of_interest)] = float(line.split()[2])
-                            ret_list["HessRho_EigVals_b_"+ str(cp_of_interest)] = float(line.split()[3])
-                            ret_list["HessRho_EigVals_c_"+ str(cp_of_interest)] = float(line.split()[4])
+                            ret_list["$\mathcal{HessRhoEigVals}_{a,"+ str(cp_of_interest) +"}$"] = float(line.split()[2])
+                            ret_list["$\mathcal{HessRhoEigVals}_{b,"+ str(cp_of_interest) +"}$"] = float(line.split()[3])
+                            ret_list["$\mathcal{HessRhoEigVals}_{c,"+ str(cp_of_interest) +"}$"] = float(line.split()[4])
                         else:
-                            ret_list[lookup_other[iter_lookup] + "_" + str(cp_of_interest)] = float(line.split()[2])
+                            ret_list["$\mathcal{" + lookup_other[iter_lookup] +"}"+ "_{" + str(cp_of_interest) +"}$"] = float(line.split()[2])
+
                         iter_lookup += 1
 
                 if (int(line.split()[1]) in num and line.split()[0] == "CP#"):
@@ -103,7 +100,6 @@ def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
 def extract_ring_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     lookup_other = [
         "Rho",
-        "GradRho",
         "DelSqRho",
         "V",
         "G",
@@ -136,27 +132,25 @@ def extract_ring_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
                     if (lookup_other[iter_lookup] == line.split()[0]):
 
-                        if (line.split()[0] == "Stress_EigVals"):
-                            ret_list["Stress_EigVals_a_"+ str(cp_of_interest)] = float(line.split()[2])
-                            ret_list["Stress_EigVals_b_"+ str(cp_of_interest)] = float(line.split()[3])
-                            ret_list["Stress_EigVals_c_"+ str(cp_of_interest)] = float(line.split()[4])
+                        if (line.split()[0] in lookup_other[iter_lookup]):
+                            if (line.split()[0] == "Stress_EigVals"):
+                                ret_list["$\mathcal{Stress_EigVals}_{a," + str(cp_of_interest) + "}$"] = float(
+                                    line.split()[2])
+                                ret_list["$\mathcal{Stress_EigVals}_{b," + str(cp_of_interest) + "}$"] = float(
+                                    line.split()[3])
+                                ret_list["$\mathcal{Stress_EigVals}_{c," + str(cp_of_interest) + "}$"] = float(
+                                    line.split()[4])
 
-                        elif (line.split()[0] == "GradRho"):
-                            ret_list["GradRho_a_"+ str(cp_of_interest)] = float(line.split()[2])
-                            ret_list["GradRho_b_"+ str(cp_of_interest)] = float(line.split()[3])
-                            ret_list["GradRho_c_"+ str(cp_of_interest)] = float(line.split()[4])
-                        elif (line.split()[0] == "HessRho_EigVals"):
-                            ret_list["HessRho_EigVals_a_"+ str(cp_of_interest)] = float(line.split()[2])
-                            ret_list["HessRho_EigVals_b_"+ str(cp_of_interest)] = float(line.split()[3])
-                            ret_list["HessRho_EigVals_c_"+ str(cp_of_interest)] = float(line.split()[4])
+                            elif (line.split()[0] == "HessRho_EigVals"):
+                                ret_list["$\mathcal{HessRhoEigVals}_{a," + str(cp_of_interest) + "}$"] = float(
+                                    line.split()[2])
+                                ret_list["$\mathcal{HessRhoEigVals}_{b," + str(cp_of_interest) + "}$"] = float(
+                                    line.split()[3])
+                                ret_list["$\mathcal{HessRhoEigVals}_{c," + str(cp_of_interest) + "}$"] = float(
+                                    line.split()[4])
 
-                        elif (line.split()[0] == "Bond"):
-                            if(line.split()[3] == "NA"):
-                                ret_list["Bond_"+ str(cp_of_interest)] = 0
-                            else:
-                                ret_list["Bond_"+ str(cp_of_interest)] = float(line.split()[3])
                         else:
-                            ret_list[lookup_other[iter_lookup]+ "_" +str(cp_of_interest)] = float(line.split()[2])
+                            ret_list["$\mathcal{" + lookup_other[iter_lookup] +"}"+ "_{" + str(cp_of_interest) +"}$"] = float(line.split()[2])
 
                         iter_lookup += 1
 
@@ -227,22 +221,17 @@ def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
                     if (line.split()[0] in lookup_nuclear[iter_lookup]  ):
                         if (line.split()[0] == "Stress_EigVals"):
-                            ret_list["Stress_EigVals_a_" + str(cp_of_interest)] = float(line.split()[2])
-                            ret_list["Stress_EigVals_b_" + str(cp_of_interest)] = float(line.split()[3])
-                            ret_list["Stress_EigVals_c_" + str(cp_of_interest)] = float(line.split()[4])
-
-                        elif (line.split()[0] == "GradRho"):
-                            ret_list["GradRho_a_"+ str(cp_of_interest)] = float(line.split()[2])
-                            ret_list["GradRho_b_"+ str(cp_of_interest)] = float(line.split()[3])
-                            ret_list["GradRho_c_"+ str(cp_of_interest)] = float(line.split()[4])
+                            ret_list["$\mathcal{Stress_EigVals}_{a," + str(cp_of_interest) +"}$"] = float(line.split()[2])
+                            ret_list["$\mathcal{Stress_EigVals}_{b," + str(cp_of_interest) +"}$"] = float(line.split()[3])
+                            ret_list["$\mathcal{Stress_EigVals}_{c," + str(cp_of_interest) +"}$"] = float(line.split()[4])
 
                         elif (line.split()[0] == "HessRho_EigVals"):
-                            ret_list["HessRho_EigVals_a_"+ str(cp_of_interest)] = float(line.split()[2])
-                            ret_list["HessRho_EigVals_b_"+ str(cp_of_interest)] = float(line.split()[3])
-                            ret_list["HessRho_EigVals_c_"+ str(cp_of_interest)] = float(line.split()[4])
+                            ret_list["$\mathcal{HessRhoEigVals}_{a,"+ str(cp_of_interest) +"}$"] = float(line.split()[2])
+                            ret_list["$\mathcal{HessRhoEigVals}_{b,"+ str(cp_of_interest) +"}$"] = float(line.split()[3])
+                            ret_list["$\mathcal{HessRhoEigVals}_{c,"+ str(cp_of_interest) +"}$"] = float(line.split()[4])
 
                         else:
-                            ret_list[lookup_nuclear[iter_lookup] +"_"+ str(cp_of_interest)] = float(line.split()[2])
+                            ret_list["$\mathcal{" + lookup_nuclear[iter_lookup] +"}"+ "_{" + str(cp_of_interest) +"}$"] = float(line.split()[2])
 
                         iter_lookup += 1
 
@@ -253,7 +242,6 @@ def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
             except:
                 pass
         return ret_list
-
 
 def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
@@ -279,18 +267,18 @@ def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
                 # grabs charge, lagrangian, kinetic energy of ea. atom
                 #if (int(line.split().count(num[iter_1 % len(num)])) > 0 and control_1 > 0):
                 if (control_1 > 0):
-                    ret_list["NetCharge_basic_" + str(iter_1)] = float(line.split()[1])
-                    ret_list["Lagr_basic_" + str(iter_1)] = float(line.split()[2])
-                    ret_list["Kinetic_basic_" + str(iter_1)] = float(line.split()[3])
-                    ret_list["K|Scaled|_basic_" + str(iter_1)] = float(line.split()[4])
+                    ret_list["$\mathcal{NetCharge}_{basic," + str(iter_1) + "}$"] = float(line.split()[1])
+                    ret_list["$\mathcal{Lagr}_{basic," + str(iter_1) + "}$"] = float(line.split()[2])
+                    ret_list["$\mathcal{Kinetic}_{basic," + str(iter_1) + "}$"] = float(line.split()[3])
+                    ret_list["$\mathcal{K|Scaled|}_{basic," + str(iter_1) + "}$"] = float(line.split()[4])
                     iter_1 += 1
 
                 # grabs position of six atoms
                 if (control_2 > 0):
-                    ret_list["charge_basic_"+str(iter_2)] = float(line.split()[2])
-                    ret_list["x_basic_"+str(iter_2)] = float(line.split()[3])
-                    ret_list["y_basic_"+str(iter_2)] = float(line.split()[4])
-                    ret_list["z_basic_"+str(iter_2)] = float(line.split()[5])
+                    ret_list["$\mathcal{charge}_{basic}("+str(iter_2) + ")"] = float(line.split()[2])
+                    ret_list["$\mathcal{x}_{basic}("+str(iter_2) + ")$"] = float(line.split()[3])
+                    ret_list["$\mathcal{y}_{basic}("+str(iter_2) + ")$"] = float(line.split()[4])
+                    ret_list["$\mathcal{z}_{basic}("+str(iter_2) + ")$"] = float(line.split()[5])
                     iter_2 += 1
 
                 if (iter_1-1 >= len(num)):
@@ -315,15 +303,15 @@ def extract_charge_energies(num, filename="../sum_files/reactC_endo10MVc.sum"):
         for line_num, line in enumerate(myFile.readlines()):
             try:
                 if (line.split()[0] == "Molecular" and line.split()[1] == "energy"):
-                    ret_list["MolEnergy"] = float(line.split()[-1])
+                    ret_list["$\mathcal{MolEnergy}$"] = float(line.split()[-1])
                     
                 if (line.split()[0] == "Some" and line.split()[1] == "Atomic"
                         and line.split()[2] == "Properties:"):
                     control = 1
 
                 if ((line.split()[0].lower() in num or line.split()[0].upper() in num) and control == 1):
-                    ret_list["NetCharge_" + str(iter)] = float(line.split()[1])
-                    ret_list["Lagrangian_" + str(iter)] = float(line.split()[2])
+                    ret_list["$\mathcal{NetCharge}_{" + str(iter)  +"}$"] = float(line.split()[1])
+                    ret_list["$\mathcal{Lagrangian}_{" + str(iter) +"}$"] = float(line.split()[2])
                     iter += 1
 
                 if (iter-1 >= len(num)):
@@ -338,11 +326,9 @@ def extract_charge_energies(num, filename="../sum_files/reactC_endo10MVc.sum"):
 # atoms in the cage of the diels alder rxn
 def extract_spin(num, filename="../sum_files/reactC_endo10MVc.sum"):
     with open(filename) as myFile:
-
         control = 0
         ret_dic = {}
         iter = 1
-
         for line_num, line in enumerate(myFile.readlines()):
             try:
 
@@ -352,16 +338,36 @@ def extract_spin(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
                 if ((line.split()[0].lower() in num or line.split()[0].upper() in num) and control == 1):
 
-                    ret_dic["Spin_tot_" + str(iter)] = float(line.split()[3])
-                    ret_dic["Spin_net_" + str(iter)] = float(line.split()[4])
+                    ret_dic["$\mathcal{SpinTot}_{" + str(iter) +"}$"] = float(line.split()[3])
+                    ret_dic["$\mathcal{SpinNet}_{" + str(iter) +"}$"] = float(line.split()[4])
                     iter += 1
 
                 if (iter-1 >= len(num)):
                     control = 0
-
             except:
                 pass
+    return ret_dic
 
+# Delocalization Index
+def extract_DI(num, filename="../sum_files/reactC_endo10MVc.sum"):
+    with open(filename) as myFile:
+        control = 0
+        ret_dic = {}
+        iter = 1
+        for line_num, line in enumerate(myFile.readlines()):
+            try:
+                if (line.split()[0] == "More" and line.split()[1] == "Atomic"
+                        and line.split()[2] == "Electron"):
+                    control = 1
+                if ((line.split()[0].lower() in num or line.split()[0].upper() in num) and control == 1):
+                    ret_dic["$\mathcal{DelocInd}_{" + str(iter) +"}$"] = float(line.split()[3])
+                    ret_dic["$\mathcal{DelocIndBond}_{" + str(iter) +"}$"] = float(line.split()[4])
+                    iter += 1
+
+                if (iter-1 >= len(num)):
+                    control = 0
+            except:
+                pass
     return ret_dic
 
 def atom_xyz_from_sum(filename=""):
@@ -423,7 +429,7 @@ def extract_all():
     atoms = atoms.replace(" ", "")[1:-1]
     atom_id = [x[1:-1] for x in atoms.split(",")]
     basis = extract_basics(num=atom_id, filename=fl_arr[0])
-    basis_atom_1 = [basis["x_basic_1"], basis["y_basic_1"], basis["z_basic_1"]]
+    basis_atom_1 = [basis["$\mathcal{x}_{basic}(1)$"], basis["$\mathcal{y}_{basic}(2)$"], basis["$\mathcal{z}_{basic}(3)$"]]
 
     for ind, fl in enumerate(fl_arr):
         # if (pd.isnull(df["AtomOrder"][ind]) or pd.isnull(df["CPOrder"][ind]) ):
@@ -445,19 +451,21 @@ def extract_all():
                 atoms.append(int(i[-1]))
 
         bond = extract_bond_crit(num=bond_cp, filename=fl)
-        ring = extract_ring_crit(num=ring_cp, filename=fl)
+        #ring = extract_ring_crit(num=ring_cp, filename=fl)
         nuc = extract_nuc_crit(num=atoms, filename=fl)
         charge = extract_charge_energies(num=atom_id, filename=fl)
         spin = extract_spin(num=atom_id, filename=fl)
         basics = extract_basics(num=atom_id, filename=fl)
+        DelocInd = extract_DI(num = atom_id, filename=fl)
 
-        translate = ["x_basic_1", "y_basic_1", "z_basic_1",
-                     "x_basic_2", "y_basic_2", "z_basic_2", "x_basic_3", "y_basic_3", "z_basic_3",
-                     "x_basic_4", "y_basic_4", "z_basic_5", "x_basic_5", "y_basic_5", "z_basic_5",
-                     "x_basic_6", "y_basic_6", "z_basic_6"]
+        translate = ["$\mathcal{x}_{basic}(1)$", "$\mathcal{y}_{basic}(1)$", "$\mathcal{z}_{basic}(1)$",
+                     "$\mathcal{x}_{basic}(2)$", "$\mathcal{y}_{basic}(2)$", "$\mathcal{z}_{basic}(2)$",
+                     "$\mathcal{x}_{basic}(3)$", "$\mathcal{y}_{basic}(3)$", "$\mathcal{z}_{basic}(3)$",
+                     "$\mathcal{x}_{basic}(4)$", "$\mathcal{y}_{basic}(4)$", "$\mathcal{z}_{basic}(4)$",
+                     "$\mathcal{x}_{basic}(5)$", "$\mathcal{y}_{basic}(5)$", "$\mathcal{z}_{basic}(5)$",
+                     "$\mathcal{x}_{basic}(5)$", "$\mathcal{y}_{basic}(6)$", "$\mathcal{z}_{basic}(6)$"]
 
         for i in translate:
-
             if (i[0] == 'x'):
                 basics[i] = basics[i] - basis_atom_1[0]
             elif (i[0] == 'y'):
@@ -468,12 +476,12 @@ def extract_all():
         # print(len(bond) + len(ring) + len(nuc) + len(charge)+\
         #      len(spin) + len(basics))
         full_dictionary.update(bond)
-        full_dictionary.update(ring)
+        #full_dictionary.update(ring)
         full_dictionary.update(nuc)
         full_dictionary.update(charge)
         full_dictionary.update(spin)
         full_dictionary.update(basics)
-
+        full_dictionary.update(DelocInd)
 
         y.append(float(df["barrier(kj/mol)"][ind]))
 

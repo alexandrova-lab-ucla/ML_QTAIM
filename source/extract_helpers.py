@@ -31,9 +31,9 @@ import pandas as pd
 def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     lookup_other = [
         "Rho",
-        "GradRho",
         "HessRho_EigVals",
         "DelSqRho",
+        "Bond",
         "V",
         "G",
         "K",
@@ -73,16 +73,11 @@ def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
                             ret_list["Stress_EigVals_b_" + str(cp_of_interest)] = float(line.split()[3])
                             ret_list["Stress_EigVals_c_" + str(cp_of_interest)] = float(line.split()[4])
 
-                        elif (line.split()[0] == "GradRho"):
-                            ret_list["GradRho_a_" + str(cp_of_interest)] = float(line.split()[2])
-                            ret_list["GradRho_b_" + str(cp_of_interest)] = float(line.split()[3])
-                            ret_list["GradRho_c_" + str(cp_of_interest)] = float(line.split()[4])
-
                         elif (line.split()[0] == "Bond"):
                             if (line.split()[3] == "NA"):
-                                ret_list["Bond_" + str(cp_of_interest)] = 0
+                                ret_list["Bond" + str(cp_of_interest)] = 0
                             else:
-                                ret_list["Bond_" + str(cp_of_interest)] = float(line.split()[3])
+                                ret_list["Bond_Ellip" + str(cp_of_interest)+")"] = float(line.split()[3])
 
                         elif (line.split()[0] == "HessRho_EigVals"):
                             ret_list["HessRho_EigVals_a_" + str(cp_of_interest)] = float(line.split()[2])
@@ -104,7 +99,6 @@ def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
 def extract_ring_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     lookup_other = [
         "Rho",
-        "GradRho",
         "DelSqRho",
         "V",
         "G",
@@ -142,10 +136,6 @@ def extract_ring_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
                             ret_list["Stress_EigVals_b_" + str(cp_of_interest)] = float(line.split()[3])
                             ret_list["Stress_EigVals_c_" + str(cp_of_interest)] = float(line.split()[4])
 
-                        elif (line.split()[0] == "GradRho"):
-                            ret_list["GradRho_a_" + str(cp_of_interest)] = float(line.split()[2])
-                            ret_list["GradRho_b_" + str(cp_of_interest)] = float(line.split()[3])
-                            ret_list["GradRho_c_" + str(cp_of_interest)] = float(line.split()[4])
                         elif (line.split()[0] == "HessRho_EigVals"):
                             ret_list["HessRho_EigVals_a_" + str(cp_of_interest)] = float(line.split()[2])
                             ret_list["HessRho_EigVals_b_" + str(cp_of_interest)] = float(line.split()[3])
@@ -232,11 +222,6 @@ def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
                             ret_list["Stress_EigVals_a_" + str(cp_of_interest)] = float(line.split()[2])
                             ret_list["Stress_EigVals_b_" + str(cp_of_interest)] = float(line.split()[3])
                             ret_list["Stress_EigVals_c_" + str(cp_of_interest)] = float(line.split()[4])
-
-                        elif (line.split()[0] == "GradRho"):
-                            ret_list["GradRho_a_" + str(cp_of_interest)] = float(line.split()[2])
-                            ret_list["GradRho_b_" + str(cp_of_interest)] = float(line.split()[3])
-                            ret_list["GradRho_c_" + str(cp_of_interest)] = float(line.split()[4])
 
                         elif (line.split()[0] == "HessRho_EigVals"):
                             ret_list["HessRho_EigVals_a_" + str(cp_of_interest)] = float(line.split()[2])

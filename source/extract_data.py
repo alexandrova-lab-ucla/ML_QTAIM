@@ -4,7 +4,8 @@ import multiprocessing as mp
 import numpy as np
 import seaborn as sns;
 import xgboost as xgb
-from extract_helpers import *
+from extract_helpers_shifted import *
+
 from feature_sel_util import *
 from scoring_functions import *
 
@@ -36,100 +37,101 @@ std = (np.std(y), np.mean(y))
 #std = max - min
 y_scale = (y - np.mean(y))/np.std(y)
 
-# final trial with full dataset, pooled
-importance_vars_v5 = \
+pooled_set = \
     [
-        "-DivStress_0", "-DivStress_1", "-DivStress_10", "-DivStress_11", "-DivStress_2", "-DivStress_5",
-        "-DivStress_7",
-        "ESP_0", "ESP_1", "ESP_10", "ESP_2", "ESP_3", "ESP_4", "ESP_5", "ESP_9", "ESPe_0", "ESPe_9", "ESPn_10",
-        "ESPn_3", "ESPn_4", "ESPn_5",
-        "GradRho_a_11", "GradRho_a_9", "GradRho_b_10", "GradRho_b_11", "GradRho_b_7", "GradRho_c_10", "GradRho_c_6",
-        "HessRho_EigVals_a_9", "HessRho_EigVals_b_9", "HessRho_EigVals_c_6",
-        "K|Scaled|_basic_1", "K|Scaled|_basic_2", "K|Scaled|_basic_3", "K|Scaled|_basic_5",
-        "Lagr_basic_0", "Lagr_basic_1", "Lagr_basic_2", "Lagr_basic_3", "Lagr_basic_4", "Lagr_basic_5",
-        "V_11", "V_9", "Vnuc_0", "Vnuc_1", "Vnuc_10", "Vnuc_2", "Vnuc_3", "Vnuc_4", "Vnuc_5"
+     "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$","$\mathcal{Bond}_{9}$",
+     "$\mathcal{DelocIndBond}_{5}$",
+     "$\mathcal{DelSqRho}_{1}$",
+     "$\mathcal{DelSqV}_{7}$",
+     "$\mathcal{ESP}_{1}$","$\mathcal{ESP}_{2}$","$\mathcal{ESP}_{4}$","$\mathcal{ESP}_{5}$","$\mathcal{ESP}_{6}$",
+     "$\mathcal{ESPe}_{10}$",
+     "$\mathcal{ESPn}_{4}$","$\mathcal{ESPn}_{5}$",
+     "$\mathcal{HessRhoEigVals}_{c,7}$",
+     "$\mathcal{K|Scaled|}_{basic,1}$","$\mathcal{K|Scaled|}_{basic,2}$",
+     "$\mathcal{K|Scaled|}_{basic,3}$","$\mathcal{K|Scaled|}_{basic,4}$",
+     "$\mathcal{K|Scaled|}_{basic,6}$",
+     "$\mathcal{Kinetic}_{basic,5}$","$\mathcal{Kinetic}_{basic,6}$",
+     "$\mathcal{Lagr}_{basic,1}$","$\mathcal{Lagr}_{basic,5}$","$\mathcal{Lagrangian}_{2}$",
+     "$\mathcal{Rho}_{8}$",
+     "$\mathcal{Stress_EigVals}_{c,7}$",
+    "$\mathcal{Vnuc}_{1}$","$\mathcal{Vnuc}_{2}$","$\mathcal{Vnuc}_{3}$",
+    "$\mathcal{Vnuc}_{4}$","$\mathcal{Vnuc}_{5}$","$\mathcal{Vnuc}_{6}$"
     ]
-# physical set - 1
-importance_final_feats = \
+
+pool_uncorr = \
     [
-    "ESP_0","ESP_1","ESP_10","ESP_2","ESP_3","ESP_4","ESP_5","ESP_9",
-    "ESPe_0","ESPe_9",
-    "ESPn_10","ESPn_3","ESPn_4","ESPn_5",
-    "K|Scaled|_basic_1","K|Scaled|_basic_2","K|Scaled|_basic_3","K|Scaled|_basic_5",
-    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
-    "Vnuc_0","Vnuc_1","Vnuc_2","Vnuc_3","Vnuc_4","Vnuc_5",
+        "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
+        "$\mathcal{DelocIndBond}_{5}$",
+        "$\mathcal{DelSqRho}_{1}$",
+        "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{6}$",
+        "$\mathcal{ESPn}_{5}$",
+        "$\mathcal{HessRhoEigVals}_{c,7}$",
+        "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$",
+        "$\mathcal{K|Scaled|}_{basic,3}$", "$\mathcal{K|Scaled|}_{basic,4}$",
+        "$\mathcal{Kinetic}_{basic,5}$", "$\mathcal{Kinetic}_{basic,6}$",
+        "$\mathcal{Lagr}_{basic,1}$", "$\mathcal{Lagr}_{basic,5}$", "$\mathcal{Lagrangian}_{2}$",
+        "$\mathcal{Rho}_{8}$",
+        "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
+        "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
     ]
-# final trial with full dataset, no correlation
-importance_vars_v6 = \
-    [
-        "-DivStress_0", "-DivStress_1", "-DivStress_10", "-DivStress_11", "-DivStress_2", "-DivStress_5",
-        "-DivStress_7",
-        "ESP_0", "ESP_1", "ESP_10", "ESP_2", "ESP_3", "ESP_4", "ESP_5", "ESPe_0", "ESPe_9",
-        "GradRho_a_11", "GradRho_a_9", "GradRho_b_10", "GradRho_b_11", "GradRho_b_7", "GradRho_c_10", "GradRho_c_6",
-        "K|Scaled|_basic_1", "K|Scaled|_basic_2", "K|Scaled|_basic_3", "K|Scaled|_basic_5",
-        "Lagr_basic_0", "Lagr_basic_1", "Lagr_basic_2", "Lagr_basic_3", "Lagr_basic_4", "Lagr_basic_5",
-        "V_11", "Vnuc_0", "Vnuc_1", "Vnuc_2", "Vnuc_3", "Vnuc_4", "Vnuc_5"
-    ]
+
 # physical set, general model
 physical = \
     [
-    "ESP_0", "ESP_1", "ESP_2", "ESP_3", "ESP_4", "ESP_5", "ESP_6",
-    "ESP_7", "ESP_8" ,"ESP_9",
-    "ESPn_0", "ESPn_1", "ESPn_2", "ESPn_3", "ESPn_4","ESPn_5",
-    "K|Scaled|_basic_0","K|Scaled|_basic_1","K|Scaled|_basic_2", "K|Scaled|_basic_3","K|Scaled|_basic_4","K|Scaled|_basic_5",
-    "Lagr_basic_0","Lagr_basic_1","Lagr_basic_2","Lagr_basic_3","Lagr_basic_4","Lagr_basic_5",
-    "Vnuc_0","Vnuc_1","Vnuc_2", "Vnuc_3","Vnuc_4","Vnuc_5",
-    "HessRho_EigVals_c_6"
+        "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
+        "$\mathcal{DelocIndBond}_{5}$",
+        "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$", "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
+        "$\mathcal{ESPn}_{4}$", "$\mathcal{ESPn}_{5}$",
+        "$\mathcal{HessRhoEigVals}_{c,7}$",
+        "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$", "$\mathcal{K|Scaled|}_{basic,3}$",
+        "$\mathcal{K|Scaled|}_{basic,4}$", "$\mathcal{K|Scaled|}_{basic,5}$", "$\mathcal{K|Scaled|}_{basic,6}$",
+        "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$", "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$",
+        "$\mathcal{Vnuc}_{6}$"
     ]
 
-# select subset of full dictionary
-reduced_x_5_df = x[importance_vars_v5]
-reduced_x_6_df = x[importance_vars_v6]
-reduce_x_final_df = x[physical]
-#  scales features down
-reduced_x_physical = scale(reduce_x_final_df)
-reduced_x_6 = scale(reduced_x_6_df)
-reduced_x_5 = scale(reduced_x_5_df)
-full_input = scale(x)
-
 parser = argparse.ArgumentParser(description='select descriptor, and directory of files')
-parser.add_argument("--algo", action='store', dest="algo", default="xgb",
-                    help="select algorithm")
-parser.add_argument("-n", action='store', dest="n_iter", default="500",
-                    help="select number of trials")
+parser.add_argument("--algo", action='store', dest="algo", default="xgb",help="select algorithm")
+parser.add_argument("-n", action='store', dest="n_iter", default="500", help="select number of trials")
 parser.add_argument('--bayes', dest="bayes", action='store_true')
 parser.add_argument('--single', dest="single", action='store_true')
-parser.add_argument('--pca_space', dest="pca_space", action='store_true')
+parser.add_argument('--pool', dest="pool", action='store_true')
 parser.add_argument('--physical', dest="phys", action='store_true')
 parser.add_argument('--all', dest="all", action='store_true')
 
 results = parser.parse_args()
 algo = results.algo
-pca_space = results.pca_space
-physical_space = results.phys
 bayes = results.bayes
 single = results.single
 n_iter = int(results.n_iter)
 all = results.all
+pool = results.pool
+physical_set = results.phys
 
-if(pca_space == True):
-    dataset = reduced_x_6
-    ref_df = reduced_x_6_df
+phys_x_df = x[physical]
+pool_x_uncorr_df = x[pool_uncorr]
+pool_x_df = x[pooled_set]
+
+full_input = scale(x)
+pool_x = scale(x[pooled_set].to_numpy())
+phys_x = scale(x[physical].to_numpy())
+pool_x_uncorr = scale(x[pool_uncorr].to_numpy())
+
+if(pool == True):
+    dataset = pool_x
+    ref_df = pool_x_df
 else:
-    if(physical_space == True):
-        dataset = reduced_x_physical
-        ref_df = reduce_x_final_df
+    if(physical_set == True):
+        dataset = phys_x
+        ref_df = phys_x_df
     else:
-        if (all == True):
+        if(all == True):
             dataset = full_input
             ref_df = x
         else:
-            dataset = reduced_x_5
-            ref_df = reduced_x_5_df
+            dataset = pool_x_uncorr
+            ref_df = pool_x_uncorr_df
 
 x_train, x_test, y_train, y_test = train_test_split(ref_df, y_scale, test_size=0.2, random_state=1)
-#x_train, x_test, y_train, y_test = train_test_split(dataset, y_scale, test_size=0.2, random_state=1)
-
 names = ref_df
 
 if(bayes == True):
@@ -276,7 +278,7 @@ if(bayes == True):
     elif(algo == "nn"):
         print("nn algorithm")
 
-        reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, hidden_layer_sizes=(500,),
+        reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, hidden_layer_sizes=(200,200,),
                               solver="adam")
         reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10,  scoring = "neg_mean_absolute_error")
         reg_nn.fit(x_train, y_train)
@@ -478,10 +480,8 @@ elif(single == True):
         from tensorflow.keras import regularizers
 
         model = tf.keras.Sequential([
-            tf.keras.layers.Dense(50, activation='relu', input_shape=(np.shape(x_train)[1], ), bias_regularizer=regularizers.l2(1e-4)),
-            tf.keras.layers.Dense(50, activation='relu', bias_regularizer=regularizers.l2(1e-4)),
-            tf.keras.layers.Dense(50, activation='relu', bias_regularizer=regularizers.l2(1e-4)),
-
+            tf.keras.layers.Dense(1000, activation='relu', input_shape=(np.shape(x_train)[1], ),
+                                  bias_regularizer=regularizers.l2(1e-4)),
             tf.keras.layers.Dense(1, activation="linear")
         ])
         #tf.keras.layers.Dropout(0.3),
@@ -490,7 +490,7 @@ elif(single == True):
                       loss="MSE",
                       metrics=["MAE","MSE"])
 
-        model.fit(x_train, np.ravel(y_train), epochs=200,batch_size=np.shape(x_train)[0], verbose = 1)
+        model.fit(x_train, np.ravel(y_train), epochs=2000,batch_size=np.shape(x_train)[0], verbose = 1)
 
         y_hat = model.predict(x_test)
         mse = mean_squared_error(y_test, y_hat)
@@ -498,7 +498,7 @@ elif(single == True):
         r2 = r2_score(y_test, y_hat)
         print("------------------------------")
         print(np.shape(x_train))
-        print("mae test:" + str(mae * (std)))
+        print("mae test:" + str(mae * (std[0])))
         print("mse test:" + str(mse))
         print("r2 test:" + str(r2))
         # tensorflow
@@ -568,10 +568,6 @@ elif(single == True):
 else:
     print("no training selected, feature selection")
 
-
-    # -------------------------feature selection
-    # variance_thresh(x,y)
-    # -------------------------------------
     # pca(x, list(x), y)
     # lasso(x,y)
     # lasso_cv(x,y)
@@ -580,22 +576,18 @@ else:
     # 25 pca components has 90% explained variance
     # ----------------Done and good
     #lasso(x, y)
-    # boruta(x,y, n = 7)
+    #lasso_cv(x, y)
+
+    #boruta(x,y, n = 7)
     #boruta(x,y, n = 5)
-    # boruta(x,y, n = 3)
-    print("dendrogram")
-    dendo(names)
-    print("quantitative feature selction")
+    #boruta(x,y, n = 3)
+
+    #print("dendrogram")
+    #dendo(names)
+    #print("quantitative feature selction")
     quant_feat(x_train, x_test, y_train, y_test, names)
 
-    # recursive_feat_elim(x, y)
     # pca = PCA(0.90)
     # principal_components = pca.fit_transform(x)
     # principal_df = pd.DataFrame(data = principal_components)
     # principal_df
-
-    # ind_filtered = np.argsort(y)[10:-10]
-    # filt_y = y[ind_filtered]
-    # filt_x =  principal_components[ind_filtered]
-    # x_train, x_test, y_train, y_test = train_test_split(reduced_x_1, y , test_size=0.2)
-    # manually filter values found from other features
