@@ -1,11 +1,24 @@
 import numpy as np
+from plot_graphs import label_rewrite
 import matplotlib.pyplot as plt
+import matplotlib
 from matplotlib import cm
-params = {'mathtext.default': 'it' }
-plt.rcParams.update(params)
+
+matplotlib.rcParams.update({# Use mathtext, not LaTeX
+                            'text.usetex': False,
+                            # Use the Computer modern font
+                            'font.family': 'serif',
+                            'font.serif': 'cmr10',
+                            'mathtext.fontset': 'cm',
+                            # Use ASCII minus
+                            'axes.unicode_minus': False,
+                            'font.size': 14,
+                            })
 
 from boruta import BorutaPy
 import seaborn as sns
+sns.set_style("ticks")
+sns.set_context("poster")
 import pandas as pd
 
 from scipy.stats import spearmanr
@@ -240,38 +253,24 @@ def quant_feat(x_train, x_test, y_train, y_test, names):
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 8))
 
-    fig.suptitle("Permutation Importance, Physical Set", fontsize=18)
+    fig.suptitle("Permutation Importance, Pooled Set", fontsize=18)
 
     ax1.barh(tree_indices,
-             reg.feature_importances_[tree_importance_sorted_idx], height=0.7)
+             reg.feature_importances_[tree_importance_sorted_idx], height=0.7, color="peachpuff", edgecolor= "k")
     ax1.axvline(x=0, c = "red", linestyle="--")
 
-    lbls = []
-    for i in names.columns[tree_importance_sorted_idx]:
-        if (str.split(i, "\mathcal")[1][1:5] != "Bond"):
-            lbls.append(r"$" + str.split(i, "\mathcal")[1])
-
-        else:
-            tmp = r"$BondEllipt_" + i[-3]+ "$"
-            lbls.append(tmp)
-
-    ax1.set_yticklabels(lbls)
+    lbls = label_rewrite(names.columns[perm_sorted_idx])
+    ax1.set_yticklabels(lbls, fontsize=16)
     ax1.set_yticks(tree_indices)
     ax1.set_ylim((0, len(reg.feature_importances_)))
+    ax1.tick_params(labelsize=12)
 
-    lbls = []
-    for i in names.columns[perm_sorted_idx]:
-        if (str.split(i, "\mathcal")[1][1:5] != "Bond"):
-            lbls.append(r"$" + str.split(i, "\mathcal")[1])
 
-        else:
-            tmp = r"$BondEllipt_" + i[-3]+ "$"
-            print(tmp)
-            lbls.append(tmp)
-
-    ax2.boxplot(result.importances[perm_sorted_idx].T, vert=False,
-                labels=lbls)
+    lbls = label_rewrite(names.columns[perm_sorted_idx])
+    ax2.boxplot(result.importances[perm_sorted_idx].T, vert=False)
+    ax2.set_yticklabels(lbls, fontsize=16)
     ax2.axvline(x=0, c = "red", linestyle="--")
+    ax2.tick_params(labelsize=12)
     fig.tight_layout()
     plt.show()
 
@@ -305,24 +304,16 @@ def dendo(x):
     corr = spearmanr(x).correlation
     corr_linkage = hierarchy.ward(corr)
 
-    lbls = []
-    for i in x.columns:
-        if (str.split(i, "\mathcal")[1][1:5] != "Bond"):
-            lbls.append(r"$" + str.split(i, "\mathcal")[1])
-
-        else:
-            tmp = r"$BondEllipt_" + i[-3]+ "$"
-            lbls.append(tmp)
-
+    lbls = label_rewrite(x.columns)
     dendro = hierarchy.dendrogram(
         corr_linkage,labels =lbls,
-        leaf_rotation=90, leaf_font_size=16)
+        leaf_rotation=90, leaf_font_size=19)
     dendro_idx = np.arange(0, len(dendro['ivl']))
     #plt.xticks("$" + str.split(x.columns[0], "\mathcal")[1])
     #plt.xticks(["$"+str.split(i, "\mathcal")[1] for i in x.columns])
 
 
     #plt.xticks(x.columns)
-    plt.title("Feature Clustering, Physical Space", fontsize=18)
+    plt.title("Feature Clustering, Physical Space", fontsize=20)
     plt.show()
 

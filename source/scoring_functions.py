@@ -1,11 +1,25 @@
+import numpy as np
+import xgboost as xgb
+import seaborn as sns
+sns.set_style("ticks")
+sns.set_context("paper")
+import matplotlib
+import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, ExtraTreesRegressor,\
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor,\
     GradientBoostingRegressor
-import xgboost as xgb
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+
+matplotlib.rcParams.update({# Use mathtext, not LaTeX
+                            'text.usetex': False,
+                            # Use the Computer modern font
+                            'font.family': 'serif',
+                            'font.serif': 'cmr10',
+                            'mathtext.fontset': 'cm',
+                            # Use ASCII minus
+                            'axes.unicode_minus': False,
+                            'font.size': 16,
+                            })
 
 class custom_skopt_extra_scorer(object):
 
@@ -160,21 +174,22 @@ def score_single(reg, x_train, x_test, y_train, y_test, scale=(1,0)):
     plt.xlabel("Predicted Value")
     name = str(reg)
     plt.title("XGB Residuals")
+    plt.show()
 
     resid = [np.abs(y_test[i] - y_pred_test[i]) for i in range(len(y_test))]
     sorted = np.argsort(resid) # decreasing order
     [worst1, worst2, worst3] = [i for i in sorted[len(sorted)-3:len(sorted)]]
 
-    #print("----------------------------------------------------")
-    #print("worst residuals: "+ str(resid[worst1])+ ", "+ str(resid[worst2])+", " + str(resid[worst3]))
-    #print("worst index: " +str(worst1)+ ", "+str(worst2)+ ", " +str(worst3))
-    #print("1st worst barrier prediction: " +str(y_test[worst1]*scale[0]+ scale[1]))
-    #print("2st worst barrier prediction: " +str(y_test[worst2]*scale[0]+ scale[1]))
-    #print("3st worst barrier prediction: " +str(y_test[worst3]*scale[0]+ scale[1]))
-    #print("1st worst resid: " +str((y_test[worst1] - y_pred_test[worst1])*scale[0]))
-    #print("2st worst resid: " +str((y_test[worst2] - y_pred_test[worst2])*scale[0]))
-    #print("3st worst resid: " +str((y_test[worst3] - y_pred_test[worst3])*scale[0]))
-    #print(scale)
+    print("----------------------------------------------------")
+    print("worst residuals: "+ str(resid[worst1])+ ", "+ str(resid[worst2])+", " + str(resid[worst3]))
+    print("worst index: " +str(worst1)+ ", "+str(worst2)+ ", " +str(worst3))
+    print("1st worst barrier prediction: " +str(y_test[worst1]*scale[0]+ scale[1]))
+    print("2st worst barrier prediction: " +str(y_test[worst2]*scale[0]+ scale[1]))
+    print("3st worst barrier prediction: " +str(y_test[worst3]*scale[0]+ scale[1]))
+    print("1st worst resid: " +str((y_test[worst1] - y_pred_test[worst1])*scale[0]))
+    print("2st worst resid: " +str((y_test[worst2] - y_pred_test[worst2])*scale[0]))
+    print("3st worst resid: " +str((y_test[worst3] - y_pred_test[worst3])*scale[0]))
+    print(scale)
     #plt.show()
 
     x_test_sans = x_test.drop([x_test.index[worst1], x_test.index[worst2], x_test.index[worst3]])
@@ -193,12 +208,11 @@ def score_single(reg, x_train, x_test, y_train, y_test, scale=(1,0)):
     print(scale)
     sns.boxplot(np.array(resid) * scale[0])
     plt.title("Residual Distribution, Extra Trees", fontsize = 18)
-    plt.xlabel("Abs. Residual Error kj/mol", fontsize = 16)
+    plt.xlabel("Abs. Residual Error [kJ/mol]", fontsize = 16)
     plt.show()
     #plt.clf()
     #sns.histplot(resid * scale)
     #plt.show()
-
 
 def score(reg, x_train, x_test, y_train, y_test, scale=1):
 

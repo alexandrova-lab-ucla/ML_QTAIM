@@ -1,13 +1,64 @@
-import numpy as np
-import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
+sns.set_style("ticks")
+sns.set_context("paper")
 from matplotlib import cm
+import matplotlib
+import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, scale
 from extract_helpers_shifted import *
 from mpl_toolkits.mplot3d import axes3d, Axes3D
+matplotlib.rcParams.update({# Use mathtext, not LaTeX
+                            'text.usetex': False,
+                            # Use the Computer modern font
+                            'font.family': 'serif',
+                            'font.serif': 'cmr10',
+                            'mathtext.fontset': 'cm',
+                            # Use ASCII minus
+                            'axes.unicode_minus': False,
+                            'font.size': 20,
+                            })
+
+def label_rewrite(lbl_raw):
+    lbls = []
+    for i in lbl_raw:
+        if ("basic" in i):
+            i = i.replace("basic,", "")
+        if (str.split(i, "\mathcal")[1][1:5] == "Bond"):
+            tmp = r"$\mathrm{\epsilon_" + i[-3] + "}$"
+            lbls.append(tmp)
+        elif (str.split(i, "\mathcal")[1][1:4] == "Rho"):
+            tmp = r"$\mathrm{\rho_{" + i[-3] + "}}$"
+            lbls.append(tmp)
+        elif (str.split(i, "\mathcal")[1][1:6] == "DelSq"):
+            if (str.split(i, "\mathcal")[1][6] == "V"):
+                tmp = r"$\mathrm{\nabla^2 V_{" + i[-3] + "}}$"
+                lbls.append(tmp)
+            else:
+                tmp = r"$\mathrm{\nabla^2 \rho _{" + i[-3] + "}}$"
+                lbls.append(tmp)
+        elif (i == "$\mathcal{ESPe}_{10}$"):
+            lbls.append("$ESP_{e, 10}$")
+        elif ("Stress" in i):
+            lbls.append("$\lambda_{Stress, " + i[-3] + "}$")
+        elif ("DelocInd" in i):
+            lbls.append("$DelocInd" + i[-3] + "}$")
+        elif ("Vnuc" in i):
+            lbls.append("$V_{nuc, " + i[-3] + "}$")
+        elif ("ESPn" in i):
+            lbls.append("$ESP_{n, " + i[-3] + "}$")
+        elif ("{ESP}" in i):
+            lbls.append("$ESP_{" + i[-3] + "}$")
+        elif (i[0:15] == "$\mathcal{Lagr}" or i[0:21] == "$\mathcal{Lagrangian}"):
+            lbls.append("$\mathcal{L}_{" + i[-3] + "}$")
+        elif ("HessRhoEigVals" in i):
+            tmp = r"$\lambda_{\mathbf{H} \rho," + i[-3] + "}$"
+            lbls.append(tmp)
+        elif ("K" in i):
+            lbls.append("$K_{" + i[-3] + "}}$")
+        else:
+            lbls.append(r"$\mathrm" + str.split(i, "\mathcal")[1])
+    return lbls
 
 def pca(x, labels=[], barriers=np.array([])):
     pca = PCA(n_components=3)
@@ -98,7 +149,7 @@ def pca(x, labels=[], barriers=np.array([])):
     fig.subplots_adjust(top=0.88)
     plt.show()
 
-
+    '''
     variance = pca.explained_variance_ratio_
     var = np.cumsum(np.round(variance, decimals=3) * 100)
     sns.set_theme(style="ticks")
@@ -128,124 +179,112 @@ def pca(x, labels=[], barriers=np.array([])):
     ax.arrow(40,81, 0, 14, fc='black',             #arrow fill color
              ec='black')
     plt.show()
+    '''
 
 
 
-x, y = extract_all()
-min = np.min(y)
-max = np.max(y)
-y_scale = (y - min) / (max - min)
-sns.set_theme()
+if __name__ == "__main__":
 
-#plt.hist(y)
-#plt.title("Distribution of Dataset Energies")
-#plt.xlabel("Energy (kJ/Mol)")
-#plt.ylabel("Counts")
-#plt.show()
+    x, y = extract_all()
+    min = np.min(y)
+    max = np.max(y)
+    y_scale = (y - min) / (max - min)
 
-
-pooled_set = \
-    [
-     "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$","$\mathcal{Bond}_{9}$",
-     "$\mathcal{DelocIndBond}_{5}$",
-     "$\mathcal{DelSqRho}_{1}$",
-     "$\mathcal{DelSqV}_{7}$",
-     "$\mathcal{ESP}_{1}$","$\mathcal{ESP}_{2}$","$\mathcal{ESP}_{4}$","$\mathcal{ESP}_{5}$","$\mathcal{ESP}_{6}$",
-     "$\mathcal{ESPe}_{10}$",
-     "$\mathcal{ESPn}_{4}$","$\mathcal{ESPn}_{5}$",
-     "$\mathcal{HessRhoEigVals}_{c,7}$",
-     "$\mathcal{K|Scaled|}_{basic,1}$","$\mathcal{K|Scaled|}_{basic,2}$",
-     "$\mathcal{K|Scaled|}_{basic,3}$","$\mathcal{K|Scaled|}_{basic,4}$",
-     "$\mathcal{K|Scaled|}_{basic,6}$",
-     "$\mathcal{Kinetic}_{basic,5}$","$\mathcal{Kinetic}_{basic,6}$",
-     "$\mathcal{Lagr}_{basic,1}$","$\mathcal{Lagr}_{basic,5}$","$\mathcal{Lagrangian}_{2}$",
-     "$\mathcal{Rho}_{8}$",
-     "$\mathcal{Stress_EigVals}_{c,7}$",
-    "$\mathcal{Vnuc}_{1}$","$\mathcal{Vnuc}_{2}$","$\mathcal{Vnuc}_{3}$",
-    "$\mathcal{Vnuc}_{4}$","$\mathcal{Vnuc}_{5}$","$\mathcal{Vnuc}_{6}$"
-    ]
-
-pool_uncorr = \
-    [
-        "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
-        "$\mathcal{DelocIndBond}_{5}$",
-        "$\mathcal{DelSqRho}_{1}$",
-        "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{6}$",
-        "$\mathcal{ESPn}_{5}$",
-        "$\mathcal{HessRhoEigVals}_{c,7}$",
-        "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$",
-        "$\mathcal{K|Scaled|}_{basic,3}$", "$\mathcal{K|Scaled|}_{basic,4}$",
-        "$\mathcal{Kinetic}_{basic,5}$", "$\mathcal{Kinetic}_{basic,6}$",
-        "$\mathcal{Lagr}_{basic,1}$", "$\mathcal{Lagr}_{basic,5}$", "$\mathcal{Lagrangian}_{2}$",
-        "$\mathcal{Rho}_{8}$",
-        "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
-        "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
-    ]
-
-# physical set, general model
-physical = \
-    [
-        "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
-        "$\mathcal{DelocIndBond}_{5}$",
-        "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$", "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
-        "$\mathcal{ESPn}_{4}$", "$\mathcal{ESPn}_{5}$",
-        "$\mathcal{HessRhoEigVals}_{c,7}$",
-        "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$", "$\mathcal{K|Scaled|}_{basic,3}$",
-        "$\mathcal{K|Scaled|}_{basic,4}$", "$\mathcal{K|Scaled|}_{basic,5}$", "$\mathcal{K|Scaled|}_{basic,6}$",
-        "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$", "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$",
-        "$\mathcal{Vnuc}_{6}$"
-    ]
-pool_x_df           = x[pooled_set]
-phys_x_df           = x[physical_set]
-pool_x_uncorr_df    = x[pool_uncorr]
-
-full_input = scale(x)
-pool_x          = scale(x[pooled_set].to_numpy())
-phys_x          = scale(x[physical_set].to_numpy())
-pool_x_uncorr   = scale(x[pool_uncorr].to_numpy())
-
-#--------------------------------------------------------------
-corr = pool_x_df.corr()
-lbls = []
-for i in pool_x_df:
-    if (str.split(i, "\mathcal")[1][1:5] != "Bond"):
-        lbls.append(r"$" + str.split(str(i), "\mathcal")[1])
-    else:
-        tmp = r"$BondEllipt_" + str(i)[-3] + "$"
-        lbls.append(tmp)
-
-ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
-                 yticklabels=lbls, xticklabels=False)
-
-#ax.set_yticklabels(lbls, rotation="0", fontsize = "small", va="center")
-plt.title("Correlation, Compiled Descriptors")
-plt.show()
-#--------------------------------------------------------------
-plot_corr = pool_x_df
-plot_corr["barrier"] = y_scale
-corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
-corr_barrier = plot_corr.corr()["barrier"].to_numpy()[0:-1]
-corr_barriers_labels = plot_corr.corr()["barrier"].keys()[0:-1]
-
-ax = plt.subplot(1,1,1)
-plt.title("Physical Descriptor Correlation vs. Barrier")
-plt.xlabel("Correlation w/Barrier")
-ax.barh(range(np.shape(corr_barrier)[0]), corr_barrier)
-lbls = []
-
-for i in corr_barriers_labels:
-    if (str.split(i, "\mathcal")[1][1:5] != "Bond"):
-        lbls.append(r"$" + str.split(i, "\mathcal")[1])
-
-    else:
-        tmp = r"$BondEllipt_" + i[-3] + "$"
-        lbls.append(tmp)
-ax.set_yticklabels(lbls, rotation="0")
-ax.set_yticks(np.arange(np.shape(corr_barriers_labels)[0]))
-plt.show()
+    plt.hist(y)
+    plt.title("Distribution of Dataset Energies")
+    plt.xlabel("Energy [kJ/Mol]")
+    plt.ylabel("Frequency")
+    plt.show()
 
 
+    pooled_set = \
+        [
+         "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$","$\mathcal{Bond}_{9}$",
+         "$\mathcal{DelocIndBond}_{5}$",
+         "$\mathcal{DelSqRho}_{1}$",
+         "$\mathcal{DelSqV}_{7}$",
+         "$\mathcal{ESP}_{1}$","$\mathcal{ESP}_{2}$","$\mathcal{ESP}_{4}$","$\mathcal{ESP}_{5}$","$\mathcal{ESP}_{6}$",
+         "$\mathcal{ESPe}_{10}$",
+         "$\mathcal{ESPn}_{4}$","$\mathcal{ESPn}_{5}$",
+         "$\mathcal{HessRhoEigVals}_{c,7}$",
+         "$\mathcal{K|Scaled|}_{basic,1}$","$\mathcal{K|Scaled|}_{basic,2}$",
+         "$\mathcal{K|Scaled|}_{basic,3}$","$\mathcal{K|Scaled|}_{basic,4}$",
+         "$\mathcal{K|Scaled|}_{basic,6}$",
+         "$\mathcal{Kinetic}_{basic,5}$","$\mathcal{Kinetic}_{basic,6}$",
+         "$\mathcal{Lagr}_{basic,1}$","$\mathcal{Lagr}_{basic,5}$","$\mathcal{Lagrangian}_{2}$",
+         "$\mathcal{Rho}_{8}$",
+         "$\mathcal{Stress_EigVals}_{c,7}$",
+        "$\mathcal{Vnuc}_{1}$","$\mathcal{Vnuc}_{2}$","$\mathcal{Vnuc}_{3}$",
+        "$\mathcal{Vnuc}_{4}$","$\mathcal{Vnuc}_{5}$","$\mathcal{Vnuc}_{6}$"
+        ]
 
+    pool_uncorr = \
+        [
+            "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
+            "$\mathcal{DelocIndBond}_{5}$",
+            "$\mathcal{DelSqRho}_{1}$",
+            "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{6}$",
+            "$\mathcal{ESPn}_{5}$",
+            "$\mathcal{HessRhoEigVals}_{c,7}$",
+            "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$",
+            "$\mathcal{K|Scaled|}_{basic,3}$", "$\mathcal{K|Scaled|}_{basic,4}$",
+            "$\mathcal{Kinetic}_{basic,5}$", "$\mathcal{Kinetic}_{basic,6}$",
+            "$\mathcal{Lagr}_{basic,1}$", "$\mathcal{Lagr}_{basic,5}$", "$\mathcal{Lagrangian}_{2}$",
+            "$\mathcal{Rho}_{8}$",
+            "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
+            "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
+        ]
 
+    # physical set, general model
+    physical_set = \
+        [
+            "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
+            "$\mathcal{DelocIndBond}_{5}$",
+            "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$", "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
+            "$\mathcal{ESPn}_{4}$", "$\mathcal{ESPn}_{5}$",
+            "$\mathcal{HessRhoEigVals}_{c,7}$",
+            "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$", "$\mathcal{K|Scaled|}_{basic,3}$",
+            "$\mathcal{K|Scaled|}_{basic,4}$", "$\mathcal{K|Scaled|}_{basic,5}$", "$\mathcal{K|Scaled|}_{basic,6}$",
+            "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$", "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$",
+            "$\mathcal{Vnuc}_{6}$"
+        ]
+    pool_x_df           = x[pooled_set]
+    phys_x_df           = x[physical_set]
+    pool_x_uncorr_df    = x[pool_uncorr]
+
+    full_input = scale(x)
+    pool_x          = scale(x[pooled_set].to_numpy())
+    phys_x          = scale(x[physical_set].to_numpy())
+    pool_x_uncorr   = scale(x[pool_uncorr].to_numpy())
+
+    #--------------------------------------------------------------
+    sns.axes_style("ticks")
+    corr = pool_x_df.corr()
+    lbls = label_rewrite(pool_x_df)
+    ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
+                     yticklabels=lbls, xticklabels=False)
+    ax.set_yticklabels(lbls, fontsize=16)
+    cbar = ax.collections[0].colorbar
+    cbar.ax.tick_params(labelsize=12)
+    plt.title("Correlation, Pooled Descriptors", fontsize=16)
+    plt.show()
+
+    #--------------------------------------------------------------
+    plot_corr = pool_x_df
+    plot_corr["barrier"] = y_scale
+    corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
+    corr_barrier = plot_corr.corr()["barrier"].to_numpy()[0:-1]
+    corr_barriers_labels = plot_corr.corr()["barrier"].keys()[0:-1]
+    lbls = label_rewrite(corr_barriers_labels)
+    ax = plt.subplot(1,1,1)
+    plt.title("Pooled Descriptor Correlation vs. Barrier", fontsize=16)
+    plt.xlabel("Correlation w/Barrier", fontsize=16)
+    ax.barh(range(np.shape(corr_barrier)[0]), corr_barrier,
+            color = "peachpuff", edgecolor="k")
+
+    ax.tick_params(labelsize=12)
+    ax.set_yticklabels(lbls, rotation="0", fontsize=16)
+    ax.set_yticks(np.arange(np.shape(corr_barriers_labels)[0]))
+    plt.show()
 
 
