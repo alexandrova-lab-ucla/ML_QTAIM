@@ -253,24 +253,24 @@ def quant_feat(x_train, x_test, y_train, y_test, names):
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 8))
 
-    fig.suptitle("Permutation Importance, Pooled Set", fontsize=18)
+    fig.suptitle("Permutation Importance, Physical Set", fontsize=20)
 
     ax1.barh(tree_indices,
              reg.feature_importances_[tree_importance_sorted_idx], height=0.7, color="peachpuff", edgecolor= "k")
     ax1.axvline(x=0, c = "red", linestyle="--")
 
     lbls = label_rewrite(names.columns[perm_sorted_idx])
-    ax1.set_yticklabels(lbls, fontsize=16)
+    ax1.set_yticklabels(lbls, fontsize=18)
     ax1.set_yticks(tree_indices)
     ax1.set_ylim((0, len(reg.feature_importances_)))
-    ax1.tick_params(labelsize=12)
+    ax1.tick_params(labelsize=16)
 
 
     lbls = label_rewrite(names.columns[perm_sorted_idx])
     ax2.boxplot(result.importances[perm_sorted_idx].T, vert=False)
-    ax2.set_yticklabels(lbls, fontsize=16)
+    ax2.set_yticklabels(lbls, fontsize=18)
     ax2.axvline(x=0, c = "red", linestyle="--")
-    ax2.tick_params(labelsize=12)
+    ax2.tick_params(labelsize=16)
     fig.tight_layout()
     plt.show()
 
@@ -307,13 +307,13 @@ def dendo(x):
     lbls = label_rewrite(x.columns)
     dendro = hierarchy.dendrogram(
         corr_linkage,labels =lbls,
-        leaf_rotation=90, leaf_font_size=19)
+        leaf_rotation=90, leaf_font_size=24)
     dendro_idx = np.arange(0, len(dendro['ivl']))
     #plt.xticks("$" + str.split(x.columns[0], "\mathcal")[1])
     #plt.xticks(["$"+str.split(i, "\mathcal")[1] for i in x.columns])
 
 
     #plt.xticks(x.columns)
-    plt.title("Feature Clustering, Physical Space", fontsize=20)
+    plt.title("Feature Clustering, Physical Space", fontsize=26)
     plt.show()
 

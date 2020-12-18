@@ -25,7 +25,10 @@ def label_rewrite(lbl_raw):
         if ("basic" in i):
             i = i.replace("basic,", "")
         if (str.split(i, "\mathcal")[1][1:5] == "Bond"):
-            tmp = r"$\mathrm{\epsilon_" + i[-3] + "}$"
+            if(str(i[-3]) == "0"):
+                tmp = r"$\mathrm{\epsilon_{" + i[-4] + i[-3] + "}}$"
+            else:
+                tmp = r"$\mathrm{\epsilon_" + i[-3] + "}$"
             lbls.append(tmp)
         elif (str.split(i, "\mathcal")[1][1:4] == "Rho"):
             tmp = r"$\mathrm{\rho_{" + i[-3] + "}}$"
@@ -38,24 +41,24 @@ def label_rewrite(lbl_raw):
                 tmp = r"$\mathrm{\nabla^2 \rho _{" + i[-3] + "}}$"
                 lbls.append(tmp)
         elif (i == "$\mathcal{ESPe}_{10}$"):
-            lbls.append("$ESP_{e, 10}$")
+            lbls.append("$\Phi^{e}_{10}$")
         elif ("Stress" in i):
-            lbls.append("$\lambda_{Stress, " + i[-3] + "}$")
+            lbls.append("$\lambda^{(1)}_{\sigma, " + i[-3] + "}$")
         elif ("DelocInd" in i):
-            lbls.append("$DelocInd" + i[-3] + "}$")
+            lbls.append("$\delta_" + i[-3] + "}$")
         elif ("Vnuc" in i):
-            lbls.append("$V_{nuc, " + i[-3] + "}$")
+            lbls.append(r"$\tilde{\Phi}^{nuc}_{" + i[-3] + "}$")
         elif ("ESPn" in i):
-            lbls.append("$ESP_{n, " + i[-3] + "}$")
+            lbls.append("$\Phi^{nuc}_{" + i[-3] + "}$")
         elif ("{ESP}" in i):
-            lbls.append("$ESP_{" + i[-3] + "}$")
+            lbls.append("$\Phi_{" + i[-3] + "}$")
         elif (i[0:15] == "$\mathcal{Lagr}" or i[0:21] == "$\mathcal{Lagrangian}"):
             lbls.append("$\mathcal{L}_{" + i[-3] + "}$")
         elif ("HessRhoEigVals" in i):
-            tmp = r"$\lambda_{\mathbf{H} \rho," + i[-3] + "}$"
+            tmp = r"$\lambda^{(1)}_{\mathbf{H} \rho," + i[-3] + "}$"
             lbls.append(tmp)
         elif ("K" in i):
-            lbls.append("$K_{" + i[-3] + "}}$")
+            lbls.append("$\mathcal{K}_{" + i[-3] + "}}$")
         else:
             lbls.append(r"$\mathrm" + str.split(i, "\mathcal")[1])
     return lbls
@@ -203,14 +206,14 @@ if __name__ == "__main__":
          "$\mathcal{DelocIndBond}_{5}$",
          "$\mathcal{DelSqRho}_{1}$",
          "$\mathcal{DelSqV}_{7}$",
-         "$\mathcal{ESP}_{1}$","$\mathcal{ESP}_{2}$","$\mathcal{ESP}_{4}$","$\mathcal{ESP}_{5}$","$\mathcal{ESP}_{6}$",
-         "$\mathcal{ESPe}_{10}$",
+         "$\mathcal{ESP}_{1}$","$\mathcal{ESP}_{2}$","$\mathcal{ESP}_{4}$","$\mathcal{ESP}_{5}$",
+         "$\mathcal{ESP}_{6}$","$\mathcal{ESPe}_{10}$",
          "$\mathcal{ESPn}_{4}$","$\mathcal{ESPn}_{5}$",
          "$\mathcal{HessRhoEigVals}_{c,7}$",
          "$\mathcal{K|Scaled|}_{basic,1}$","$\mathcal{K|Scaled|}_{basic,2}$",
          "$\mathcal{K|Scaled|}_{basic,3}$","$\mathcal{K|Scaled|}_{basic,4}$",
          "$\mathcal{K|Scaled|}_{basic,6}$",
-         "$\mathcal{Kinetic}_{basic,5}$","$\mathcal{Kinetic}_{basic,6}$",
+         "$\mathcal{Kinetic}_{basic,5}$",
          "$\mathcal{Lagr}_{basic,1}$","$\mathcal{Lagr}_{basic,5}$","$\mathcal{Lagrangian}_{2}$",
          "$\mathcal{Rho}_{8}$",
          "$\mathcal{Stress_EigVals}_{c,7}$",
@@ -240,7 +243,8 @@ if __name__ == "__main__":
         [
             "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
             "$\mathcal{DelocIndBond}_{5}$",
-            "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$", "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
+            "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$", "$\mathcal{ESP}_{4}$",
+            "$\mathcal{ESP}_{5}$","$\mathcal{ESP}_{6}$",
             "$\mathcal{ESPn}_{4}$", "$\mathcal{ESPn}_{5}$",
             "$\mathcal{HessRhoEigVals}_{c,7}$",
             "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$", "$\mathcal{K|Scaled|}_{basic,3}$",

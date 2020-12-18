@@ -452,14 +452,14 @@ def extract_all():
 
         # print(len(bond) + len(ring) + len(nuc) + len(charge)+\
         #      len(spin) + len(basics))
-
+        print(len(bond))
         full_dictionary.update(bond)
         full_dictionary.update(ring)
         full_dictionary.update(nuc)
         full_dictionary.update(charge)
         full_dictionary.update(spin)
         full_dictionary.update(basics)
-
+        print(len(full_dictionary))
         y.append(float(df["barrier(kj/mol)"][ind]))
 
         list_of_dicts.append(full_dictionary)

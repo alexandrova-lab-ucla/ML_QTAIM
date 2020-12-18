@@ -25,6 +25,7 @@ from scoring_functions import *
 # critical values for each file. Y is the energies of each file.
 
 x, y = extract_all()
+print(np.shape(x))
 min = np.min(y)
 max = np.max(y)
 # y_scale = (y - min) / (max - min)
@@ -46,9 +47,8 @@ pooled_set = \
         "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$",
         "$\mathcal{K|Scaled|}_{basic,3}$", "$\mathcal{K|Scaled|}_{basic,4}$",
         "$\mathcal{K|Scaled|}_{basic,6}$",
-        "$\mathcal{Kinetic}_{basic,5}$", "$\mathcal{Kinetic}_{basic,6}$",
+        "$\mathcal{Kinetic}_{basic,5}$",
         "$\mathcal{Lagr}_{basic,1}$", "$\mathcal{Lagr}_{basic,5}$", "$\mathcal{Lagrangian}_{2}$",
-        "$\mathcal{Rho}_{8}$",
         "$\mathcal{Stress_EigVals}_{c,7}$",
         "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
         "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
@@ -66,7 +66,6 @@ pool_uncorr = \
         "$\mathcal{K|Scaled|}_{basic,3}$", "$\mathcal{K|Scaled|}_{basic,4}$",
         "$\mathcal{Kinetic}_{basic,5}$", "$\mathcal{Kinetic}_{basic,6}$",
         "$\mathcal{Lagr}_{basic,1}$", "$\mathcal{Lagr}_{basic,5}$", "$\mathcal{Lagrangian}_{2}$",
-        "$\mathcal{Rho}_{8}$",
         "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
         "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
     ]
@@ -457,8 +456,7 @@ elif (single == True):
 
     elif (algo == "ada"):
         print("ada algorithm")
-
-        reg_ada = AdaBoostRegressor()
+        reg_ada = AdaBoostRegressor(n_estimators=1500, learning_rate=0.050)
         reg_ada.fit(x_train, y_train)
         score_single(reg_ada, x_train, x_test, y_train, y_test, std)
 
@@ -469,7 +467,7 @@ elif (single == True):
         reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter,
                               hidden_layer_sizes=(200, 200,),
                               solver="lbfgs", alpha=8.64e-10,
-                              learning_rate_init=3.84e-05,
+                              learning_rate_init=3.84e-02,
                               max_iter=640, tol=1.86e-03)
         reg_nn.fit(x_train, y_train)
         score_single(reg_nn, x_train, x_test, y_train, y_test, std)
@@ -488,7 +486,7 @@ elif (single == True):
         model.compile(optimizer='adam',
                       loss="MSE",
                       metrics=["MAE", "MSE"])
-        model.fit(x_train, np.ravel(y_train), epochs=2000, batch_size=np.shape(x_train)[0], verbose=1)
+        model.fit(x_train, np.ravel(y_train), epochs=100, batch_size=np.shape(x_train)[0], verbose=1)
 
         y_hat = model.predict(x_test)
         mse = mean_squared_error(y_test, y_hat)
@@ -505,16 +503,16 @@ elif (single == True):
 
         print("xgb algorithms")
         reg_xgb = xgb.XGBRegressor(
-            reg_alpha=0.01, colsample_bytree=0.3, eta=0.0, gamma=0.0,
-            reg_lambda=0.0, learning_rate=0.01, max_depth=5, n_estimators=1000,
+            reg_alpha=0.0, colsample_bytree=0.3, eta=0.1, gamma=0.01,
+            reg_lambda=0.0, learning_rate=0.1, max_depth=8, n_estimators=800,
             objective="reg:squarederror", tree_method="gpu_hist")
         reg_xgb.fit(x_train, y_train)
         score_single(reg_xgb, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "rf"):
         print("random forest algorithms ")
-        reg_rf = RandomForestRegressor(min_samples_leaf=1, min_samples_split=2,
-                                       n_estimators=2500, n_jobs=10, criterion="entropy")
+        reg_rf = RandomForestRegressor(min_samples_leaf=2, min_samples_split=2,
+                                       n_estimators=100, n_jobs=10)
         reg_rf = RandomForestRegressor(n_jobs=10)
         custom_scorer_rf = custom_skopt_rf_scorer
         reg_rf.fit(x_train, y_train)
@@ -523,20 +521,22 @@ elif (single == True):
     elif (algo == "extra"):
         print("extra algorithm")
 
-        reg_extra = ExtraTreesRegressor(min_samples_split=3,
-                                        min_samples_leaf=3,
-                                        n_estimators=2200)
+        reg_extra = ExtraTreesRegressor(min_samples_split=2,
+                                        min_samples_leaf=2,
+                                        n_estimators=1500)
         custom_scorer_extra = custom_skopt_extra_scorer
         reg_extra.fit(x_train, y_train)
         score_single(reg_extra, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "grad"):
         print("grad algorithm")
-        dict = {'learning_rate': 0.029850214667088548, 'min_samples_split': 3, 'min_samples_leaf': 4, 'max_depth': 2,
-                'n_estimators': 611, 'subsample': 0.4}
+        dict = {'learning_rate': 0.005, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_depth': 8,
+                'n_estimators': 1500, 'subsample': 0.5}
         reg_grad = GradientBoostingRegressor(**dict)
         reg_grad.fit(x_train, y_train)
         score_single(reg_grad, x_train, x_test, y_train, y_test, std)
+        # {'learning_rate': 0.020037429107630705, 'min_samples_split': 3, 'min_samples_leaf': 1, 'max_depth': 2, 'n_estimators': 907, 'subsample': 0.8319757440943847}
+        # {'learning_rate': 0.008130467504230791, 'min_samples_split': 3, 'min_samples_leaf': 1, 'max_depth': 2, 'n_estimators': 1692, 'subsample': 0.8396639338788848}
 
     elif (algo == "huber"):
         print("huber algorithm")
@@ -552,9 +552,9 @@ elif (single == True):
 
     else:
         print("extra trees algorithm")
-        reg_extra = ExtraTreesRegressor(min_samples_split=3,
-                                        min_samples_leaf=3,
-                                        n_estimators=2200)
+        reg_extra = ExtraTreesRegressor(min_samples_split=2,
+                                        min_samples_leaf=2,
+                                        n_estimators=2000)
         reg_extra.fit(x_train, y_train)
         score_single(reg_extra, x_train, x_test, y_train, y_test, std)
 

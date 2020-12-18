@@ -170,10 +170,12 @@ def score_single(reg, x_train, x_test, y_train, y_test, scale=(1,0)):
     plt.plot(y_pred_train*scale[0]+ scale[1],y_train*scale[0] + scale[1], 'o', color='black', markersize = 5)
     plt.plot(y_pred_test*scale[0]+ scale[1],y_test*scale[0]+ scale[1], 'o', color='red')
 
-    plt.ylabel("True Values")
-    plt.xlabel("Predicted Value")
+    plt.ylabel("True Value", fontsize=16)
+    plt.yticks(fontsize=12)
+    plt.xlabel("Predicted Value", fontsize=16)
+    plt.xticks(fontsize=12)
     name = str(reg)
-    plt.title("XGB Residuals")
+    plt.title("Gradient Boost Residuals", fontsize=16)
     plt.show()
 
     resid = [np.abs(y_test[i] - y_pred_test[i]) for i in range(len(y_test))]
@@ -204,10 +206,23 @@ def score_single(reg, x_train, x_test, y_train, y_test, scale=(1,0)):
     print("r2 score test: \t\t" + str(r2_test))
     print("----------------------------------------------------")
 
+    x_test_sans = x_test.drop([x_test.index[worst3]])
+    y_test_sans = np.delete(y_test, [worst3])
+    y_pred_test  = reg.predict(x_test_sans)
+    mse_test = str(mean_squared_error(y_test_sans * scale[0], y_pred_test * scale[0]))
+    mae_test = str(mean_absolute_error(y_test_sans * scale[0], y_pred_test * scale[0]))
+    r2_test = str(r2_score(y_test_sans, y_pred_test))
+    print("----------------------------------------------------")
+    print("MSE test score: \t" + str(mse_test))
+    print("MAE test score: \t" + str(mae_test))
+    print("r2 score test: \t\t" + str(r2_test))
+    print("----------------------------------------------------")
+
+
     plt.clf()
     print(scale)
     sns.boxplot(np.array(resid) * scale[0])
-    plt.title("Residual Distribution, Extra Trees", fontsize = 18)
+    plt.title("Residual Distribution, Grad. Boost", fontsize = 18)
     plt.xlabel("Abs. Residual Error [kJ/mol]", fontsize = 16)
     plt.show()
     #plt.clf()
@@ -243,9 +258,9 @@ def score(reg, x_train, x_test, y_train, y_test, scale=1):
     #plt.text(0.5, 0.15, "MAE test: " +str(mae_test))
     #plt.text(0.5, 0.25, "MAE train: " +str(mae_train))
 
-    plt.xlabel("Normalized Predicted Value")
-    plt.ylabel("Normalized True Values")
+    plt.xlabel("Normalized Predicted Value", fontsize=16)
+    plt.ylabel("Normalized True Values", fontsize=16)
     name = str(reg.get_params()["estimator"]).split("(")[0]
-    plt.title(name)
+    plt.title(name, fontsize=16)
     plt.savefig(name + ".png")
     plt.clf()
