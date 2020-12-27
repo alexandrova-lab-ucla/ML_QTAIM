@@ -30,7 +30,7 @@ from sklearn.feature_selection import RFE, RFECV, \
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, scale
 from sklearn.svm import SVR
 from sklearn.linear_model import SGDRegressor, Lasso, LassoCV
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
 from sklearn.inspection import permutation_importance
 
 #######################################Method 1: Lasso #########################################33
@@ -243,7 +243,9 @@ def pca(x, labels=[], barriers=np.array([])):
 
 def quant_feat(x_train, x_test, y_train, y_test, names):
 
-    reg = RandomForestRegressor(n_jobs=-1)
+    reg = ExtraTreesRegressor(min_samples_split=2,
+                                        min_samples_leaf=2,
+                                        n_estimators=1500)
     reg.fit(x_train, y_train)
     result = permutation_importance(reg, x_test, y_test, n_repeats=20, random_state=42)
 
@@ -251,9 +253,9 @@ def quant_feat(x_train, x_test, y_train, y_test, names):
     tree_importance_sorted_idx = np.argsort(reg.feature_importances_)
     tree_indices = np.arange(0, len(reg.feature_importances_)) + 0.5
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 8))
+    fig, (ax1) = plt.subplots(1, 1, figsize=(12, 8))
 
-    fig.suptitle("Permutation Importance, Physical Set", fontsize=20)
+    fig.suptitle("Permutation Importance, Pooled Set", fontsize=20)
 
     ax1.barh(tree_indices,
              reg.feature_importances_[tree_importance_sorted_idx], height=0.7, color="peachpuff", edgecolor= "k")
@@ -267,10 +269,10 @@ def quant_feat(x_train, x_test, y_train, y_test, names):
 
 
     lbls = label_rewrite(names.columns[perm_sorted_idx])
-    ax2.boxplot(result.importances[perm_sorted_idx].T, vert=False)
-    ax2.set_yticklabels(lbls, fontsize=18)
-    ax2.axvline(x=0, c = "red", linestyle="--")
-    ax2.tick_params(labelsize=16)
+    #ax2.boxplot(result.importances[perm_sorted_idx].T, vert=False)
+    #ax2.set_yticklabels(lbls, fontsize=18)
+    #ax2.axvline(x=0, c = "red", linestyle="--")
+    #ax2.tick_params(labelsize=16)
     fig.tight_layout()
     plt.show()
 

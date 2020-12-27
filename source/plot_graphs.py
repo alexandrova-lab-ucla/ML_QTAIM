@@ -184,10 +184,7 @@ def pca(x, labels=[], barriers=np.array([])):
     plt.show()
     '''
 
-
-
 if __name__ == "__main__":
-
     x, y = extract_all()
     min = np.min(y)
     max = np.max(y)
@@ -199,26 +196,25 @@ if __name__ == "__main__":
     plt.ylabel("Frequency")
     plt.show()
 
-
     pooled_set = \
         [
-         "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$","$\mathcal{Bond}_{9}$",
-         "$\mathcal{DelocIndBond}_{5}$",
-         "$\mathcal{DelSqRho}_{1}$",
-         "$\mathcal{DelSqV}_{7}$",
-         "$\mathcal{ESP}_{1}$","$\mathcal{ESP}_{2}$","$\mathcal{ESP}_{4}$","$\mathcal{ESP}_{5}$",
-         "$\mathcal{ESP}_{6}$","$\mathcal{ESPe}_{10}$",
-         "$\mathcal{ESPn}_{4}$","$\mathcal{ESPn}_{5}$",
-         "$\mathcal{HessRhoEigVals}_{c,7}$",
-         "$\mathcal{K|Scaled|}_{basic,1}$","$\mathcal{K|Scaled|}_{basic,2}$",
-         "$\mathcal{K|Scaled|}_{basic,3}$","$\mathcal{K|Scaled|}_{basic,4}$",
-         "$\mathcal{K|Scaled|}_{basic,6}$",
-         "$\mathcal{Kinetic}_{basic,5}$",
-         "$\mathcal{Lagr}_{basic,1}$","$\mathcal{Lagr}_{basic,5}$","$\mathcal{Lagrangian}_{2}$",
-         "$\mathcal{Rho}_{8}$",
-         "$\mathcal{Stress_EigVals}_{c,7}$",
-        "$\mathcal{Vnuc}_{1}$","$\mathcal{Vnuc}_{2}$","$\mathcal{Vnuc}_{3}$",
-        "$\mathcal{Vnuc}_{4}$","$\mathcal{Vnuc}_{5}$","$\mathcal{Vnuc}_{6}$"
+            "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
+            "$\mathcal{DelocIndBond}_{5}$",
+            "$\mathcal{DelSqRho}_{1}$",
+            "$\mathcal{DelSqV}_{7}$",
+            "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{5}$",
+            "$\mathcal{ESP}_{6}$",
+            "$\mathcal{ESPe}_{10}$",
+            "$\mathcal{ESPn}_{4}$", "$\mathcal{ESPn}_{5}$",
+            "$\mathcal{HessRhoEigVals}_{c,7}$",
+            "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$",
+            "$\mathcal{K|Scaled|}_{basic,3}$", "$\mathcal{K|Scaled|}_{basic,4}$",
+            "$\mathcal{K|Scaled|}_{basic,6}$",
+            "$\mathcal{Kinetic}_{basic,5}$",
+            "$\mathcal{Lagr}_{basic,1}$", "$\mathcal{Lagr}_{basic,5}$", "$\mathcal{Lagrangian}_{2}$",
+            "$\mathcal{Stress_EigVals}_{c,7}$",
+            "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
+            "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
         ]
 
     pool_uncorr = \
@@ -233,48 +229,50 @@ if __name__ == "__main__":
             "$\mathcal{K|Scaled|}_{basic,3}$", "$\mathcal{K|Scaled|}_{basic,4}$",
             "$\mathcal{Kinetic}_{basic,5}$", "$\mathcal{Kinetic}_{basic,6}$",
             "$\mathcal{Lagr}_{basic,1}$", "$\mathcal{Lagr}_{basic,5}$", "$\mathcal{Lagrangian}_{2}$",
-            "$\mathcal{Rho}_{8}$",
             "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
             "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
         ]
 
     # physical set, general model
-    physical_set = \
+    physical = \
         [
             "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
             "$\mathcal{DelocIndBond}_{5}$",
             "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$", "$\mathcal{ESP}_{4}$",
-            "$\mathcal{ESP}_{5}$","$\mathcal{ESP}_{6}$",
+            "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
             "$\mathcal{ESPn}_{4}$", "$\mathcal{ESPn}_{5}$",
             "$\mathcal{HessRhoEigVals}_{c,7}$",
             "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$", "$\mathcal{K|Scaled|}_{basic,3}$",
             "$\mathcal{K|Scaled|}_{basic,4}$", "$\mathcal{K|Scaled|}_{basic,5}$", "$\mathcal{K|Scaled|}_{basic,6}$",
-            "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$", "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$",
+            "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$", "$\mathcal{Vnuc}_{4}$",
+            "$\mathcal{Vnuc}_{5}$",
             "$\mathcal{Vnuc}_{6}$"
         ]
+
     pool_x_df           = x[pooled_set]
-    phys_x_df           = x[physical_set]
+    phys_x_df           = x[physical]
     pool_x_uncorr_df    = x[pool_uncorr]
 
     full_input = scale(x)
     pool_x          = scale(x[pooled_set].to_numpy())
-    phys_x          = scale(x[physical_set].to_numpy())
+    phys_x          = scale(x[physical].to_numpy())
     pool_x_uncorr   = scale(x[pool_uncorr].to_numpy())
 
     #--------------------------------------------------------------
     sns.axes_style("ticks")
-    corr = pool_x_df.corr()
-    lbls = label_rewrite(pool_x_df)
+    corr = phys_x_df.corr()
+    lbls = label_rewrite(phys_x_df)
     ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
-                     yticklabels=lbls, xticklabels=False)
+                     yticklabels=lbls, xticklabels=False, cbar_kws={'label': 'R'})
     ax.set_yticklabels(lbls, fontsize=16)
+    ax.figure.axes[-1].yaxis.label.set_size(12)
     cbar = ax.collections[0].colorbar
     cbar.ax.tick_params(labelsize=12)
-    plt.title("Correlation, Pooled Descriptors", fontsize=16)
+    plt.title("Correlation, Physical Descriptors", fontsize=16)
     plt.show()
 
     #--------------------------------------------------------------
-    plot_corr = pool_x_df
+    plot_corr = phys_x_df
     plot_corr["barrier"] = y_scale
     corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
     corr_barrier = plot_corr.corr()["barrier"].to_numpy()[0:-1]
@@ -282,7 +280,7 @@ if __name__ == "__main__":
     lbls = label_rewrite(corr_barriers_labels)
     ax = plt.subplot(1,1,1)
     plt.title("Pooled Descriptor Correlation vs. Barrier", fontsize=16)
-    plt.xlabel("Correlation w/Barrier", fontsize=16)
+    plt.xlabel("Correlation w/Barrier (R)", fontsize=16)
     ax.barh(range(np.shape(corr_barrier)[0]), corr_barrier,
             color = "peachpuff", edgecolor="k")
 

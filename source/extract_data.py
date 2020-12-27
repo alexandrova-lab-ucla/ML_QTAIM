@@ -442,15 +442,27 @@ elif (single == True):
         r2_train = str(r2_score(y_train, y_pred_train))
 
         print("MSE test score: \t" + str(mse_test))
-        print("MSE train score:\t" + str(mse_train))
         print("MAE test score: \t" + str(mae_test))
-        print("MAE train score:\t" + str(mae_train))
         print("r2 score test: \t\t" + str(r2_test))
-        print("r2 score train:\t\t" + str(r2_train))
+
+        resid = [np.abs(y_test[i] - y_pred_test[i])[0] for i in range(len(y_test))]
+        sorted = np.argsort(resid)  # decreasing order
+        [worst1, worst2, worst3] = [i for i in sorted[len(sorted) - 3:len(sorted)]]
+        x_test_sans = x_test.drop([x_test.index[worst1], x_test.index[worst2], x_test.index[worst3]])
+        y_test_sans = np.delete(y_test, [worst1, worst2, worst3])
+        y_pred_test, y_var = reg_gp.predict_f(np.array(x_test_sans))
+        mse_test = str(mean_squared_error(y_test_sans * std[0], y_pred_test * std[0]))
+        mae_test = str(mean_absolute_error(y_test_sans * std[0], y_pred_test * std[0]))
+        r2_test = str(r2_score(y_test_sans, y_pred_test))
+        print("----------------------------------------------------")
+        print("MSE test score: \t" + str(mse_test))
+        print("MAE test score: \t" + str(mae_test))
+        print("r2 score test: \t\t" + str(r2_test))
+        print("----------------------------------------------------")
 
     elif (algo == "krr"):
         print("krr algorithm")
-        reg_kernelridge = KernelRidge(kernel="poly", degree=8)
+        reg_kernelridge = KernelRidge()
         reg_kernelridge.fit(x_train, y_train)
         score_single(reg_kernelridge, x_train, x_test, y_train, y_test, std)
 
@@ -465,10 +477,7 @@ elif (single == True):
         print("nn algorithm")
 
         reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter,
-                              hidden_layer_sizes=(200, 200,),
-                              solver="lbfgs", alpha=8.64e-10,
-                              learning_rate_init=3.84e-02,
-                              max_iter=640, tol=1.86e-03)
+                              solver="adam")
         reg_nn.fit(x_train, y_train)
         score_single(reg_nn, x_train, x_test, y_train, y_test, std)
 
@@ -477,9 +486,10 @@ elif (single == True):
         from tensorflow.keras import regularizers
 
         model = tf.keras.Sequential([
-            tf.keras.layers.Dense(1000, activation='relu', input_shape=(np.shape(x_train)[1],),
-                                  bias_regularizer=regularizers.l2(1e-4)),
-            tf.keras.layers.Dropout(0.3),
+            tf.keras.layers.Dense(40, activation='relu', input_shape=(np.shape(x_train)[1],)),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dense(40, activation='relu'),
+            tf.keras.layers.Dropout(0.2),
             tf.keras.layers.Dense(1, activation="linear")
         ])
 
@@ -540,7 +550,7 @@ elif (single == True):
 
     elif (algo == "huber"):
         print("huber algorithm")
-        reg_huber = HuberRegressor(max_iter=1000, alpha=1e-06, epsilon=1.01, tol=0.0012904985834892478)
+        reg_huber = HuberRegressor()
         reg_huber.fit(x_train, y_train)
         score_single(reg_huber, x_train, x_test, y_train, y_test, std)
 

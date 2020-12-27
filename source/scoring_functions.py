@@ -167,16 +167,22 @@ def score_single(reg, x_train, x_test, y_train, y_test, scale=(1,0)):
     print("r2 score test: \t\t" + str(r2_test))
     print("r2 score train:\t\t" + str(r2_train))
 
-    plt.plot(y_pred_train*scale[0]+ scale[1],y_train*scale[0] + scale[1], 'o', color='black', markersize = 5)
-    plt.plot(y_pred_test*scale[0]+ scale[1],y_test*scale[0]+ scale[1], 'o', color='red')
+    plt.plot(y_pred_train*scale[0]+ scale[1],y_train*scale[0] + scale[1], 'o', color='blue', markersize = 5, label= "Train")
+    plt.plot(y_pred_test*scale[0]+ scale[1],y_test*scale[0]+ scale[1], 'o', color='red', label = "Test")
+    plt.legend(fontsize = 12)
+    x = np.linspace(0,300,100)
+    plt.plot(x, x, color="black")
+    plt.ylim((0,300))
+    plt.xlim((0, 300))
 
     plt.ylabel("True Value", fontsize=16)
     plt.yticks(fontsize=12)
     plt.xlabel("Predicted Value", fontsize=16)
     plt.xticks(fontsize=12)
     name = str(reg)
-    plt.title("Gradient Boost Residuals", fontsize=16)
+    plt.title("Extra Tree Parity", fontsize=16)
     plt.show()
+    plt.tight_layout()
 
     resid = [np.abs(y_test[i] - y_pred_test[i]) for i in range(len(y_test))]
     sorted = np.argsort(resid) # decreasing order
@@ -260,6 +266,8 @@ def score(reg, x_train, x_test, y_train, y_test, scale=1):
 
     plt.xlabel("Normalized Predicted Value", fontsize=16)
     plt.ylabel("Normalized True Values", fontsize=16)
+
+
     name = str(reg.get_params()["estimator"]).split("(")[0]
     plt.title(name, fontsize=16)
     plt.savefig(name + ".png")
