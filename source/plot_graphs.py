@@ -260,19 +260,19 @@ if __name__ == "__main__":
 
     #--------------------------------------------------------------
     sns.axes_style("ticks")
-    corr = phys_x_df.corr()
-    lbls = label_rewrite(phys_x_df)
+    corr = pool_x_df.corr()
+    lbls = label_rewrite(pool_x_df)
     ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
                      yticklabels=lbls, xticklabels=False, cbar_kws={'label': 'R'})
     ax.set_yticklabels(lbls, fontsize=16)
     ax.figure.axes[-1].yaxis.label.set_size(12)
     cbar = ax.collections[0].colorbar
     cbar.ax.tick_params(labelsize=12)
-    plt.title("Correlation, Physical Descriptors", fontsize=16)
+    plt.title("Correlation, Pooled Descriptors", fontsize=16)
     plt.show()
 
     #--------------------------------------------------------------
-    plot_corr = phys_x_df
+    plot_corr = pool_x_df
     plot_corr["barrier"] = y_scale
     corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
     corr_barrier = plot_corr.corr()["barrier"].to_numpy()[0:-1]
