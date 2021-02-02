@@ -406,3 +406,57 @@ def extract_all():
     df_results = pd.DataFrame(list_of_dicts)
 
     return df_results, np.array(y)
+
+
+def extract_test():
+    # add reactD once I get the files for it
+    fl_arr = []
+    list_of_dicts = []
+    df = pd.read_excel("../data/enzy_labels.xlsx")
+    full_dictionary = {}
+
+    for i, j in enumerate(df["group"]):
+        if (j != "reactC"):
+            temp_name = "../enzy_test/" + str(j) + "-opt.sum"
+            fl_arr.append(temp_name)
+        else:
+            temp_name = "../enzy_test/" + str(j) + ".sum"
+            fl_arr.append(temp_name)
+
+    for ind, fl in enumerate(fl_arr):
+        print(fl)
+        atoms = df["AtomOrder"][ind]
+        atoms = atoms.replace(" ", "")[1:-1]
+        atom_id = [x[1:-1] for x in atoms.split(",")]
+        bond_cp = [int(x) for x in df["CPOrder"][ind].split(",")][6:13]
+        bond_cp = bond_cp[0:4]
+
+        atoms = []
+        for i in atom_id:
+            if (len(i) == 3):
+                atoms.append(int(i[1:3]))
+            else:
+                atoms.append(int(i[-1]))
+
+        bond = extract_bond_crit(num=bond_cp, filename=fl)
+        nuc = extract_nuc_crit(num=atoms, filename=fl)
+        charge = extract_charge_energies(num=atom_id, filename=fl)
+        spin = extract_spin(num=atom_id, filename=fl)
+        basics = extract_basics(num=atom_id, filename=fl)
+        DelocInd = extract_DI(num = atom_id, filename=fl)
+
+
+        full_dictionary.update(bond)
+        full_dictionary.update(nuc)
+        full_dictionary.update(charge)
+        full_dictionary.update(spin)
+        full_dictionary.update(basics)
+        full_dictionary.update(DelocInd)
+
+
+        list_of_dicts.append(full_dictionary)
+        full_dictionary = {}
+
+    df_results = pd.DataFrame(list_of_dicts)
+
+    return df_results

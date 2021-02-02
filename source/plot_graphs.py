@@ -259,33 +259,36 @@ if __name__ == "__main__":
     pool_x_uncorr   = scale(x[pool_uncorr].to_numpy())
 
     #--------------------------------------------------------------
+    analysis_choice = pool_x_df
+    #--------------------------------------------------------------
     sns.axes_style("ticks")
-    corr = pool_x_df.corr()
-    lbls = label_rewrite(pool_x_df)
+    corr = analysis_choice.corr()
+    lbls = label_rewrite(analysis_choice)
     ax = sns.heatmap(corr,  vmin=-1, vmax=1, center=0,  cmap=sns.diverging_palette(20, 220, n=200), square=True,
-                     yticklabels=lbls, xticklabels=False, cbar_kws={'label': 'R'})
-    ax.set_yticklabels(lbls, fontsize=16)
-    ax.figure.axes[-1].yaxis.label.set_size(12)
+                     yticklabels=lbls, xticklabels=lbls, cbar_kws={'label': 'R'}) # xticklabels=False,
+    ax.set_yticklabels(lbls, fontsize=19)
+    ax.set_xticklabels(lbls, fontsize=19)
+    ax.figure.axes[-1].yaxis.label.set_size(19)
     cbar = ax.collections[0].colorbar
-    cbar.ax.tick_params(labelsize=12)
-    plt.title("Correlation, Pooled Descriptors", fontsize=16)
+    cbar.ax.tick_params(labelsize=19)
+    plt.title("Correlation, Pooled Descriptors", fontsize=23)
     plt.show()
 
     #--------------------------------------------------------------
-    plot_corr = pool_x_df
+    plot_corr = analysis_choice
     plot_corr["barrier"] = y_scale
     corr = np.array(plot_corr.corr()["barrier"].to_numpy()[0:-1])
     corr_barrier = plot_corr.corr()["barrier"].to_numpy()[0:-1]
     corr_barriers_labels = plot_corr.corr()["barrier"].keys()[0:-1]
     lbls = label_rewrite(corr_barriers_labels)
     ax = plt.subplot(1,1,1)
-    plt.title("Pooled Descriptor Correlation vs. Barrier", fontsize=16)
-    plt.xlabel("Correlation w/Barrier (R)", fontsize=16)
+    plt.title("Pooled Descriptors Correlation vs. Barrier", fontsize=23)
+    plt.xlabel("Correlation w/Barrier (R)", fontsize=19)
     ax.barh(range(np.shape(corr_barrier)[0]), corr_barrier,
-            color = "peachpuff", edgecolor="k")
+            color = "peachpuff", edgecolor="k", )
 
-    ax.tick_params(labelsize=12)
-    ax.set_yticklabels(lbls, rotation="0", fontsize=16)
+    ax.tick_params(labelsize=15)
+    ax.set_yticklabels(lbls, rotation="0", fontsize=18)
     ax.set_yticks(np.arange(np.shape(corr_barriers_labels)[0]))
     plt.show()
 

@@ -212,19 +212,6 @@ def score_single(reg, x_train, x_test, y_train, y_test, scale=(1,0)):
     print("r2 score test: \t\t" + str(r2_test))
     print("----------------------------------------------------")
 
-    x_test_sans = x_test.drop([x_test.index[worst3]])
-    y_test_sans = np.delete(y_test, [worst3])
-    y_pred_test  = reg.predict(x_test_sans)
-    mse_test = str(mean_squared_error(y_test_sans * scale[0], y_pred_test * scale[0]))
-    mae_test = str(mean_absolute_error(y_test_sans * scale[0], y_pred_test * scale[0]))
-    r2_test = str(r2_score(y_test_sans, y_pred_test))
-    print("----------------------------------------------------")
-    print("MSE test score: \t" + str(mse_test))
-    print("MAE test score: \t" + str(mae_test))
-    print("r2 score test: \t\t" + str(r2_test))
-    print("----------------------------------------------------")
-
-
     plt.clf()
     print(scale)
     sns.boxplot(np.array(resid) * scale[0])
