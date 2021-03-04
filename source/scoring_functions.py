@@ -175,12 +175,12 @@ def score_single(reg, x_train, x_test, y_train, y_test, scale=(1,0)):
     plt.ylim((0,300))
     plt.xlim((0, 300))
 
-    plt.ylabel("True Value", fontsize=16)
+    plt.ylabel("True Value [kJ/mol]", fontsize=16)
     plt.yticks(fontsize=12)
-    plt.xlabel("Predicted Value", fontsize=16)
+    plt.xlabel("Predicted Value [kJ/mol]", fontsize=16)
     plt.xticks(fontsize=12)
     name = str(reg)
-    plt.title("Extra Tree Parity", fontsize=16)
+    plt.title("Ridge Parity", fontsize=16)
     plt.show()
     plt.tight_layout()
 
@@ -213,7 +213,7 @@ def score_single(reg, x_train, x_test, y_train, y_test, scale=(1,0)):
     print("----------------------------------------------------")
 
     plt.clf()
-    print(scale)
+    print("Std. Var: " + str(scale[0]) + " Mean: " + str(scale[1]))
     sns.boxplot(np.array(resid) * scale[0])
     plt.title("Residual Distribution, Grad. Boost", fontsize = 18)
     plt.xlabel("Abs. Residual Error [kJ/mol]", fontsize = 16)
