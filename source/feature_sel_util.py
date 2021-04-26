@@ -65,10 +65,10 @@ def lasso_cv(x, y):
 #######################################Method 2: Recursive #########################################33
 # recursive feature elimination, tune to the number of features we want
 
-def recursive_feat_elim(x, y):
+def recursive_feat_elim(x, y, depth = 7):
 
-    rf = RandomForestRegressor(n_jobs=-1, max_depth=7)
-    rfe = RFE(estimator = rf, n_features_to_select = 20, step=1, verbose=1)
+    rf = RandomForestRegressor(n_jobs=-1, max_depth=depth)
+    rfe = RFE(estimator = rf, n_features_to_select = 20, step=1, verbose=0)
 
     rfe.fit(x,y)
     ranking = rfe.ranking_.reshape(np.shape(x)[1])
@@ -291,7 +291,7 @@ def boruta(x,y, n=5):
     #print("mse: "+ str(mse))
     #print("mae: "+ str(mae))
     rf = RandomForestRegressor(n_jobs=-1, max_depth=n)
-    feat_selector = BorutaPy(rf, n_estimators='auto', verbose=2, max_iter=2500)
+    feat_selector = BorutaPy(rf, n_estimators='auto', verbose=0, max_iter=2500)
     #for i in x:
     #    print(i)
     feat_selector.fit(np.array(x_scale), y)
@@ -300,7 +300,6 @@ def boruta(x,y, n=5):
     for i, j in enumerate(feat_selector.support_):
         if j == True:
             print(x.columns.values[i])
-
 
 def dendo(x):
     corr = spearmanr(x).correlation

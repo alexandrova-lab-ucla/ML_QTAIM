@@ -572,20 +572,27 @@ elif (single == True):
 else:
     print("no training selected, feature selection")
     #pca(x, list(x), y)
-    # lasso(x,y)
-    # lasso_cv(x,y)
+    #lasso(x,y)
+    #lasso_cv(x,y)
+
     # 15 pca components has 82% explained variance
     # 20 pca components has 87% explained variance
     # 25 pca components has 90% explained variance
-    # lasso(x, y)
-    # lasso_cv(x, y)
+    lasso(x, y)
+    #lasso_cv(x, y)
 
     #boruta(x,y, n = 7)
     #boruta(x,y, n = 5)
     #boruta(x,y, n = 3)
 
-    print("dendrogram")
-    dendo(names)
-    print("quantitative feature selction")
-    quant_feat(x_train, x_test, y_train, y_test, names)
+    #recursive_feat_elim(x,y,7)
+    #print("---------------------------------")
+    #recursive_feat_elim(x, y, 5)
+    #print("---------------------------------")
+    #recursive_feat_elim(x, y, 3)
+
+    #print("dendrogram")
+    #dendo(names)
+    #print("quantitative feature selction")
+    #quant_feat(x_train, x_test, y_train, y_test, names)
 

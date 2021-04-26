@@ -61,10 +61,11 @@ def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
                     #    ret_list.append(line.split()[3])
 
                     if (lookup_other[iter_lookup] == line.split()[0]):
+                        if (line.split()[0] == "ESP"):
+                            ret_list["$\mathcal{ESP}"+ "_{" + str(cp_of_interest) +"}$"] = float(line.split()[-1])
 
                         if (line.split()[0] == "Stress_EigVals"):
                             ret_list["$\mathcal{Stress_EigVals}_{c," + str(cp_of_interest) +"}$"] = float(line.split()[4])
-
 
                         elif (line.split()[0] == "Bond"):
                             if (line.split()[3] == "NA"):
@@ -163,7 +164,6 @@ def extract_ring_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
 # Atomic Electronic Spin Populations:
 # ...
 
-
 def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     lookup_nuclear = [
         "DelSqRho",
@@ -222,14 +222,13 @@ def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
     with open(filename) as myFile:
         for line_num, line in enumerate(myFile.readlines()):
             try:
-
                 # sets control to 1 when the line of interest is hit
-                if (line.split()[1] == "Atomic" and
-                        line.split()[0] == "Some"):
+                if (line.split()[1] == "Atomic" and line.split()[0] == "Some"):
                     control_1 = 1
 
                 # grabs charge, lagrangian, kinetic energy of ea. atom
                 if (control_1 > 0):
+                    ret_list["$\mathcal{Charg}_{" + str(iter_1) + "}$"] = float(line.split()[1]) # add charge
                     ret_list["$\mathcal{Lagr}_{basic," + str(iter_1) + "}$"] = float(line.split()[2])
                     ret_list["$\mathcal{Kinetic}_{basic," + str(iter_1) + "}$"] = float(line.split()[3])
                     ret_list["$\mathcal{K|Scaled|}_{basic," + str(iter_1) + "}$"] = float(line.split()[4])
@@ -238,6 +237,7 @@ def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
                 if (iter_1-1 >= len(num)):
                     control_1 = 0
                     iter_1 = 1
+
             except:
                 pass
         return ret_list
@@ -297,21 +297,63 @@ def extract_spin(num, filename="../sum_files/reactC_endo10MVc.sum"):
 # Delocalization Index
 def extract_DI(num, filename="../sum_files/reactC_endo10MVc.sum"):
     with open(filename) as myFile:
+
         control = 0
         ret_dic = {}
-        iter = 1
+        iter, iter_2, iter_3, iter_4, iter_5 = 1, 1, 1, 1, 1
+
         for line_num, line in enumerate(myFile.readlines()):
             try:
                 if (line.split()[0] == "More" and line.split()[1] == "Atomic"
                         and line.split()[2] == "Electron"):
                     control = 1
+                if (line.split()[0] == "Virial-Based" and line.split()[1] == "Atomic"):
+                    control_2 = 1
+                if (line.split()[0] == "More" and line.split()[1] == "Virial-Based"):
+                    control_3 = 1
+                if (line.split()[0] == "Atomic" and line.split()[1] == "Electron" and line.split()[2] == "Populations,"):
+                    control_4 = 1
+                if (line.split()[0] == "Atomic" and line.split()[1] == "Electron" and line.split()[2] == "Pair"):
+                    control_5 = 1
+
                 if ((line.split()[0].lower() in num or line.split()[0].upper() in num) and control == 1):
                     ret_dic["$\mathcal{DelocInd}_{" + str(iter) +"}$"] = float(line.split()[3])
                     ret_dic["$\mathcal{DelocIndBond}_{" + str(iter) +"}$"] = float(line.split()[4])
                     iter += 1
 
+                if ((line.split()[0].lower() in num or line.split()[0].upper() in num) and control_2 > 0):
+                    # add all of these to descriptors in SI and paper
+                    ret_dic["$\mathcal{Ee}_{" + str(iter_2) + "}$"] = float(line.split()[1])
+                    ret_dic["$\mathcal{T}_{" + str(iter_2) + "}$"] = float(line.split()[2])
+                    iter_2 += 1
+
+                if ((line.split()[0].lower() in num or line.split()[0].upper() in num) and control_3 > 0):
+                    # add all of these to descriptors in SI and paper
+                    ret_dic["$\mathcal{EnE}_{" + str(iter_3) + "}$"] = float(line.split()[1])
+                    iter_3 += 1
+
+                if ((line.split()[0].lower() in num or line.split()[0].upper() in num) and control_4 > 0):
+                    # add all of these to descriptors in SI and paper
+                    ret_dic["$\mathcal{LI}_{" + str(iter_4) + "}$"] = float(line.split()[3])
+                    ret_dic["$\mathcal{DI}_{" + str(iter_4) + "}$"] = float(line.split()[5])
+                    iter_4 += 1
+
+                if ((line.split()[0].lower() in num or line.split()[0].upper() in num) and control_5 > 0):
+                    # add all of these to descriptors in SI and paper
+                    ret_dic["$\mathcal{D2}_{" + str(iter_4) + "}$"] = float(line.split()[1])
+                    ret_dic["$\mathcal{D2'}_{" + str(iter_4) + "}$"] = float(line.split()[2])
+                    ret_dic["$\mathcal{D2}_{sum," + str(iter_4) + "}$"] = float(line.split()[3])
+                    iter_5 += 1
+
                 if (iter-1 >= len(num)):
                     control = 0
+                if (iter_2-1 >= len(num)):
+                    control_2 = 0
+                if (iter_3-1 >= len(num)):
+                    control_3 = 0
+                if (iter_4-1 >= len(num)):
+                    control_4 = 0
+
             except:
                 pass
     return ret_dic
@@ -390,7 +432,6 @@ def extract_all():
         basics = extract_basics(num=atom_id, filename=fl)
         DelocInd = extract_DI(num = atom_id, filename=fl)
 
-
         full_dictionary.update(bond)
         full_dictionary.update(nuc)
         full_dictionary.update(charge)
@@ -399,14 +440,12 @@ def extract_all():
         full_dictionary.update(DelocInd)
 
         y.append(float(df["barrier(kj/mol)"][ind]))
-
         list_of_dicts.append(full_dictionary)
         full_dictionary = {}
 
     df_results = pd.DataFrame(list_of_dicts)
 
     return df_results, np.array(y)
-
 
 def extract_test():
     # add reactD once I get the files for it

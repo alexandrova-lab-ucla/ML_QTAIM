@@ -95,7 +95,6 @@ def extract_bond_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
                 pass
     return ret_list
 
-
 def extract_ring_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     lookup_other = [
         "Rho",
@@ -164,7 +163,6 @@ def extract_ring_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
     return ret_list
 
-
 # For all nuclear critical points, there is
 # i think this all are in the other part
 # (1) Bader charge, - the other
@@ -183,7 +181,6 @@ def extract_ring_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
 # ---------------------------------------------
 # Atomic Electronic Spin Populations:
 # ...
-
 
 def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
     lookup_nuclear = [
@@ -241,7 +238,6 @@ def extract_nuc_crit(num, filename="../sum_files/reactC_endo10MVc.sum"):
                 pass
         return ret_list
 
-
 def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
     control_1 = 0
     control_2 = 0
@@ -290,7 +286,6 @@ def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
                 pass
         return ret_list
 
-
 # this implementation gets "N_total" and "N_spin" vectors from the
 # atoms in the cage of the diels alder rxn
 def extract_charge_energies(num, filename="../sum_files/reactC_endo10MVc.sum"):
@@ -320,7 +315,6 @@ def extract_charge_energies(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
     return ret_list
 
-
 # this implementation gets "N_total" and "N_spin" vectors from the
 # atoms in the cage of the diels alder rxn
 def extract_spin(num, filename="../sum_files/reactC_endo10MVc.sum"):
@@ -349,7 +343,6 @@ def extract_spin(num, filename="../sum_files/reactC_endo10MVc.sum"):
                 pass
 
     return ret_dic
-
 
 def atom_xyz_from_sum(filename=""):
     temp = []
