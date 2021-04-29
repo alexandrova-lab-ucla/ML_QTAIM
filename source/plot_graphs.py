@@ -43,16 +43,22 @@ def label_rewrite(lbl_raw):
             else:
                 tmp = r"$\mathrm{\nabla^2 \rho _{" + i[-3] + "}}$"
                 lbls.append(tmp)
-        elif (i == "$\mathcal{ESPe}_{10}$"):
-            lbls.append("$\Phi^{e}_{10}$")
         elif ("Stress" in i):
             lbls.append("$\lambda^{(1)}_{\sigma, " + i[-3] + "}$")
-        elif ("DelocInd" in i):
+        elif ("DI" in i):
             lbls.append("$\delta_" +str(int(i[-3])+1) + "}$")
-        elif ("Vnuc" in i):
-            lbls.append(r"$\tilde{\Phi}^{nuc}_{" + i[-3] + "}$")
+        elif ("DelocIndBond" in i):
+            lbls.append("$\delta_{bond, " +str(int(i[-3])+1) + "}$")
         elif ("ESPn" in i):
             lbls.append("$\Phi^{nuc}_{" + i[-3] + "}$")
+        elif (i == "$\mathcal{ESPe}_{10}$"):
+            lbls.append("$\Phi^{e}_{10}$")
+        elif ("{Ee}" in i):
+            lbls.append("$\mathrm{E}_{e," + i[-3] + "}$")
+        elif("{T}" in i):
+            lbls.append("$\mathrm{T}_{" + i[-3] + "}$")
+        elif ("{q}" in i):
+            lbls.append("$\mathit{q}_{" + i[-3] + "}$")
         elif ("{ESP}" in i):
             num = i.split("{")[-1].split("}")[0]
             lbls.append("$\Phi_{" + num + "}$")
@@ -63,8 +69,19 @@ def label_rewrite(lbl_raw):
             lbls.append(tmp)
         elif ("K" in i):
             lbls.append("$\mathcal{K}_{" + i[-3] + "}}$")
+        elif("{LI}" in i):
+            lbls.append("$\mathcal{\lambda}_{" + i[-3] + "}}$")
+
+        elif (i == "$\mathcal{D2'}_{7}$"):
+            lbls.append("$\mathrm{d'}_{" + str(int(i[-3])) + "}}$")
+        elif (i == "$\mathcal{D2}_{7}$"):
+            lbls.append("$\mathrm{d}_{" + str(int(i[-3])) + "}}$")
+        elif (i == "$\mathcal{D2}_{sum,7}$"):
+            lbls.append("$\mathrm{d}_{sum," + str(int(i[-3])) + "}}$")
+
         else:
             lbls.append(r"$\mathrm" + str.split(i, "\mathcal")[1])
+
     return lbls
 
 def pca(x, labels=[], barriers=np.array([])):
@@ -200,8 +217,7 @@ if __name__ == "__main__":
     plt.ylabel("Frequency")
     plt.show()
 
-    pooled_set = \
-        [
+    pooled_set = [
             "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
             "$\mathcal{DelocIndBond}_{5}$",
             "$\mathcal{DelSqRho}_{1}$",
@@ -220,8 +236,7 @@ if __name__ == "__main__":
             "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
             "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
         ]
-    pool_uncorr = \
-        [
+    pool_uncorr = [
             "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
             "$\mathcal{DelocIndBond}_{5}$",
             "$\mathcal{DelSqRho}_{1}$",
@@ -235,8 +250,7 @@ if __name__ == "__main__":
             "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
             "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
         ]
-    physical = \
-        [
+    physical = [
             "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
             "$\mathcal{DelocIndBond}_{5}$",
             "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$", "$\mathcal{ESP}_{4}$",
@@ -249,16 +263,15 @@ if __name__ == "__main__":
             "$\mathcal{Vnuc}_{5}$",
             "$\mathcal{Vnuc}_{6}$"
         ]
+
     pooled_post = [
-        "$\mathcal{Bond}_{7}$","$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
-        "$\mathcal{Charg}_{1}$", "$\mathcal{Charg}_{2}$","$\mathcal{Charg}_{4}$","$\mathcal{Charg}_{5}$",
+        "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
+        "$\mathcal{q}_{1}$", "$\mathcal{q}_{2}$", "$\mathcal{q}_{4}$", "$\mathcal{q}_{5}$",
         "$\mathcal{D2'}_{7}$", "$\mathcal{D2}_{7}$", "$\mathcal{D2}_{sum,7}$",
-        "$\mathcal{DelocInd}_{1}$", "$\mathcal{DelocInd}_{2}$", "$\mathcal{DelocInd}_{4}$", "$\mathcal{DelocInd}_{6}$",
         "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{4}$",
         "$\mathcal{DelocIndBond}_{5}$",
         "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{3}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
         "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
-        "$\mathcal{EnE}_{1}$", "$\mathcal{EnE}_{3}$", "$\mathcal{EnE}_{4}$",
         "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{10}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
         "$\mathcal{ESP}_{4}$",
         "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
@@ -267,39 +280,24 @@ if __name__ == "__main__":
         "$\mathcal{T}_{1}$", "$\mathcal{T}_{3}$", "$\mathcal{T}_{4}$"
     ]
     pool_uncorr_post = [
-        "$\mathcal{Bond}_{7}$","$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
-        "$\mathcal{Charg}_{1}$", "$\mathcal{Charg}_{2}$","$\mathcal{Charg}_{4}$","$\mathcal{Charg}_{5}$",
+        "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
+        "$\mathcal{q}_{1}$", "$\mathcal{q}_{2}$", "$\mathcal{q}_{4}$", "$\mathcal{q}_{5}$",
         "$\mathcal{D2}_{sum,7}$",
-        "$\mathcal{DelocInd}_{1}$", "$\mathcal{DelocInd}_{2}$", "$\mathcal{DelocInd}_{4}$", "$\mathcal{DelocInd}_{6}$",
-        "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{4}$",
-        "$\mathcal{DelocIndBond}_{5}$",
-
         "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{3}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
-
         "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
-        "$\mathcal{EnE}_{1}$", "$\mathcal{EnE}_{3}$", "$\mathcal{EnE}_{4}$",
         "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{10}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
         "$\mathcal{ESP}_{4}$",
         "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
         "$\mathcal{ESPe}_{10}$", "$\mathcal{ESPn}_{5}$"
     ]
-    phys_post =[
+    phys_post = [
         "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
-
-        "$\mathcal{Charg}_{1}$", "$\mathcal{Charg}_{2}$", "$\mathcal{Charg}_{3}$",
-        "$\mathcal{Charg}_{4}$", "$\mathcal{Charg}_{5}$", "$\mathcal{Charg}_{6}$",
-
+        "$\mathcal{q}_{1}$", "$\mathcal{q}_{2}$", "$\mathcal{q}_{3}$",
+        "$\mathcal{q}_{4}$", "$\mathcal{q}_{5}$", "$\mathcal{q}_{6}$",
         "$\mathcal{D2}_{sum,7}$",
-
-        "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{3}$",
-        "$\mathcal{DelocIndBond}_{4}$", "$\mathcal{DelocIndBond}_{5}$", "$\mathcal{DelocIndBond}_{6}$",
-
-        "$\mathcal{DI}_{1}$","$\mathcal{DI}_{2}$", "$\mathcal{DI}_{3}$",
+        "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{2}$", "$\mathcal{DI}_{3}$",
         "$\mathcal{DI}_{4}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
-
         "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{2}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
-        "$\mathcal{EnE}_{1}$", "$\mathcal{EnE}_{2}$", "$\mathcal{EnE}_{3}$", "$\mathcal{EnE}_{4}$",
-
         "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
         "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$", "$\mathcal{ESP}_{10}$"
 
@@ -321,9 +319,9 @@ if __name__ == "__main__":
     uncorr_post_x = scale(x[pool_uncorr_post].to_numpy())
     phys_post_x = scale(x[phys_post].to_numpy())
 
-    #--------------------------------------------------------------
+    #------------------------------------------------------------------------
     analysis_choice = phys_x_post_df
-    #--------------------------------------------------------------
+    #------------------------------------------------------------------------
     sns.axes_style("ticks")
     corr = analysis_choice.corr()
     lbls = label_rewrite(analysis_choice)
@@ -345,7 +343,7 @@ if __name__ == "__main__":
     corr_barriers_labels = plot_corr.corr()["barrier"].keys()[0:-1]
     lbls = label_rewrite(corr_barriers_labels)
     ax = plt.subplot(1,1,1)
-    plt.title("Pooled Descriptors Correlation vs. Barrier", fontsize=23)
+    plt.title("Pooled Descriptors, Uncorrelated Correlation vs. Barrier", fontsize=23)
     plt.xlabel("Correlation w/Barrier (R)", fontsize=19)
     ax.barh(range(np.shape(corr_barrier)[0]), corr_barrier,
             color = "peachpuff", edgecolor="k", )

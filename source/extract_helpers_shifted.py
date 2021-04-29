@@ -228,7 +228,7 @@ def extract_basics(num, filename="../sum_files/reactC_endo10MVc.sum"):
 
                 # grabs charge, lagrangian, kinetic energy of ea. atom
                 if (control_1 > 0):
-                    ret_list["$\mathcal{Charg}_{" + str(iter_1) + "}$"] = float(line.split()[1]) # add charge
+                    ret_list["$\mathcal{q}_{" + str(iter_1) + "}$"] = float(line.split()[1]) # add charge
                     ret_list["$\mathcal{Lagr}_{basic," + str(iter_1) + "}$"] = float(line.split()[2])
                     ret_list["$\mathcal{Kinetic}_{basic," + str(iter_1) + "}$"] = float(line.split()[3])
                     ret_list["$\mathcal{K|Scaled|}_{basic," + str(iter_1) + "}$"] = float(line.split()[4])

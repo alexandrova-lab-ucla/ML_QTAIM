@@ -85,14 +85,12 @@ physical = \
 
 pooled_post = [
     "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
-    "$\mathcal{Charg}_{1}$", "$\mathcal{Charg}_{2}$", "$\mathcal{Charg}_{4}$", "$\mathcal{Charg}_{5}$",
+    "$\mathcal{q}_{1}$", "$\mathcal{q}_{2}$", "$\mathcal{q}_{4}$", "$\mathcal{q}_{5}$",
     "$\mathcal{D2'}_{7}$", "$\mathcal{D2}_{7}$", "$\mathcal{D2}_{sum,7}$",
-    "$\mathcal{DelocInd}_{1}$", "$\mathcal{DelocInd}_{2}$", "$\mathcal{DelocInd}_{4}$", "$\mathcal{DelocInd}_{6}$",
     "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{4}$",
     "$\mathcal{DelocIndBond}_{5}$",
     "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{3}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
     "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
-    "$\mathcal{EnE}_{1}$", "$\mathcal{EnE}_{3}$", "$\mathcal{EnE}_{4}$",
     "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{10}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
     "$\mathcal{ESP}_{4}$",
     "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
@@ -102,16 +100,10 @@ pooled_post = [
 ]
 pool_uncorr_post = [
     "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
-    "$\mathcal{Charg}_{1}$", "$\mathcal{Charg}_{2}$", "$\mathcal{Charg}_{4}$", "$\mathcal{Charg}_{5}$",
+    "$\mathcal{q}_{1}$", "$\mathcal{q}_{2}$", "$\mathcal{q}_{4}$", "$\mathcal{q}_{5}$",
     "$\mathcal{D2}_{sum,7}$",
-    "$\mathcal{DelocInd}_{1}$", "$\mathcal{DelocInd}_{2}$", "$\mathcal{DelocInd}_{4}$", "$\mathcal{DelocInd}_{6}$",
-    "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{4}$",
-    "$\mathcal{DelocIndBond}_{5}$",
-
     "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{3}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
-
     "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
-    "$\mathcal{EnE}_{1}$", "$\mathcal{EnE}_{3}$", "$\mathcal{EnE}_{4}$",
     "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{10}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
     "$\mathcal{ESP}_{4}$",
     "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
@@ -119,21 +111,12 @@ pool_uncorr_post = [
 ]
 phys_post = [
     "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
-
-    "$\mathcal{Charg}_{1}$", "$\mathcal{Charg}_{2}$", "$\mathcal{Charg}_{3}$",
-    "$\mathcal{Charg}_{4}$", "$\mathcal{Charg}_{5}$", "$\mathcal{Charg}_{6}$",
-
+    "$\mathcal{q}_{1}$", "$\mathcal{q}_{2}$", "$\mathcal{q}_{3}$",
+    "$\mathcal{q}_{4}$", "$\mathcal{q}_{5}$", "$\mathcal{q}_{6}$",
     "$\mathcal{D2}_{sum,7}$",
-
-    "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{3}$",
-    "$\mathcal{DelocIndBond}_{4}$", "$\mathcal{DelocIndBond}_{5}$", "$\mathcal{DelocIndBond}_{6}$",
-
     "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{2}$", "$\mathcal{DI}_{3}$",
     "$\mathcal{DI}_{4}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
-
     "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{2}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
-    "$\mathcal{EnE}_{1}$", "$\mathcal{EnE}_{2}$", "$\mathcal{EnE}_{3}$", "$\mathcal{EnE}_{4}$",
-
     "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
     "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$", "$\mathcal{ESP}_{10}$"
 
@@ -653,7 +636,7 @@ elif (single == True):
 
 else:
     print("no training selected, feature selection")
-    pca(x, list(x), y)
+    #pca(x, list(x), y)
     #lasso(x,y)
     #lasso_cv(x,y)
 
@@ -676,5 +659,5 @@ else:
     #print("dendrogram")
     #dendo(names)
     #print("quantitative feature selction")
-    #quant_feat(x_train, x_test, y_train, y_test, names)
+    quant_feat(x_train, x_test, y_train, y_test, names)
 
