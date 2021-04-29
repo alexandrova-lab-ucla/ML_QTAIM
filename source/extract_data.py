@@ -53,7 +53,6 @@ pooled_set = \
         "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
         "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
     ]
-
 pool_uncorr = \
     [
         "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
@@ -69,8 +68,6 @@ pool_uncorr = \
         "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
         "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
     ]
-
-# physical set, general model
 physical = \
     [
         "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
@@ -86,14 +83,74 @@ physical = \
         "$\mathcal{Vnuc}_{6}$"
     ]
 
+pooled_post = [
+    "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
+    "$\mathcal{Charg}_{1}$", "$\mathcal{Charg}_{2}$", "$\mathcal{Charg}_{4}$", "$\mathcal{Charg}_{5}$",
+    "$\mathcal{D2'}_{7}$", "$\mathcal{D2}_{7}$", "$\mathcal{D2}_{sum,7}$",
+    "$\mathcal{DelocInd}_{1}$", "$\mathcal{DelocInd}_{2}$", "$\mathcal{DelocInd}_{4}$", "$\mathcal{DelocInd}_{6}$",
+    "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{4}$",
+    "$\mathcal{DelocIndBond}_{5}$",
+    "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{3}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
+    "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
+    "$\mathcal{EnE}_{1}$", "$\mathcal{EnE}_{3}$", "$\mathcal{EnE}_{4}$",
+    "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{10}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
+    "$\mathcal{ESP}_{4}$",
+    "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
+    "$\mathcal{ESPe}_{10}$", "$\mathcal{ESPn}_{5}$",
+    "$\mathcal{LI}_{1}$", "$\mathcal{LI}_{3}$", "$\mathcal{LI}_{5}$", "$\mathcal{LI}_{6}$",
+    "$\mathcal{T}_{1}$", "$\mathcal{T}_{3}$", "$\mathcal{T}_{4}$"
+]
+pool_uncorr_post = [
+    "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
+    "$\mathcal{Charg}_{1}$", "$\mathcal{Charg}_{2}$", "$\mathcal{Charg}_{4}$", "$\mathcal{Charg}_{5}$",
+    "$\mathcal{D2}_{sum,7}$",
+    "$\mathcal{DelocInd}_{1}$", "$\mathcal{DelocInd}_{2}$", "$\mathcal{DelocInd}_{4}$", "$\mathcal{DelocInd}_{6}$",
+    "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{4}$",
+    "$\mathcal{DelocIndBond}_{5}$",
+
+    "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{3}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
+
+    "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
+    "$\mathcal{EnE}_{1}$", "$\mathcal{EnE}_{3}$", "$\mathcal{EnE}_{4}$",
+    "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{10}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
+    "$\mathcal{ESP}_{4}$",
+    "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
+    "$\mathcal{ESPe}_{10}$", "$\mathcal{ESPn}_{5}$"
+]
+phys_post = [
+    "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
+
+    "$\mathcal{Charg}_{1}$", "$\mathcal{Charg}_{2}$", "$\mathcal{Charg}_{3}$",
+    "$\mathcal{Charg}_{4}$", "$\mathcal{Charg}_{5}$", "$\mathcal{Charg}_{6}$",
+
+    "$\mathcal{D2}_{sum,7}$",
+
+    "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{3}$",
+    "$\mathcal{DelocIndBond}_{4}$", "$\mathcal{DelocIndBond}_{5}$", "$\mathcal{DelocIndBond}_{6}$",
+
+    "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{2}$", "$\mathcal{DI}_{3}$",
+    "$\mathcal{DI}_{4}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
+
+    "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{2}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
+    "$\mathcal{EnE}_{1}$", "$\mathcal{EnE}_{2}$", "$\mathcal{EnE}_{3}$", "$\mathcal{EnE}_{4}$",
+
+    "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
+    "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$", "$\mathcal{ESP}_{10}$"
+
+]
+
 parser = argparse.ArgumentParser(description='select descriptor, and directory of files')
+
 parser.add_argument("--algo", action='store', dest="algo", default="xgb", help="select algorithm")
 parser.add_argument("-n", action='store', dest="n_iter", default="500", help="select number of trials")
 parser.add_argument('--bayes', dest="bayes", action='store_true')
+
 parser.add_argument('--single', dest="single", action='store_true')
+
 parser.add_argument('--pool', dest="pool", action='store_true')
 parser.add_argument('--physical', dest="phys", action='store_true')
 parser.add_argument('--all', dest="all", action='store_true')
+parser.add_argument('--post_review', dest="review", action='store_true')
 
 results = parser.parse_args()
 algo = results.algo
@@ -103,32 +160,57 @@ n_iter = int(results.n_iter)
 all = results.all
 pool = results.pool
 physical_set = results.phys
+review = results.review
 
 phys_x_df = x[physical]
 pool_x_uncorr_df = x[pool_uncorr]
 pool_x_df = x[pooled_set]
 
-full_input = scale(x)
+pool_post_x_df = x[pooled_post]
+uncorr_post_x_df = x[pool_uncorr_post]
+phys_x_post_df = x[phys_post]
 
+full_input = scale(x)
 pool_x = scale(x[pooled_set].to_numpy())
 phys_x = scale(x[physical].to_numpy())
 pool_x_uncorr = scale(x[pool_uncorr].to_numpy())
 
+pool_post_x = scale(x[pooled_post].to_numpy())
+uncorr_post_x = scale(x[pool_uncorr_post].to_numpy())
+phys_post_x = scale(x[phys_post].to_numpy())
+
 # selection of what feature set to use
-if (pool == True):
-    dataset = pool_x
-    ref_df = pool_x_df
-else:
-    if (physical_set == True):
-        dataset = phys_x
-        ref_df = phys_x_df
+
+if(review == True):
+    if (pool == True):
+        dataset = pool_post_x
+        ref_df = pool_post_x_df
     else:
-        if (all == True):
-            dataset = full_input
-            ref_df = x
+        if (physical_set == True):
+            dataset = phys_post_x
+            ref_df = phys_x_post_df
         else:
-            dataset = pool_x_uncorr
-            ref_df = pool_x_uncorr_df
+            if (all == True):
+                dataset = full_input
+                ref_df = x
+            else:
+                dataset = uncorr_post_x
+                ref_df = uncorr_post_x_df
+else:
+    if (pool == True):
+        dataset = pool_x
+        ref_df = pool_x_df
+    else:
+        if (physical_set == True):
+            dataset = phys_x
+            ref_df = phys_x_df
+        else:
+            if (all == True):
+                dataset = full_input
+                ref_df = x
+            else:
+                dataset = pool_x_uncorr
+                ref_df = pool_x_uncorr_df
 
 x_train, x_test, y_train, y_test = train_test_split(ref_df, y_scale, test_size=0.2, random_state=1)
 names = ref_df
@@ -186,7 +268,7 @@ if (bayes == True):
     params_lasso = {"alpha": Real(1e-5, 1, prior="log-uniform")}
     param_ada = {"n_estimators": Integer(1e1, 1e3, prior="log-uniform"),
                  "learning_rate": Real(1e-2, 1e1, prior="log-uniform")}
-    param_extra = {"n_estimators": Integer(10, 1e4, prior="log-uniform"),
+    param_extra = {"n_estimators": Integer(10, 1e3, prior="log-uniform"),
                    "min_samples_split": Integer(2, 6), "min_samples_leaf": Integer(2, 4),
                    "max_depth": Integer(10, 50), "n_jobs": [mp.cpu_count()]}
     param_huber = {"epsilon": Real(1.01, 1.5), "alpha": Real(1e-6, 1e-1, prior="log-uniform"),
@@ -279,7 +361,7 @@ if (bayes == True):
     elif (algo == "nn"):
         print("nn algorithm")
 
-        reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, hidden_layer_sizes=(200, 200,),
+        reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, hidden_layer_sizes=(50,50,50,),
                               solver="adam")
         reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10,
                                scoring="neg_mean_absolute_error")
@@ -571,14 +653,14 @@ elif (single == True):
 
 else:
     print("no training selected, feature selection")
-    #pca(x, list(x), y)
+    pca(x, list(x), y)
     #lasso(x,y)
     #lasso_cv(x,y)
 
     # 15 pca components has 82% explained variance
     # 20 pca components has 87% explained variance
     # 25 pca components has 90% explained variance
-    lasso(x, y)
+    #lasso(x, y)
     #lasso_cv(x, y)
 
     #boruta(x,y, n = 7)

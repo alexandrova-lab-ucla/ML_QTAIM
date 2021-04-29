@@ -154,14 +154,15 @@ def pca(x, labels=[], barriers=np.array([])):
     plt.show()
     comp = []
     coeff_pca = []
-    for i in pca.components_:
+    for ind, i in enumerate(pca.components_):
+        print("components of PC " + str(ind) + ":")
         for ind, j in enumerate(labels):
             if(np.absolute(i[ind]) > 0.1):
                 comp.append(labels[ind])
                 print(labels[ind])
                 coeff_pca.append(i[ind])
-        print(comp)
-        print(len(comp))
+        #print(comp)
+        #print(len(comp))
 
         #print(np.sort(np.absolute(np.array(i))))
         #print(len(np.array(i)))

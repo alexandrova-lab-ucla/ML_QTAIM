@@ -22,14 +22,17 @@ matplotlib.rcParams.update({# Use mathtext, not LaTeX
 def label_rewrite(lbl_raw):
     lbls = []
     for i in lbl_raw:
+
         if ("basic" in i):
             i = i.replace("basic,", "")
+
         if (str.split(i, "\mathcal")[1][1:5] == "Bond"):
             if(str(i[-3]) == "0"):
                 tmp = r"$\mathrm{\epsilon_{" + i[-4] + i[-3] + "}}$"
             else:
                 tmp = r"$\mathrm{\epsilon_" + i[-3] + "}$"
             lbls.append(tmp)
+
         elif (str.split(i, "\mathcal")[1][1:4] == "Rho"):
             tmp = r"$\mathrm{\rho_{" + i[-3] + "}}$"
             lbls.append(tmp)
@@ -45,13 +48,14 @@ def label_rewrite(lbl_raw):
         elif ("Stress" in i):
             lbls.append("$\lambda^{(1)}_{\sigma, " + i[-3] + "}$")
         elif ("DelocInd" in i):
-            lbls.append("$\delta_" + i[-3] + "}$")
+            lbls.append("$\delta_" +str(int(i[-3])+1) + "}$")
         elif ("Vnuc" in i):
             lbls.append(r"$\tilde{\Phi}^{nuc}_{" + i[-3] + "}$")
         elif ("ESPn" in i):
             lbls.append("$\Phi^{nuc}_{" + i[-3] + "}$")
         elif ("{ESP}" in i):
-            lbls.append("$\Phi_{" + i[-3] + "}$")
+            num = i.split("{")[-1].split("}")[0]
+            lbls.append("$\Phi_{" + num + "}$")
         elif (i[0:15] == "$\mathcal{Lagr}" or i[0:21] == "$\mathcal{Lagrangian}"):
             lbls.append("$\mathcal{L}_{" + i[-3] + "}$")
         elif ("HessRhoEigVals" in i):
@@ -216,7 +220,6 @@ if __name__ == "__main__":
             "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
             "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
         ]
-
     pool_uncorr = \
         [
             "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
@@ -232,8 +235,6 @@ if __name__ == "__main__":
             "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
             "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
         ]
-
-    # physical set, general model
     physical = \
         [
             "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
@@ -248,18 +249,80 @@ if __name__ == "__main__":
             "$\mathcal{Vnuc}_{5}$",
             "$\mathcal{Vnuc}_{6}$"
         ]
+    pooled_post = [
+        "$\mathcal{Bond}_{7}$","$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
+        "$\mathcal{Charg}_{1}$", "$\mathcal{Charg}_{2}$","$\mathcal{Charg}_{4}$","$\mathcal{Charg}_{5}$",
+        "$\mathcal{D2'}_{7}$", "$\mathcal{D2}_{7}$", "$\mathcal{D2}_{sum,7}$",
+        "$\mathcal{DelocInd}_{1}$", "$\mathcal{DelocInd}_{2}$", "$\mathcal{DelocInd}_{4}$", "$\mathcal{DelocInd}_{6}$",
+        "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{4}$",
+        "$\mathcal{DelocIndBond}_{5}$",
+        "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{3}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
+        "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
+        "$\mathcal{EnE}_{1}$", "$\mathcal{EnE}_{3}$", "$\mathcal{EnE}_{4}$",
+        "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{10}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
+        "$\mathcal{ESP}_{4}$",
+        "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
+        "$\mathcal{ESPe}_{10}$", "$\mathcal{ESPn}_{5}$",
+        "$\mathcal{LI}_{1}$", "$\mathcal{LI}_{3}$", "$\mathcal{LI}_{5}$", "$\mathcal{LI}_{6}$",
+        "$\mathcal{T}_{1}$", "$\mathcal{T}_{3}$", "$\mathcal{T}_{4}$"
+    ]
+    pool_uncorr_post = [
+        "$\mathcal{Bond}_{7}$","$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
+        "$\mathcal{Charg}_{1}$", "$\mathcal{Charg}_{2}$","$\mathcal{Charg}_{4}$","$\mathcal{Charg}_{5}$",
+        "$\mathcal{D2}_{sum,7}$",
+        "$\mathcal{DelocInd}_{1}$", "$\mathcal{DelocInd}_{2}$", "$\mathcal{DelocInd}_{4}$", "$\mathcal{DelocInd}_{6}$",
+        "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{4}$",
+        "$\mathcal{DelocIndBond}_{5}$",
+
+        "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{3}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
+
+        "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
+        "$\mathcal{EnE}_{1}$", "$\mathcal{EnE}_{3}$", "$\mathcal{EnE}_{4}$",
+        "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{10}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
+        "$\mathcal{ESP}_{4}$",
+        "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
+        "$\mathcal{ESPe}_{10}$", "$\mathcal{ESPn}_{5}$"
+    ]
+    phys_post =[
+        "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
+
+        "$\mathcal{Charg}_{1}$", "$\mathcal{Charg}_{2}$", "$\mathcal{Charg}_{3}$",
+        "$\mathcal{Charg}_{4}$", "$\mathcal{Charg}_{5}$", "$\mathcal{Charg}_{6}$",
+
+        "$\mathcal{D2}_{sum,7}$",
+
+        "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{3}$",
+        "$\mathcal{DelocIndBond}_{4}$", "$\mathcal{DelocIndBond}_{5}$", "$\mathcal{DelocIndBond}_{6}$",
+
+        "$\mathcal{DI}_{1}$","$\mathcal{DI}_{2}$", "$\mathcal{DI}_{3}$",
+        "$\mathcal{DI}_{4}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
+
+        "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{2}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
+        "$\mathcal{EnE}_{1}$", "$\mathcal{EnE}_{2}$", "$\mathcal{EnE}_{3}$", "$\mathcal{EnE}_{4}$",
+
+        "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
+        "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$", "$\mathcal{ESP}_{10}$"
+
+    ]
 
     pool_x_df           = x[pooled_set]
     phys_x_df           = x[physical]
     pool_x_uncorr_df    = x[pool_uncorr]
 
+    pool_post_x_df = x[pooled_post]
+    uncorr_post_x_df = x[pool_uncorr_post]
+    phys_x_post_df = x[phys_post]
+
     full_input = scale(x)
     pool_x          = scale(x[pooled_set].to_numpy())
     phys_x          = scale(x[physical].to_numpy())
     pool_x_uncorr   = scale(x[pool_uncorr].to_numpy())
+    pool_post_x = scale(x[pooled_post].to_numpy())
+    uncorr_post_x = scale(x[pool_uncorr_post].to_numpy())
+    phys_post_x = scale(x[phys_post].to_numpy())
 
     #--------------------------------------------------------------
-    analysis_choice = pool_x_df
+    analysis_choice = phys_x_post_df
     #--------------------------------------------------------------
     sns.axes_style("ticks")
     corr = analysis_choice.corr()
@@ -271,7 +334,7 @@ if __name__ == "__main__":
     ax.figure.axes[-1].yaxis.label.set_size(19)
     cbar = ax.collections[0].colorbar
     cbar.ax.tick_params(labelsize=19)
-    plt.title("Correlation, Pooled Descriptors", fontsize=23)
+    plt.title("Correlation, Physical Descriptors", fontsize=23)
     plt.show()
 
     #--------------------------------------------------------------
