@@ -168,7 +168,7 @@ def score_single(reg, x_train, x_test, y_train, y_test, scale=(1,0)):
     print("r2 score train:\t\t" + str(r2_train))
 
     plt.plot(y_pred_train*scale[0]+ scale[1],y_train*scale[0] + scale[1], 'o', color='blue', markersize = 5, label= "Train")
-    plt.plot(y_pred_test*scale[0]+ scale[1],y_test*scale[0]+ scale[1], 'o', color='red', label = "Test")
+    plt.plot(y_pred_test*scale[0]+ scale[1],y_test*scale[0]+ scale[1], 'o', color='red', label = "Validation")
     plt.legend(fontsize = 12)
     x = np.linspace(0,300,100)
     plt.plot(x, x, color="black")
