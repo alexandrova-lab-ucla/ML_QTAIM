@@ -259,17 +259,17 @@ def quant_feat(x_train, x_test, y_train, y_test, names):
     fig.suptitle("Permutation Importance, Pooled Set", fontsize=20)
 
     ax1.barh(tree_indices,
-             reg.feature_importances_[tree_importance_sorted_idx], height=0.7, color="peachpuff", edgecolor= "k")
-    ax1.axvline(x=0, c = "red", linestyle="--")
+             reg.feature_importances_[tree_importance_sorted_idx], height=0.7, color="dodgerblue", edgecolor= "k")
+    ax1.axvline(x=0, c = "royalblue", linestyle="--")
 
     lbls = label_rewrite(names.columns[perm_sorted_idx])
-    ax1.set_yticklabels(lbls, fontsize=18)
+    ax1.set_yticklabels(lbls, fontsize=16)
     ax1.set_yticks(tree_indices)
     ax1.set_ylim((0, len(reg.feature_importances_)))
-    ax1.tick_params(labelsize=16)
+    ax1.tick_params(labelsize=14)
 
 
-    lbls = label_rewrite(names.columns[perm_sorted_idx])
+    #lbls = label_rewrite(names.columns[perm_sorted_idx])
     #ax2.boxplot(result.importances[perm_sorted_idx].T, vert=False)
     #ax2.set_yticklabels(lbls, fontsize=18)
     #ax2.axvline(x=0, c = "red", linestyle="--")

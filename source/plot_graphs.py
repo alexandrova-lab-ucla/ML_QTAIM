@@ -48,20 +48,20 @@ def label_rewrite(lbl_raw):
         elif ("DI" in i):
             lbls.append("$\delta_" +str(int(i[-3])+1) + "}$")
         elif ("DelocIndBond" in i):
-            lbls.append("$\delta_{bond, " +str(int(i[-3])+1) + "}$")
+            lbls.append("$\delta^\mathrm{bond}_{" +str(int(i[-3])+1) + "}$")
         elif ("ESPn" in i):
-            lbls.append("$\Phi^{nuc}_{" + i[-3] + "}$")
+            lbls.append("$\Phi^\mathrm{nuc}_{" + i[-3] + "}$")
         elif (i == "$\mathcal{ESPe}_{10}$"):
-            lbls.append("$\Phi^{e}_{10}$")
+            lbls.append("$\mathrm{\Phi}^{e}_{10}$")
         elif ("{Ee}" in i):
-            lbls.append("$\mathrm{E}_{e," + i[-3] + "}$")
+            lbls.append("$\mathrm{E}^\mathit{e}_\mathit{" + i[-3] + "}$")
         elif("{T}" in i):
             lbls.append("$\mathrm{T}_{" + i[-3] + "}$")
         elif ("{q}" in i):
             lbls.append("$\mathit{q}_{" + i[-3] + "}$")
         elif ("{ESP}" in i):
             num = i.split("{")[-1].split("}")[0]
-            lbls.append("$\Phi_{" + num + "}$")
+            lbls.append("$\mathrm{\Phi}_{" + num + "}$")
         elif (i[0:15] == "$\mathcal{Lagr}" or i[0:21] == "$\mathcal{Lagrangian}"):
             lbls.append("$\mathcal{L}_{" + i[-3] + "}$")
         elif ("HessRhoEigVals" in i):
@@ -77,7 +77,7 @@ def label_rewrite(lbl_raw):
         elif (i == "$\mathcal{D2}_{7}$"):
             lbls.append("$\mathrm{d}_{" + str(int(i[-3])) + "}}$")
         elif (i == "$\mathcal{D2}_{sum,7}$"):
-            lbls.append("$\mathrm{d}_{sum," + str(int(i[-3])) + "}}$")
+            lbls.append("$\mathrm{d}^\mathrm{sum}_{" + str(int(i[-3])) + "}}$")
 
         else:
             lbls.append(r"$\mathrm" + str.split(i, "\mathcal")[1])
@@ -346,7 +346,7 @@ if __name__ == "__main__":
     plt.title("Pooled Descriptors, Uncorrelated Correlation vs. Barrier", fontsize=23)
     plt.xlabel("Correlation w/Barrier (R)", fontsize=19)
     ax.barh(range(np.shape(corr_barrier)[0]), corr_barrier,
-            color = "peachpuff", edgecolor="k", )
+            color = "dodgerblue", edgecolor="k", )
 
     ax.tick_params(labelsize=15)
     ax.set_yticklabels(lbls, rotation="0", fontsize=18)
