@@ -320,7 +320,7 @@ if __name__ == "__main__":
     phys_post_x = scale(x[phys_post].to_numpy())
 
     #------------------------------------------------------------------------
-    analysis_choice = phys_x_post_df
+    analysis_choice = uncorr_post_x_df
     #------------------------------------------------------------------------
     sns.axes_style("ticks")
     corr = analysis_choice.corr()
@@ -343,7 +343,7 @@ if __name__ == "__main__":
     corr_barriers_labels = plot_corr.corr()["barrier"].keys()[0:-1]
     lbls = label_rewrite(corr_barriers_labels)
     ax = plt.subplot(1,1,1)
-    plt.title("Pooled Descriptors, Uncorrelated Correlation vs. Barrier", fontsize=23)
+    plt.title("Physical Descriptors, Correlation vs. Barrier", fontsize=23)
     plt.xlabel("Correlation w/Barrier (R)", fontsize=19)
     ax.barh(range(np.shape(corr_barrier)[0]), corr_barrier,
             color = "dodgerblue", edgecolor="k", )
@@ -352,5 +352,4 @@ if __name__ == "__main__":
     ax.set_yticklabels(lbls, rotation="0", fontsize=18)
     ax.set_yticks(np.arange(np.shape(corr_barriers_labels)[0]))
     plt.show()
-
 

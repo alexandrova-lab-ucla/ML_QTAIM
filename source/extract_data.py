@@ -195,7 +195,13 @@ else:
                 dataset = pool_x_uncorr
                 ref_df = pool_x_uncorr_df
 
-x_train, x_test, y_train, y_test = train_test_split(ref_df, y_scale, test_size=0.2, random_state=1)
+x_train, x_test, y_train_ind, y_test_ind = train_test_split(ref_df, range(len(y_scale)), test_size=0.2, random_state=1)
+y_train = y_scale[y_train_ind]
+y_test = y_scale[y_test_ind]
+
+#print(sorted(y_train_ind))
+#print(sorted(y_test_ind))
+
 names = ref_df
 
 if (bayes == True):
@@ -395,40 +401,40 @@ elif (single == True):
 
     if (algo == "svr_rbf"):
         print("svr rbf algorithms")
-        reg_svr_rbf = SVR(kernel="rbf", C=0.6299017591106881, cache_size=500,
+        reg = SVR(kernel="rbf", C=0.6299017591106881, cache_size=500,
                           epsilon=0.056183687320042426, gamma=0.059982132068042655)
-        reg_svr_rbf.fit(x_train, y_train)
-        score_single(reg_svr_rbf, x_train, x_test, y_train, y_test, std)
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "svr_lin"):
         print("svr lin algorithms")
-        reg_svr_lin = SVR(kernel="linear")
-        reg_svr_lin.fit(x_train, y_train)
-        score_single(reg_svr_lin, x_train, x_test, y_train, y_test, std)
+        reg = SVR(kernel="linear")
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "bayes"):
         print("bayes algorithm")
-        reg_bayes = BayesianRidge()
-        reg_bayes.fit(x_train, y_train)
-        score_single(reg_bayes, x_train, x_test, y_train, y_test, std)
+        reg = BayesianRidge()
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "sgd"):
         print("sgd algorithms")
-        reg_sgd = SGDRegressor()
-        reg_sgd.fit(x_train, y_train)
-        score_single(reg_sgd, x_train, x_test, y_train, y_test, std)
+        reg = SGDRegressor()
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "lasso"):
         print("lasso algorithms")
-        reg_lasso = Lasso(alpha=0.01)
-        reg_lasso.fit(x_train, y_train)
-        score_single(reg_lasso, x_train, x_test, y_train, y_test, std)
+        reg = Lasso(alpha=0.01)
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "ridge"):
         print("ridge algorithms")
-        reg_ridge = Ridge(alpha=10.0, tol=1e-05)
-        reg_ridge.fit(x_train, y_train)
-        score_single(reg_ridge, x_train, x_test, y_train, y_test, std)
+        reg = Ridge(alpha=10.0, tol=1e-05)
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "gp"):
 
@@ -528,24 +534,24 @@ elif (single == True):
 
     elif (algo == "krr"):
         print("krr algorithm")
-        reg_kernelridge = KernelRidge()
-        reg_kernelridge.fit(x_train, y_train)
-        score_single(reg_kernelridge, x_train, x_test, y_train, y_test, std)
+        reg = KernelRidge()
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "ada"):
         print("ada algorithm")
-        reg_ada = AdaBoostRegressor(n_estimators=1500, learning_rate=0.050)
-        reg_ada.fit(x_train, y_train)
-        score_single(reg_ada, x_train, x_test, y_train, y_test, std)
+        reg = AdaBoostRegressor(n_estimators=1500, learning_rate=0.050)
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "nn"):
 
         print("nn algorithm")
 
-        reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter,
+        reg = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter,
                               solver="adam")
-        reg_nn.fit(x_train, y_train)
-        score_single(reg_nn, x_train, x_test, y_train, y_test, std)
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
         # tensorflow
         import tensorflow as tf
@@ -578,61 +584,61 @@ elif (single == True):
     elif (algo == "xgb"):
 
         print("xgb algorithms")
-        reg_xgb = xgb.XGBRegressor(
+        reg = xgb.XGBRegressor(
             reg_alpha=0.0, colsample_bytree=0.3, eta=0.1, gamma=0.01,
             reg_lambda=0.0, learning_rate=0.1, max_depth=8, n_estimators=800,
             objective="reg:squarederror", tree_method="gpu_hist")
-        reg_xgb.fit(x_train, y_train)
-        score_single(reg_xgb, x_train, x_test, y_train, y_test, std)
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "rf"):
         print("random forest algorithms ")
-        reg_rf = RandomForestRegressor(min_samples_leaf=2, min_samples_split=2,
+        reg = RandomForestRegressor(min_samples_leaf=2, min_samples_split=2,
                                        n_estimators=100, n_jobs=10)
-        reg_rf = RandomForestRegressor(n_jobs=10)
+        reg = RandomForestRegressor(n_jobs=10)
         custom_scorer_rf = custom_skopt_rf_scorer
-        reg_rf.fit(x_train, y_train)
-        score_single(reg_rf, x_train, x_test, y_train, y_test, std)
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "extra"):
         print("extra algorithm")
 
-        reg_extra = ExtraTreesRegressor(min_samples_split=2,
+        reg = ExtraTreesRegressor(min_samples_split=2,
                                         min_samples_leaf=2,
                                         n_estimators=1500)
         custom_scorer_extra = custom_skopt_extra_scorer
-        reg_extra.fit(x_train, y_train)
-        score_single(reg_extra, x_train, x_test, y_train, y_test, std)
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "grad"):
         print("grad algorithm")
         dict = {'learning_rate': 0.005, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_depth': 8,
                 'n_estimators': 1500, 'subsample': 0.5}
-        reg_grad = GradientBoostingRegressor(**dict)
-        reg_grad.fit(x_train, y_train)
-        score_single(reg_grad, x_train, x_test, y_train, y_test, std)
+        reg = GradientBoostingRegressor(**dict)
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
         # {'learning_rate': 0.020037429107630705, 'min_samples_split': 3, 'min_samples_leaf': 1, 'max_depth': 2, 'n_estimators': 907, 'subsample': 0.8319757440943847}
         # {'learning_rate': 0.008130467504230791, 'min_samples_split': 3, 'min_samples_leaf': 1, 'max_depth': 2, 'n_estimators': 1692, 'subsample': 0.8396639338788848}
 
     elif (algo == "huber"):
         print("huber algorithm")
-        reg_huber = HuberRegressor()
-        reg_huber.fit(x_train, y_train)
-        score_single(reg_huber, x_train, x_test, y_train, y_test, std)
+        reg = HuberRegressor()
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     elif (algo == "knn"):
         print("knn algorithm")
-        reg_knn = KNeighborsRegressor(algorithm="auto", weights="distance", n_neighbors=5)
-        reg_knn.fit(x_train, y_train)
-        score_single(reg_knn, x_train, x_test, y_train, y_test, std)
+        reg = KNeighborsRegressor(algorithm="auto", weights="distance", n_neighbors=5)
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
     else:
         print("extra trees algorithm")
-        reg_extra = ExtraTreesRegressor(min_samples_split=2,
+        reg = ExtraTreesRegressor(min_samples_split=2,
                                         min_samples_leaf=2,
                                         n_estimators=2000)
-        reg_extra.fit(x_train, y_train)
-        score_single(reg_extra, x_train, x_test, y_train, y_test, std)
+        reg.fit(x_train, y_train)
+        score_single(reg, x_train, x_test, y_train, y_test, std)
 
 else:
     print("no training selected, feature selection")

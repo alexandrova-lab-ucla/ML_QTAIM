@@ -180,7 +180,7 @@ def score_single(reg, x_train, x_test, y_train, y_test, scale=(1,0)):
     plt.xlabel("Predicted Value [kJ/mol]", fontsize=16)
     plt.xticks(fontsize=12)
     name = str(reg)
-    plt.title("Extra Tree Parity", fontsize=16)
+    plt.title("XGBoost Parity", fontsize=16)
     plt.show()
     plt.tight_layout()
 
@@ -211,7 +211,6 @@ def score_single(reg, x_train, x_test, y_train, y_test, scale=(1,0)):
     print("MAE test score: \t" + str(mae_test))
     print("r2 score test: \t\t" + str(r2_test))
     print("----------------------------------------------------")
-
     #plt.clf()
     #print("Std. Var: " + str(scale[0]) + " Mean: " + str(scale[1]))
     #sns.boxplot(np.array(resid) * scale[0])
