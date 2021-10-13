@@ -4,6 +4,7 @@ from gpflow.mean_functions import Constant
 from gpflow.utilities import positive, print_summary
 from gpflow.utilities.ops import broadcasting_elementwise
 
+
 class Tanimoto(gpflow.kernels.Kernel):
     def __init__(self):
         super().__init__()
@@ -22,13 +23,15 @@ class Tanimoto(gpflow.kernels.Kernel):
 
         Xs = tf.reduce_sum(tf.square(X), axis=-1)  # Squared L2-norm of X
         X2s = tf.reduce_sum(tf.square(X2), axis=-1)  # Squared L2-norm of X2
-        outer_product = tf.tensordot(X, X2, [[-1], [-1]])  # outer product of the matrices X and X2
+        outer_product = tf.tensordot(
+            X, X2, [[-1], [-1]]
+        )  # outer product of the matrices X and X2
 
         # Analogue of denominator in Tanimoto formula
 
         denominator = -outer_product + broadcasting_elementwise(tf.add, Xs, X2s)
 
-        return self.variance * outer_product/denominator
+        return self.variance * outer_product / denominator
 
     def K_diag(self, X):
         """

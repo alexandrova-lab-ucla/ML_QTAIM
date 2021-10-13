@@ -2,17 +2,26 @@ import argparse
 import multiprocessing as mp
 
 import xgboost as xgb
-from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, ExtraTreesRegressor, \
-    GradientBoostingRegressor
+from sklearn.ensemble import (
+    RandomForestRegressor,
+    AdaBoostRegressor,
+    ExtraTreesRegressor,
+    GradientBoostingRegressor,
+)
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import WhiteKernel, Matern
 from sklearn.kernel_ridge import KernelRidge
-from sklearn.linear_model import BayesianRidge, SGDRegressor, Ridge, HuberRegressor, Lasso
+from sklearn.linear_model import (
+    BayesianRidge,
+    SGDRegressor,
+    Ridge,
+    HuberRegressor,
+    Lasso,
+)
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.neural_network import MLPRegressor
-from sklearn.preprocessing import scale
 from skopt.searchcv import BayesSearchCV
 from skopt.space import Real, Integer
 
@@ -33,107 +42,210 @@ std = (np.std(y), np.mean(y))
 # std = max - min
 y_scale = (y - np.mean(y)) / np.std(y)
 
-pooled_set = \
-    [
-        "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
-        "$\mathcal{DelocIndBond}_{5}$",
-        "$\mathcal{DelSqRho}_{1}$",
-        "$\mathcal{DelSqV}_{7}$",
-        "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{5}$",
-        "$\mathcal{ESP}_{6}$",
-        "$\mathcal{ESPe}_{10}$",
-        "$\mathcal{ESPn}_{4}$", "$\mathcal{ESPn}_{5}$",
-        "$\mathcal{HessRhoEigVals}_{c,7}$",
-        "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$",
-        "$\mathcal{K|Scaled|}_{basic,3}$", "$\mathcal{K|Scaled|}_{basic,4}$",
-        "$\mathcal{K|Scaled|}_{basic,6}$",
-        "$\mathcal{Kinetic}_{basic,5}$",
-        "$\mathcal{Lagr}_{basic,1}$", "$\mathcal{Lagr}_{basic,5}$", "$\mathcal{Lagrangian}_{2}$",
-        "$\mathcal{Stress_EigVals}_{c,7}$",
-        "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
-        "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
-    ]
-pool_uncorr = \
-    [
-        "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
-        "$\mathcal{DelocIndBond}_{5}$",
-        "$\mathcal{DelSqRho}_{1}$",
-        "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{6}$",
-        "$\mathcal{ESPn}_{5}$",
-        "$\mathcal{HessRhoEigVals}_{c,7}$",
-        "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$",
-        "$\mathcal{K|Scaled|}_{basic,3}$", "$\mathcal{K|Scaled|}_{basic,4}$",
-        "$\mathcal{Kinetic}_{basic,5}$", "$\mathcal{Kinetic}_{basic,6}$",
-        "$\mathcal{Lagr}_{basic,1}$", "$\mathcal{Lagr}_{basic,5}$", "$\mathcal{Lagrangian}_{2}$",
-        "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$",
-        "$\mathcal{Vnuc}_{4}$", "$\mathcal{Vnuc}_{5}$", "$\mathcal{Vnuc}_{6}$"
-    ]
-physical = \
-    [
-        "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
-        "$\mathcal{DelocIndBond}_{5}$",
-        "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$", "$\mathcal{ESP}_{4}$",
-        "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
-        "$\mathcal{ESPn}_{4}$", "$\mathcal{ESPn}_{5}$",
-        "$\mathcal{HessRhoEigVals}_{c,7}$",
-        "$\mathcal{K|Scaled|}_{basic,1}$", "$\mathcal{K|Scaled|}_{basic,2}$", "$\mathcal{K|Scaled|}_{basic,3}$",
-        "$\mathcal{K|Scaled|}_{basic,4}$", "$\mathcal{K|Scaled|}_{basic,5}$", "$\mathcal{K|Scaled|}_{basic,6}$",
-        "$\mathcal{Vnuc}_{1}$", "$\mathcal{Vnuc}_{2}$", "$\mathcal{Vnuc}_{3}$", "$\mathcal{Vnuc}_{4}$",
-        "$\mathcal{Vnuc}_{5}$",
-        "$\mathcal{Vnuc}_{6}$"
-    ]
+pooled_set = [
+    "$\mathcal{Bond}_{7}$",
+    "$\mathcal{Bond}_{8}$",
+    "$\mathcal{Bond}_{9}$",
+    "$\mathcal{DelocIndBond}_{5}$",
+    "$\mathcal{DelSqRho}_{1}$",
+    "$\mathcal{DelSqV}_{7}$",
+    "$\mathcal{ESP}_{1}$",
+    "$\mathcal{ESP}_{2}$",
+    "$\mathcal{ESP}_{4}$",
+    "$\mathcal{ESP}_{5}$",
+    "$\mathcal{ESP}_{6}$",
+    "$\mathcal{ESPe}_{10}$",
+    "$\mathcal{ESPn}_{4}$",
+    "$\mathcal{ESPn}_{5}$",
+    "$\mathcal{HessRhoEigVals}_{c,7}$",
+    "$\mathcal{K|Scaled|}_{basic,1}$",
+    "$\mathcal{K|Scaled|}_{basic,2}$",
+    "$\mathcal{K|Scaled|}_{basic,3}$",
+    "$\mathcal{K|Scaled|}_{basic,4}$",
+    "$\mathcal{K|Scaled|}_{basic,6}$",
+    "$\mathcal{Kinetic}_{basic,5}$",
+    "$\mathcal{Lagr}_{basic,1}$",
+    "$\mathcal{Lagr}_{basic,5}$",
+    "$\mathcal{Lagrangian}_{2}$",
+    "$\mathcal{Stress_EigVals}_{c,7}$",
+    "$\mathcal{Vnuc}_{1}$",
+    "$\mathcal{Vnuc}_{2}$",
+    "$\mathcal{Vnuc}_{3}$",
+    "$\mathcal{Vnuc}_{4}$",
+    "$\mathcal{Vnuc}_{5}$",
+    "$\mathcal{Vnuc}_{6}$",
+]
+pool_uncorr = [
+    "$\mathcal{Bond}_{7}$",
+    "$\mathcal{Bond}_{8}$",
+    "$\mathcal{Bond}_{9}$",
+    "$\mathcal{DelocIndBond}_{5}$",
+    "$\mathcal{DelSqRho}_{1}$",
+    "$\mathcal{ESP}_{1}$",
+    "$\mathcal{ESP}_{2}$",
+    "$\mathcal{ESP}_{4}$",
+    "$\mathcal{ESP}_{6}$",
+    "$\mathcal{ESPn}_{5}$",
+    "$\mathcal{HessRhoEigVals}_{c,7}$",
+    "$\mathcal{K|Scaled|}_{basic,1}$",
+    "$\mathcal{K|Scaled|}_{basic,2}$",
+    "$\mathcal{K|Scaled|}_{basic,3}$",
+    "$\mathcal{K|Scaled|}_{basic,4}$",
+    "$\mathcal{Kinetic}_{basic,5}$",
+    "$\mathcal{Kinetic}_{basic,6}$",
+    "$\mathcal{Lagr}_{basic,1}$",
+    "$\mathcal{Lagr}_{basic,5}$",
+    "$\mathcal{Lagrangian}_{2}$",
+    "$\mathcal{Vnuc}_{1}$",
+    "$\mathcal{Vnuc}_{2}$",
+    "$\mathcal{Vnuc}_{3}$",
+    "$\mathcal{Vnuc}_{4}$",
+    "$\mathcal{Vnuc}_{5}$",
+    "$\mathcal{Vnuc}_{6}$",
+]
+physical = [
+    "$\mathcal{Bond}_{7}$",
+    "$\mathcal{Bond}_{8}$",
+    "$\mathcal{Bond}_{9}$",
+    "$\mathcal{Bond}_{10}$",
+    "$\mathcal{DelocIndBond}_{5}$",
+    "$\mathcal{ESP}_{1}$",
+    "$\mathcal{ESP}_{2}$",
+    "$\mathcal{ESP}_{3}$",
+    "$\mathcal{ESP}_{4}$",
+    "$\mathcal{ESP}_{5}$",
+    "$\mathcal{ESP}_{6}$",
+    "$\mathcal{ESPn}_{4}$",
+    "$\mathcal{ESPn}_{5}$",
+    "$\mathcal{HessRhoEigVals}_{c,7}$",
+    "$\mathcal{K|Scaled|}_{basic,1}$",
+    "$\mathcal{K|Scaled|}_{basic,2}$",
+    "$\mathcal{K|Scaled|}_{basic,3}$",
+    "$\mathcal{K|Scaled|}_{basic,4}$",
+    "$\mathcal{K|Scaled|}_{basic,5}$",
+    "$\mathcal{K|Scaled|}_{basic,6}$",
+    "$\mathcal{Vnuc}_{1}$",
+    "$\mathcal{Vnuc}_{2}$",
+    "$\mathcal{Vnuc}_{3}$",
+    "$\mathcal{Vnuc}_{4}$",
+    "$\mathcal{Vnuc}_{5}$",
+    "$\mathcal{Vnuc}_{6}$",
+]
 
 pooled_post = [
-    "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
-    "$\mathcal{q}_{1}$", "$\mathcal{q}_{2}$", "$\mathcal{q}_{4}$", "$\mathcal{q}_{5}$",
-    "$\mathcal{D2'}_{7}$", "$\mathcal{D2}_{7}$", "$\mathcal{D2}_{sum,7}$",
-    "$\mathcal{DelocIndBond}_{1}$", "$\mathcal{DelocIndBond}_{2}$", "$\mathcal{DelocIndBond}_{4}$",
+    "$\mathcal{Bond}_{7}$",
+    "$\mathcal{Bond}_{8}$",
+    "$\mathcal{Bond}_{9}$",
+    "$\mathcal{q}_{1}$",
+    "$\mathcal{q}_{2}$",
+    "$\mathcal{q}_{4}$",
+    "$\mathcal{q}_{5}$",
+    "$\mathcal{D2'}_{7}$",
+    "$\mathcal{D2}_{7}$",
+    "$\mathcal{D2}_{sum,7}$",
+    "$\mathcal{DelocIndBond}_{1}$",
+    "$\mathcal{DelocIndBond}_{2}$",
+    "$\mathcal{DelocIndBond}_{4}$",
     "$\mathcal{DelocIndBond}_{5}$",
-    "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{3}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
-    "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
-    "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{10}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
+    "$\mathcal{DI}_{1}$",
+    "$\mathcal{DI}_{3}$",
+    "$\mathcal{DI}_{5}$",
+    "$\mathcal{DI}_{6}$",
+    "$\mathcal{Ee}_{1}$",
+    "$\mathcal{Ee}_{3}$",
+    "$\mathcal{Ee}_{4}$",
+    "$\mathcal{ESP}_{1}$",
+    "$\mathcal{ESP}_{10}$",
+    "$\mathcal{ESP}_{2}$",
+    "$\mathcal{ESP}_{3}$",
     "$\mathcal{ESP}_{4}$",
-    "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
-    "$\mathcal{ESPe}_{10}$", "$\mathcal{ESPn}_{5}$",
-    "$\mathcal{LI}_{1}$", "$\mathcal{LI}_{3}$", "$\mathcal{LI}_{5}$", "$\mathcal{LI}_{6}$",
-    "$\mathcal{T}_{1}$", "$\mathcal{T}_{3}$", "$\mathcal{T}_{4}$"
+    "$\mathcal{ESP}_{5}$",
+    "$\mathcal{ESP}_{6}$",
+    "$\mathcal{ESPe}_{10}$",
+    "$\mathcal{ESPn}_{5}$",
+    "$\mathcal{LI}_{1}$",
+    "$\mathcal{LI}_{3}$",
+    "$\mathcal{LI}_{5}$",
+    "$\mathcal{LI}_{6}$",
+    "$\mathcal{T}_{1}$",
+    "$\mathcal{T}_{3}$",
+    "$\mathcal{T}_{4}$",
 ]
 pool_uncorr_post = [
-    "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$",
-    "$\mathcal{q}_{1}$", "$\mathcal{q}_{2}$", "$\mathcal{q}_{4}$", "$\mathcal{q}_{5}$",
+    "$\mathcal{Bond}_{7}$",
+    "$\mathcal{Bond}_{8}$",
+    "$\mathcal{Bond}_{9}$",
+    "$\mathcal{q}_{1}$",
+    "$\mathcal{q}_{2}$",
+    "$\mathcal{q}_{4}$",
+    "$\mathcal{q}_{5}$",
     "$\mathcal{D2}_{sum,7}$",
-    "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{3}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
-    "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
-    "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{10}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
+    "$\mathcal{DI}_{1}$",
+    "$\mathcal{DI}_{3}$",
+    "$\mathcal{DI}_{5}$",
+    "$\mathcal{DI}_{6}$",
+    "$\mathcal{Ee}_{1}$",
+    "$\mathcal{Ee}_{3}$",
+    "$\mathcal{Ee}_{4}$",
+    "$\mathcal{ESP}_{1}$",
+    "$\mathcal{ESP}_{10}$",
+    "$\mathcal{ESP}_{2}$",
+    "$\mathcal{ESP}_{3}$",
     "$\mathcal{ESP}_{4}$",
-    "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$",
-    "$\mathcal{ESPe}_{10}$", "$\mathcal{ESPn}_{5}$"
+    "$\mathcal{ESP}_{5}$",
+    "$\mathcal{ESP}_{6}$",
+    "$\mathcal{ESPe}_{10}$",
+    "$\mathcal{ESPn}_{5}$",
 ]
 phys_post = [
-    "$\mathcal{Bond}_{7}$", "$\mathcal{Bond}_{8}$", "$\mathcal{Bond}_{9}$", "$\mathcal{Bond}_{10}$",
-    "$\mathcal{q}_{1}$", "$\mathcal{q}_{2}$", "$\mathcal{q}_{3}$",
-    "$\mathcal{q}_{4}$", "$\mathcal{q}_{5}$", "$\mathcal{q}_{6}$",
+    "$\mathcal{Bond}_{7}$",
+    "$\mathcal{Bond}_{8}$",
+    "$\mathcal{Bond}_{9}$",
+    "$\mathcal{Bond}_{10}$",
+    "$\mathcal{q}_{1}$",
+    "$\mathcal{q}_{2}$",
+    "$\mathcal{q}_{3}$",
+    "$\mathcal{q}_{4}$",
+    "$\mathcal{q}_{5}$",
+    "$\mathcal{q}_{6}$",
     "$\mathcal{D2}_{sum,7}$",
-    "$\mathcal{DI}_{1}$", "$\mathcal{DI}_{2}$", "$\mathcal{DI}_{3}$",
-    "$\mathcal{DI}_{4}$", "$\mathcal{DI}_{5}$", "$\mathcal{DI}_{6}$",
-    "$\mathcal{Ee}_{1}$", "$\mathcal{Ee}_{2}$", "$\mathcal{Ee}_{3}$", "$\mathcal{Ee}_{4}$",
-    "$\mathcal{ESP}_{1}$", "$\mathcal{ESP}_{2}$", "$\mathcal{ESP}_{3}$",
-    "$\mathcal{ESP}_{4}$", "$\mathcal{ESP}_{5}$", "$\mathcal{ESP}_{6}$", "$\mathcal{ESP}_{10}$"
-
+    "$\mathcal{DI}_{1}$",
+    "$\mathcal{DI}_{2}$",
+    "$\mathcal{DI}_{3}$",
+    "$\mathcal{DI}_{4}$",
+    "$\mathcal{DI}_{5}$",
+    "$\mathcal{DI}_{6}$",
+    "$\mathcal{Ee}_{1}$",
+    "$\mathcal{Ee}_{2}$",
+    "$\mathcal{Ee}_{3}$",
+    "$\mathcal{Ee}_{4}$",
+    "$\mathcal{ESP}_{1}$",
+    "$\mathcal{ESP}_{2}$",
+    "$\mathcal{ESP}_{3}$",
+    "$\mathcal{ESP}_{4}$",
+    "$\mathcal{ESP}_{5}$",
+    "$\mathcal{ESP}_{6}$",
+    "$\mathcal{ESP}_{10}$",
 ]
 
-parser = argparse.ArgumentParser(description='select descriptor, and directory of files')
+parser = argparse.ArgumentParser(
+    description="select descriptor, and directory of files"
+)
 
-parser.add_argument("--algo", action='store', dest="algo", default="xgb", help="select algorithm")
-parser.add_argument("-n", action='store', dest="n_iter", default="500", help="select number of trials")
-parser.add_argument('--bayes', dest="bayes", action='store_true')
+parser.add_argument(
+    "--algo", action="store", dest="algo", default="xgb", help="select algorithm"
+)
+parser.add_argument(
+    "-n", action="store", dest="n_iter", default="500", help="select number of trials"
+)
+parser.add_argument("--bayes", dest="bayes", action="store_true")
 
-parser.add_argument('--single', dest="single", action='store_true')
+parser.add_argument("--single", dest="single", action="store_true")
 
-parser.add_argument('--pool', dest="pool", action='store_true')
-parser.add_argument('--physical', dest="phys", action='store_true')
-parser.add_argument('--all', dest="all", action='store_true')
-parser.add_argument('--post_review', dest="review", action='store_true')
+parser.add_argument("--pool", dest="pool", action="store_true")
+parser.add_argument("--physical", dest="phys", action="store_true")
+parser.add_argument("--all", dest="all", action="store_true")
+parser.add_argument("--post_review", dest="review", action="store_true")
 
 results = parser.parse_args()
 algo = results.algo
@@ -164,77 +276,91 @@ phys_post_x = scale(x[phys_post].to_numpy())
 
 # selection of what feature set to use
 
-if(review == True):
-    if (pool == True):
+if review == True:
+    if pool == True:
         dataset = pool_post_x
         ref_df = pool_post_x_df
     else:
-        if (physical_set == True):
+        if physical_set == True:
             dataset = phys_post_x
             ref_df = phys_x_post_df
         else:
-            if (all == True):
+            if all == True:
                 dataset = full_input
                 ref_df = x
             else:
                 dataset = uncorr_post_x
                 ref_df = uncorr_post_x_df
 else:
-    if (pool == True):
+    if pool == True:
         dataset = pool_x
         ref_df = pool_x_df
     else:
-        if (physical_set == True):
+        if physical_set == True:
             dataset = phys_x
             ref_df = phys_x_df
         else:
-            if (all == True):
+            if all == True:
                 dataset = full_input
                 ref_df = x
             else:
                 dataset = pool_x_uncorr
                 ref_df = pool_x_uncorr_df
 
-x_train, x_test, y_train_ind, y_test_ind = train_test_split(ref_df, range(len(y_scale)), test_size=0.2, random_state=1)
+x_train, x_test, y_train_ind, y_test_ind = train_test_split(
+    ref_df, range(len(y_scale)), test_size=0.2, random_state=1
+)
 y_train = y_scale[y_train_ind]
 y_test = y_scale[y_test_ind]
 
-#print(sorted(y_train_ind))
-#print(sorted(y_test_ind))
+# print(sorted(y_train_ind))
+# print(sorted(y_test_ind))
 
 names = ref_df
 
-if (bayes == True):
+if bayes == True:
     # dictionaries of hyperparameters
     params_bayes = {
         "n_iter": Integer(1000, 10000),
-        "tol": Real(1e-9, 1e-3, prior='log-uniform'),
-        "alpha_1": Real(1e-6, 1e+1, prior='log-uniform'),
-        "alpha_2": Real(1e-6, 1e+1, prior='log-uniform'),
-        "lambda_1": Real(1e-6, 1e+1, prior='log-uniform'),
-        "lambda_2": Real(1e-6, 1e+1, prior='log-uniform')}
-    params_kernelridge = {"alpha": Real(1e-6, 1e0, prior='log-uniform'),
-                          "gamma": Real(1e-8, 1e0, prior='log-uniform')}
-    params_svr_lin = {"C": Real(1e-6, 1e+1, prior='log-uniform'),
-                      "gamma": Real(1e-5, 1e-1, prior='log-uniform'),
-                      "cache_size": Integer(500, 8000)}
-    params_svr_rbf = {"C": Real(1e-5, 1e+1, prior='log-uniform'),
-                      "gamma": Real(1e-5, 1e-1, prior='log-uniform'),
-                      "epsilon": Real(1e-2, 1e+1, prior='log-uniform'),
-                      "cache_size": Integer(500, 8000)}
-    params_rf = {"min_samples_split": Integer(2, 8),
-                 "n_estimators": Integer(100, 1000),
-                 "min_samples_leaf": Integer(1, 10),
-                 "n_jobs": [mp.cpu_count()]
-                 }
-    params_nn = {"alpha": Real(1e-10, 1e-1, prior='log-uniform'),
-                 "max_iter": Integer(100, 10000),
-                 "tol": Real(1e-10, 1e1, prior='log-uniform'),
-                 "learning_rate_init": Real(1e-5, 1e-1, prior='log-uniform')}
-    params = {'l1_ratio': Real(0.1, 0.3),
-              'tol': Real(1e-3, 1e-1, prior="log-uniform"),
-              "epsilon": Real(1e-3, 1e0, prior="log-uniform"),
-              "eta0": Real(0.01, 0.2)}
+        "tol": Real(1e-9, 1e-3, prior="log-uniform"),
+        "alpha_1": Real(1e-6, 1e1, prior="log-uniform"),
+        "alpha_2": Real(1e-6, 1e1, prior="log-uniform"),
+        "lambda_1": Real(1e-6, 1e1, prior="log-uniform"),
+        "lambda_2": Real(1e-6, 1e1, prior="log-uniform"),
+    }
+    params_kernelridge = {
+        "alpha": Real(1e-6, 1e0, prior="log-uniform"),
+        "gamma": Real(1e-8, 1e0, prior="log-uniform"),
+    }
+    params_svr_lin = {
+        "C": Real(1e-6, 1e1, prior="log-uniform"),
+        "gamma": Real(1e-5, 1e-1, prior="log-uniform"),
+        "cache_size": Integer(500, 8000),
+    }
+    params_svr_rbf = {
+        "C": Real(1e-5, 1e1, prior="log-uniform"),
+        "gamma": Real(1e-5, 1e-1, prior="log-uniform"),
+        "epsilon": Real(1e-2, 1e1, prior="log-uniform"),
+        "cache_size": Integer(500, 8000),
+    }
+    params_rf = {
+        "min_samples_split": Integer(2, 8),
+        "n_estimators": Integer(100, 1000),
+        "min_samples_leaf": Integer(1, 10),
+        "n_jobs": [mp.cpu_count()],
+    }
+    params_nn = {
+        "alpha": Real(1e-10, 1e-1, prior="log-uniform"),
+        "max_iter": Integer(100, 10000),
+        "tol": Real(1e-10, 1e1, prior="log-uniform"),
+        "learning_rate_init": Real(1e-5, 1e-1, prior="log-uniform"),
+    }
+    params = {
+        "l1_ratio": Real(0.1, 0.3),
+        "tol": Real(1e-3, 1e-1, prior="log-uniform"),
+        "epsilon": Real(1e-3, 1e0, prior="log-uniform"),
+        "eta0": Real(0.01, 0.2),
+    }
     params_xgb = {
         "colsample_bytree": Real(0.5, 0.99),
         "max_depth": Integer(5, 25),
@@ -245,86 +371,127 @@ if (bayes == True):
         "gamma": Real(0, 0.2),
         "n_estimators": Integer(100, 2000),
         "objective": ["reg:squarederror"],
-        "tree_method": ["gpu_hist"]}
-    param_grad = {"n_estimators": Integer(100, 2000),
-                  "learning_rate": Real(1e-5, 0.1, prior="log-uniform"),
-                  "subsample": Real(0.8, 1),
-                  "min_samples_split": Integer(2, 5),
-                  "min_samples_leaf": Integer(1, 4),
-                  "max_depth": Integer(3, 15)}
-    params_ridge = {"tol": Real(1e-5, 1e-1, prior="log-uniform"), "alpha": Real(1e-2, 10, prior="log-uniform")}
+        "tree_method": ["gpu_hist"],
+    }
+    param_grad = {
+        "n_estimators": Integer(100, 2000),
+        "learning_rate": Real(1e-5, 0.1, prior="log-uniform"),
+        "subsample": Real(0.8, 1),
+        "min_samples_split": Integer(2, 5),
+        "min_samples_leaf": Integer(1, 4),
+        "max_depth": Integer(3, 15),
+    }
+    params_ridge = {
+        "tol": Real(1e-5, 1e-1, prior="log-uniform"),
+        "alpha": Real(1e-2, 10, prior="log-uniform"),
+    }
     params_gp = {"alpha": Real(1e-12, 1e-4, prior="log-uniform")}
     params_lasso = {"alpha": Real(1e-5, 1, prior="log-uniform")}
-    param_ada = {"n_estimators": Integer(1e1, 1e3, prior="log-uniform"),
-                 "learning_rate": Real(1e-2, 1e1, prior="log-uniform")}
-    param_extra = {"n_estimators": Integer(10, 1e3, prior="log-uniform"),
-                   "min_samples_split": Integer(2, 6), "min_samples_leaf": Integer(2, 4),
-                   "max_depth": Integer(10, 50), "n_jobs": [mp.cpu_count()]}
-    param_huber = {"epsilon": Real(1.01, 1.5), "alpha": Real(1e-6, 1e-1, prior="log-uniform"),
-                   "tol": Real(1e-7, 1e-2, prior="log-uniform")}
+    param_ada = {
+        "n_estimators": Integer(1e1, 1e3, prior="log-uniform"),
+        "learning_rate": Real(1e-2, 1e1, prior="log-uniform"),
+    }
+    param_extra = {
+        "n_estimators": Integer(10, 1e3, prior="log-uniform"),
+        "min_samples_split": Integer(2, 6),
+        "min_samples_leaf": Integer(2, 4),
+        "max_depth": Integer(10, 50),
+        "n_jobs": [mp.cpu_count()],
+    }
+    param_huber = {
+        "epsilon": Real(1.01, 1.5),
+        "alpha": Real(1e-6, 1e-1, prior="log-uniform"),
+        "tol": Real(1e-7, 1e-2, prior="log-uniform"),
+    }
     param_knn = {"n_neighbors": Integer(3, 7)}
 
-    if (algo == "xgb"):
+    if algo == "xgb":
         print("xgb algorithms")
         reg_xgb = xgb.XGBRegressor()
         reg_xgb = BayesSearchCV(reg_xgb, params_xgb, n_iter=n_iter, verbose=4, cv=3)
         custom_scorer_xgb = custom_skopt_xgb_scorer
-        reg_xgb.fit(x_train, y_train, callback=[custom_skopt_xgb_scorer(x, y)])  # custom scoring functions
+        reg_xgb.fit(
+            x_train, y_train, callback=[custom_skopt_xgb_scorer(x, y)]
+        )  # custom scoring functions
         score(reg_xgb, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "svr_rbf"):
+    elif algo == "svr_rbf":
         print("svr rbf algorithms")
         reg_svr_rbf = SVR(kernel="rbf")
-        reg_svr_rbf = BayesSearchCV(reg_svr_rbf, params_svr_rbf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_svr_rbf = BayesSearchCV(
+            reg_svr_rbf, params_svr_rbf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10
+        )
         reg_svr_rbf.fit(x_train, y_train)
         score(reg_svr_rbf, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "svr_lin"):
+    elif algo == "svr_lin":
         print("svr lin algorithms")
         reg_svr_lin = SVR(kernel="linear")
-        reg_svr_lin = BayesSearchCV(reg_svr_lin, params_svr_lin, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_svr_lin = BayesSearchCV(
+            reg_svr_lin, params_svr_lin, n_iter=n_iter, verbose=3, cv=3, n_jobs=10
+        )
         reg_svr_lin.fit(x_train, y_train)
         score(reg_svr_lin, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "bayes"):
+    elif algo == "bayes":
         print("bayes algorithm")
         reg_bayes = BayesianRidge()
-        reg_bayes = BayesSearchCV(reg_bayes, params_bayes, n_iter=n_iter, verbose=3, cv=3, n_jobs=10,
-                                  scoring="neg_mean_absolute_error")
+        reg_bayes = BayesSearchCV(
+            reg_bayes,
+            params_bayes,
+            n_iter=n_iter,
+            verbose=3,
+            cv=3,
+            n_jobs=10,
+            scoring="neg_mean_absolute_error",
+        )
         reg_bayes.fit(x_train, y_train)
         score(reg_bayes, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "rf"):
+    elif algo == "rf":
         print("random forest algorithms ")
         reg_rf = RandomForestRegressor()
-        reg_rf = BayesSearchCV(reg_rf, params_rf, n_iter=n_iter, verbose=3, cv=3, n_jobs=10,
-                               scoring="neg_mean_absolute_error")
+        reg_rf = BayesSearchCV(
+            reg_rf,
+            params_rf,
+            n_iter=n_iter,
+            verbose=3,
+            cv=3,
+            n_jobs=10,
+            scoring="neg_mean_absolute_error",
+        )
         custom_scorer_rf = custom_skopt_rf_scorer
-        reg_rf.fit(x_train, y_train, callback=[custom_skopt_rf_scorer(x, y)])  # custom scoring functions
+        reg_rf.fit(
+            x_train, y_train, callback=[custom_skopt_rf_scorer(x, y)]
+        )  # custom scoring functions
         score(reg_rf, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "sgd"):
+    elif algo == "sgd":
         print("sgd algorithms")
         reg_sgd = SGDRegressor()
-        reg_sgd = BayesSearchCV(reg_sgd, params, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_sgd = BayesSearchCV(
+            reg_sgd, params, n_iter=n_iter, verbose=3, cv=3, n_jobs=10
+        )
         reg_sgd.fit(x_train, y_train)
         score(reg_sgd, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "lasso"):
+    elif algo == "lasso":
         print("lasso algorithms")
         reg_lasso = Lasso()
         reg_lasso = BayesSearchCV(reg_lasso, params_lasso, n_iter=n_iter, cv=3)
         reg_lasso.fit(x_train, y_train)
         score(reg_lasso, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "ridge"):
+    elif algo == "ridge":
         print("ridge algorithms")
         reg_ridge = Ridge()
-        reg_ridge = BayesSearchCV(reg_ridge, params_ridge, verbose=4, n_iter=n_iter, cv=3)
+        reg_ridge = BayesSearchCV(
+            reg_ridge, params_ridge, verbose=4, n_iter=n_iter, cv=3
+        )
         reg_ridge.fit(x_train, y_train)
         score(reg_ridge, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "gp"):
+    elif algo == "gp":
         print("gaussian process algorithm")
         kernel = Matern(length_scale=1, nu=5 / 2) + WhiteKernel(noise_level=1)
         reg_gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10)
@@ -332,111 +499,154 @@ if (bayes == True):
         reg_gp.fit(x_train, y_train)
         score(reg_gp, x_train, x_test, y_train, y_test, std)  # fuck with kernel
 
-    elif (algo == "krr"):
+    elif algo == "krr":
         print("krr algorithm")
         reg_kernelridge = KernelRidge(kernel="poly", degree=8)
-        reg_kernelridge = BayesSearchCV(reg_kernelridge, params_kernelridge, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_kernelridge = BayesSearchCV(
+            reg_kernelridge,
+            params_kernelridge,
+            n_iter=n_iter,
+            verbose=3,
+            cv=3,
+            n_jobs=10,
+        )
         reg_kernelridge.fit(x_train, y_train)
         score(reg_kernelridge, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "ada"):
+    elif algo == "ada":
         print("ada algorithm")
 
         reg_ada = AdaBoostRegressor()
-        reg_ada = BayesSearchCV(reg_ada, param_ada, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_ada = BayesSearchCV(
+            reg_ada, param_ada, n_iter=n_iter, verbose=3, cv=3, n_jobs=10
+        )
         reg_ada.fit(x_train, y_train)
         score(reg_ada, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "nn"):
+    elif algo == "nn":
         print("nn algorithm")
 
-        reg_nn = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, hidden_layer_sizes=(50,50,50,),
-                              solver="adam")
-        reg_nn = BayesSearchCV(reg_nn, params_nn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10,
-                               scoring="neg_mean_absolute_error")
+        reg_nn = MLPRegressor(
+            early_stopping=True,
+            n_iter_no_change=n_iter,
+            hidden_layer_sizes=(
+                50,
+                50,
+                50,
+            ),
+            solver="adam",
+        )
+        reg_nn = BayesSearchCV(
+            reg_nn,
+            params_nn,
+            n_iter=n_iter,
+            verbose=3,
+            cv=3,
+            n_jobs=10,
+            scoring="neg_mean_absolute_error",
+        )
         reg_nn.fit(x_train, y_train)
         score(reg_nn, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "extra"):
+    elif algo == "extra":
         print("extra algorithm")
 
         reg_extra = ExtraTreesRegressor(criterion="mae")
-        reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_extra = BayesSearchCV(
+            reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10
+        )
         custom_scorer_extra = custom_skopt_extra_scorer
-        reg_extra.fit(x_train, y_train, callback=[custom_scorer_extra(x, y)])  # custom scoring functions
+        reg_extra.fit(
+            x_train, y_train, callback=[custom_scorer_extra(x, y)]
+        )  # custom scoring functions
         score(reg_extra, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "huber"):
+    elif algo == "huber":
         print("huber algorithm")
 
         reg_huber = HuberRegressor(max_iter=1000)
-        reg_huber = BayesSearchCV(reg_huber, param_huber, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_huber = BayesSearchCV(
+            reg_huber, param_huber, n_iter=n_iter, verbose=3, cv=3, n_jobs=10
+        )
         reg_huber.fit(x_train, y_train)
         score(reg_huber, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "knn"):
+    elif algo == "knn":
         print("knn algorithm")
 
         reg_knn = KNeighborsRegressor(algorithm="auto", weights="distance")
-        reg_knn = BayesSearchCV(reg_knn, param_knn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_knn = BayesSearchCV(
+            reg_knn, param_knn, n_iter=n_iter, verbose=3, cv=3, n_jobs=10
+        )
         reg_knn.fit(x_train, y_train)
         score(reg_knn, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "grad"):
+    elif algo == "grad":
         print("grad algorithm")
         reg_grad = GradientBoostingRegressor(n_iter_no_change=250)
-        reg_grad = BayesSearchCV(reg_grad, param_grad, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
-        reg_grad.fit(x_train, y_train, callback=[custom_skopt_grad_scorer(x, y)])  # custom scoring functions
+        reg_grad = BayesSearchCV(
+            reg_grad, param_grad, n_iter=n_iter, verbose=3, cv=3, n_jobs=10
+        )
+        reg_grad.fit(
+            x_train, y_train, callback=[custom_skopt_grad_scorer(x, y)]
+        )  # custom scoring functions
         score(reg_grad, x_train, x_test, y_train, y_test, std)
 
     else:
         print("extra trees algorithm")
         reg_extra = ExtraTreesRegressor(criterion="mae")
-        reg_extra = BayesSearchCV(reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10)
+        reg_extra = BayesSearchCV(
+            reg_extra, param_extra, n_iter=n_iter, verbose=3, cv=3, n_jobs=10
+        )
         custom_scorer_extra = custom_skopt_extra_scorer
         reg_extra.fit(x_train, y_train, callback=[custom_scorer_extra(x, y)])
         score(reg_extra, x_train, x_test, y_train, y_test, std)
 
-elif (single == True):
+elif single == True:
 
-    if (algo == "svr_rbf"):
+    if algo == "svr_rbf":
         print("svr rbf algorithms")
-        reg = SVR(kernel="rbf", C=0.6299017591106881, cache_size=500,
-                          epsilon=0.056183687320042426, gamma=0.059982132068042655)
+        reg = SVR(
+            kernel="rbf",
+            C=0.6299017591106881,
+            cache_size=500,
+            epsilon=0.056183687320042426,
+            gamma=0.059982132068042655,
+        )
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "svr_lin"):
+    elif algo == "svr_lin":
         print("svr lin algorithms")
         reg = SVR(kernel="linear")
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "bayes"):
+    elif algo == "bayes":
         print("bayes algorithm")
         reg = BayesianRidge()
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "sgd"):
+    elif algo == "sgd":
         print("sgd algorithms")
         reg = SGDRegressor()
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "lasso"):
+    elif algo == "lasso":
         print("lasso algorithms")
         reg = Lasso(alpha=0.01)
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "ridge"):
+    elif algo == "ridge":
         print("ridge algorithms")
         reg = Ridge(alpha=10.0, tol=1e-05)
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "gp"):
+    elif algo == "gp":
 
         import gpflow
         from gpflow.ci_utils import ci_niter
@@ -449,9 +659,14 @@ elif (single == True):
         k = gpflow.kernels.Matern52()
         # k = Tanimoto()
 
-        reg_gp = gpflow.models.GPR(data=(x_train, y_train.reshape(-1, 1)), kernel=k,
-                                   noise_variance=1)
-        opt_logs = opt.minimize(reg_gp.training_loss, reg_gp.trainable_variables, options=dict(maxiter=10000), )
+        reg_gp = gpflow.models.GPR(
+            data=(x_train, y_train.reshape(-1, 1)), kernel=k, noise_variance=1
+        )
+        opt_logs = opt.minimize(
+            reg_gp.training_loss,
+            reg_gp.trainable_variables,
+            options=dict(maxiter=10000),
+        )
         f64 = gpflow.utilities.to_default_float
 
         # option for two different, common kernels from cheminformatics
@@ -474,12 +689,16 @@ elif (single == True):
         )
 
         hmc = tfp.mcmc.HamiltonianMonteCarlo(
-            target_log_prob_fn=hmc_helper.target_log_prob_fn, num_leapfrog_steps=10, step_size=0.01
+            target_log_prob_fn=hmc_helper.target_log_prob_fn,
+            num_leapfrog_steps=10,
+            step_size=0.01,
         )
         adaptive_hmc = tfp.mcmc.SimpleStepSizeAdaptation(
-            hmc, num_adaptation_steps=10, target_accept_prob=f64(0.75), adaptation_rate=0.1
+            hmc,
+            num_adaptation_steps=10,
+            target_accept_prob=f64(0.75),
+            adaptation_rate=0.1,
         )
-
 
         @tf.function
         def run_chain_fn():
@@ -491,10 +710,12 @@ elif (single == True):
                 trace_fn=lambda _, pkr: pkr.inner_results.is_accepted,
             )
 
-
         samples, _ = run_chain_fn()
         parameter_samples = hmc_helper.convert_to_constrained_values(samples)
-        param_to_name = {param: name for name, param in gpflow.utilities.parameter_dict(reg_gp).items()}
+        param_to_name = {
+            param: name
+            for name, param in gpflow.utilities.parameter_dict(reg_gp).items()
+        }
 
         # gp returns mean and standard deviation of sample dist.
         y_pred, y_var = reg_gp.predict_f(np.array(x_test))
@@ -519,8 +740,10 @@ elif (single == True):
 
         resid = [np.abs(y_test[i] - y_pred_test[i])[0] for i in range(len(y_test))]
         sorted = np.argsort(resid)  # decreasing order
-        [worst1, worst2, worst3] = [i for i in sorted[len(sorted) - 3:len(sorted)]]
-        x_test_sans = x_test.drop([x_test.index[worst1], x_test.index[worst2], x_test.index[worst3]])
+        [worst1, worst2, worst3] = [i for i in sorted[len(sorted) - 3 : len(sorted)]]
+        x_test_sans = x_test.drop(
+            [x_test.index[worst1], x_test.index[worst2], x_test.index[worst3]]
+        )
         y_test_sans = np.delete(y_test, [worst1, worst2, worst3])
         y_pred_test, y_var = reg_gp.predict_f(np.array(x_test_sans))
         mse_test = str(mean_squared_error(y_test_sans * std[0], y_pred_test * std[0]))
@@ -532,24 +755,23 @@ elif (single == True):
         print("r2 score test: \t\t" + str(r2_test))
         print("----------------------------------------------------")
 
-    elif (algo == "krr"):
+    elif algo == "krr":
         print("krr algorithm")
         reg = KernelRidge()
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "ada"):
+    elif algo == "ada":
         print("ada algorithm")
         reg = AdaBoostRegressor(n_estimators=1500, learning_rate=0.050)
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "nn"):
+    elif algo == "nn":
 
         print("nn algorithm")
 
-        reg = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter,
-                              solver="adam")
+        reg = MLPRegressor(early_stopping=True, n_iter_no_change=n_iter, solver="adam")
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
@@ -557,18 +779,26 @@ elif (single == True):
         import tensorflow as tf
         from tensorflow.keras import regularizers
 
-        model = tf.keras.Sequential([
-            tf.keras.layers.Dense(40, activation='relu', input_shape=(np.shape(x_train)[1],)),
-            tf.keras.layers.Dropout(0.2),
-            tf.keras.layers.Dense(40, activation='relu'),
-            tf.keras.layers.Dropout(0.2),
-            tf.keras.layers.Dense(1, activation="linear")
-        ])
+        model = tf.keras.Sequential(
+            [
+                tf.keras.layers.Dense(
+                    40, activation="relu", input_shape=(np.shape(x_train)[1],)
+                ),
+                tf.keras.layers.Dropout(0.2),
+                tf.keras.layers.Dense(40, activation="relu"),
+                tf.keras.layers.Dropout(0.2),
+                tf.keras.layers.Dense(1, activation="linear"),
+            ]
+        )
 
-        model.compile(optimizer='adam',
-                      loss="MSE",
-                      metrics=["MAE", "MSE"])
-        model.fit(x_train, np.ravel(y_train), epochs=100, batch_size=np.shape(x_train)[0], verbose=1)
+        model.compile(optimizer="adam", loss="MSE", metrics=["MAE", "MSE"])
+        model.fit(
+            x_train,
+            np.ravel(y_train),
+            epochs=100,
+            batch_size=np.shape(x_train)[0],
+            verbose=1,
+        )
 
         y_hat = model.predict(x_test)
         mse = mean_squared_error(y_test, y_hat)
@@ -581,52 +811,67 @@ elif (single == True):
         print("r2 test:" + str(r2))
         # tensorflow
 
-    elif (algo == "xgb"):
+    elif algo == "xgb":
 
         print("xgb algorithms")
         reg = xgb.XGBRegressor(
-            reg_alpha=0.0, colsample_bytree=0.3, eta=0.1, gamma=0.01,
-            reg_lambda=0.0, learning_rate=0.1, max_depth=8, n_estimators=800,
-            objective="reg:squarederror", tree_method="gpu_hist")
+            reg_alpha=0.0,
+            colsample_bytree=0.3,
+            eta=0.1,
+            gamma=0.01,
+            reg_lambda=0.0,
+            learning_rate=0.1,
+            max_depth=8,
+            n_estimators=800,
+            objective="reg:squarederror",
+            tree_method="gpu_hist",
+        )
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "rf"):
+    elif algo == "rf":
         print("random forest algorithms ")
-        reg = RandomForestRegressor(min_samples_leaf=2, min_samples_split=2,
-                                       n_estimators=100, n_jobs=10)
+        reg = RandomForestRegressor(
+            min_samples_leaf=2, min_samples_split=2, n_estimators=100, n_jobs=10
+        )
         reg = RandomForestRegressor(n_jobs=10)
         custom_scorer_rf = custom_skopt_rf_scorer
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "extra"):
+    elif algo == "extra":
         print("extra algorithm")
 
-        reg = ExtraTreesRegressor(min_samples_split=2,
-                                        min_samples_leaf=2,
-                                        n_estimators=1500)
+        reg = ExtraTreesRegressor(
+            min_samples_split=2, min_samples_leaf=2, n_estimators=1500
+        )
         custom_scorer_extra = custom_skopt_extra_scorer
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "grad"):
+    elif algo == "grad":
         print("grad algorithm")
-        dict = {'learning_rate': 0.005, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_depth': 8,
-                'n_estimators': 1500, 'subsample': 0.5}
+        dict = {
+            "learning_rate": 0.005,
+            "min_samples_split": 2,
+            "min_samples_leaf": 1,
+            "max_depth": 8,
+            "n_estimators": 1500,
+            "subsample": 0.5,
+        }
         reg = GradientBoostingRegressor(**dict)
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
         # {'learning_rate': 0.020037429107630705, 'min_samples_split': 3, 'min_samples_leaf': 1, 'max_depth': 2, 'n_estimators': 907, 'subsample': 0.8319757440943847}
         # {'learning_rate': 0.008130467504230791, 'min_samples_split': 3, 'min_samples_leaf': 1, 'max_depth': 2, 'n_estimators': 1692, 'subsample': 0.8396639338788848}
 
-    elif (algo == "huber"):
+    elif algo == "huber":
         print("huber algorithm")
         reg = HuberRegressor()
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
-    elif (algo == "knn"):
+    elif algo == "knn":
         print("knn algorithm")
         reg = KNeighborsRegressor(algorithm="auto", weights="distance", n_neighbors=5)
         reg.fit(x_train, y_train)
@@ -634,36 +879,35 @@ elif (single == True):
 
     else:
         print("extra trees algorithm")
-        reg = ExtraTreesRegressor(min_samples_split=2,
-                                        min_samples_leaf=2,
-                                        n_estimators=2000)
+        reg = ExtraTreesRegressor(
+            min_samples_split=2, min_samples_leaf=2, n_estimators=2000
+        )
         reg.fit(x_train, y_train)
         score_single(reg, x_train, x_test, y_train, y_test, std)
 
 else:
     print("no training selected, feature selection")
-    #pca(x, list(x), y)
-    #lasso(x,y)
-    #lasso_cv(x,y)
+    # pca(x, list(x), y)
+    # lasso(x,y)
+    # lasso_cv(x,y)
 
     # 15 pca components has 82% explained variance
     # 20 pca components has 87% explained variance
     # 25 pca components has 90% explained variance
-    #lasso(x, y)
-    #lasso_cv(x, y)
+    # lasso(x, y)
+    # lasso_cv(x, y)
 
-    #boruta(x,y, n = 7)
-    #boruta(x,y, n = 5)
-    #boruta(x,y, n = 3)
+    # boruta(x,y, n = 7)
+    # boruta(x,y, n = 5)
+    # boruta(x,y, n = 3)
 
-    #recursive_feat_elim(x,y,7)
-    #print("---------------------------------")
-    #recursive_feat_elim(x, y, 5)
-    #print("---------------------------------")
-    #recursive_feat_elim(x, y, 3)
+    # recursive_feat_elim(x,y,7)
+    # print("---------------------------------")
+    # recursive_feat_elim(x, y, 5)
+    # print("---------------------------------")
+    # recursive_feat_elim(x, y, 3)
 
-    #print("dendrogram")
-    #dendo(names)
-    #print("quantitative feature selction")
+    # print("dendrogram")
+    # dendo(names)
+    # print("quantitative feature selction")
     quant_feat(x_train, x_test, y_train, y_test, names)
-
